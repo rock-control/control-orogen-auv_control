@@ -1,0 +1,61 @@
+name "auv_control"
+version "1.0"
+
+using_library 'motor_controller'
+import_types_from 'base'
+import_types_from 'motor_controller/PID.hpp'
+
+using_task_library "xsens_imu"
+
+type_export_policy :used
+
+task_context 'Task' do
+    
+    #property("controller_x","motor_controller::PIDSettings")
+    #property("controller_y","motor_controller::PIDSettings")
+    
+    property("controller_x_facotor","double",1)
+    property("controller_y_factor","double",1)
+    
+    property("controller_z","motor_controller::PIDSettings")
+    
+    property("controller_yaw","motor_controller::PIDSettings")
+    property("controller_pitch","motor_controller::PIDSettings")
+    property("controller_roll","motor_controller::PIDSettings")
+    
+    #Target Pitch value to reach for the controller in RAD
+    property('pitch_target','double',0)
+    
+    property('roll_target','double',0)
+    
+    property('pitch_roll_comensation','bool',1)
+
+    # Maximum duration between two commands, in seconds
+    property('timeout', 'double', 1)
+
+    property('cutoff','double',0.8).
+    	doc("Maximum allowed Value between 0 and 1 that is an cutoff for maximum pwm value 0.8 means 80% PWM")
+
+    input_port('pose_samples', '/base/samples/RigidBodyState').
+        doc("the current pose estimate")
+
+    input_port('motion_commands', '/base/AUVMotionCommand').
+        doc("the input commands")
+
+    # The speed commands
+    output_port("hbridge_commands","base/actuators/Command")
+
+    # The internal state of the controller
+    #output_port 'debug', '/avalon_control/MotionControllerState'
+
+    error_states :TIMEOUT_COMMAND, :TIMEOUT_RBS
+    runtime_states :WAITING_FOR_RBS, :WAITING_FOR_COMMAND
+
+    port_driven :pose_samples
+end
+
+deployment "test" do
+    task("auv_control","Task")
+    task("xsens","xsens_imu::Task")
+    do_not_install
+end

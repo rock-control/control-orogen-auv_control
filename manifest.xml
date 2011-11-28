@@ -1,0 +1,12 @@
+<package>
+  <description brief="Basic AUV MotionController">
+  </description>
+  <author>Matthias Goldhoorn/Matthias.Goldhoorn@dfki.de</author>
+  <license></license>
+  <depend package="base/types"/>
+  <depend package="control/motor_controller"/>
+  <versioncontrol type="git" url="" />
+  <export>
+    <cpp cflags="" lflags="" />
+  </export>
+</package>
