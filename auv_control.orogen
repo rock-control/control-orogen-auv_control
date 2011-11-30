@@ -21,14 +21,12 @@ task_context 'Task' do
     
     #Target Pitch value to reach for the controller in RAD
     property('pitch_target','double',0)
-    
     property('roll_target','double',0)
     
     property('pitch_roll_comensation','bool',1)
     property('use_rbs_for_speed','bool',1)
 
     property('thruster_control_matrix','/base/Matrix6d')
-    
     property('thruster_death_zones','/std/vector</double>')
 
     # Maximum duration between two commands, in seconds
@@ -46,13 +44,9 @@ task_context 'Task' do
     # The speed commands
     output_port("motor_commands","base/actuators/Command")
 
-    # The internal state of the controller
-    #output_port 'debug', '/avalon_control/MotionControllerState'
-
     error_states :TIMEOUT_COMMAND, :TIMEOUT_RBS, :INVALID_RBS
     runtime_states :WAITING_FOR_RBS, :WAITING_FOR_COMMAND
 
-    port_driven :pose_samples
 end
 
 deployment "test" do

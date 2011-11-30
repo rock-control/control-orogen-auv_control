@@ -7,6 +7,25 @@ using namespace auv_control;
 Task::Task(std::string const& name, TaskCore::TaskState initial_state)
     : TaskBase(name, initial_state)
 {
+    /*
+    Eigen::Matrix<double,6,6> controlMatrix = _thruster_control_matrix.get();
+
+    
+                            //Links     //Rechts    //Dive  //Strave    //Turn  //Pitch
+    controlMatrix.row(0) << 1,          1,          0,      0,          0,      0;      //X
+    controlMatrix.row(1) << 0,          0,          0,      1,          0.2,     0;      //Y
+    controlMatrix.row(2) << 0,          0,          1,      0,          0,      0.2;    //Z
+    controlMatrix.row(3) << 0,          0,          0,      -0.2,       1,      0;      //Yaw
+    controlMatrix.row(4) << 0,          0,          0,      0,          0,      1;      //Pitch
+    controlMatrix.row(5) << 0,          0,          0,      0,          0,      0;      //Roll
+    _thruster_control_matrix.set(controlMatrix);
+    
+    std::vector<double> workaround;
+    for(int i=0;i<6;i++){
+        workaround.push_back(0.14);
+    }
+    _thruster_death_zones.set(workaround);
+    */
 }
 
 Task::Task(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
@@ -61,14 +80,8 @@ bool Task::startHook()
     pitch_pid.setPIDSettings(_controller_pitch.get());
     roll_pid.setPIDSettings(_controller_roll.get());
 
-    //inital_heading = std::numeric_limits<double>::infinity();
     body_state.invalidate();
-    //last_state = RUNNING;
 
-    //last_body_time = 0;
-    //last_motor_command_time = 0;
-    
-    
     motorCommands.resize(6);
     if(_thruster_death_zones.get().size() != 6){
         return false;
@@ -88,40 +101,27 @@ void Task::updateHook()
 
     //if(motion_command.time == base::Time::fromSeconds(0)){ //TODO timestamping
     if(last_motion_command_time == base::Time::fromSeconds(0)){
+        printf("Waiting for command\n");
         state(WAITING_FOR_COMMAND);
         return;
     }else if(body_state.time == base::Time::fromSeconds(0)){ //TODO timestamping
+        printf("Waiting for RBS\n");
         state(WAITING_FOR_RBS);
         return;
     //}else if((base::Time::now() - motion_command.time).toSeconds() > _timeout.get()){
     }else if((base::Time::now() - last_motion_command_time).toSeconds() > _timeout.get()){
+        printf("Timeout command\n");
         error(TIMEOUT_COMMAND); 
     }else if((base::Time::now() - body_state.time).toSeconds() > _timeout.get()){
+        printf("Timeout RBS\n");
         error(TIMEOUT_RBS); 
     }else{
+        printf("Running\n");
         state(RUNNING);
     }
 
     Eigen::Matrix<double,6,6> controlMatrix = _thruster_control_matrix.get();
-/*
-    
-                            //Links     //Rechts    //Dive  //Strave    //Turn  //Pitch
-    controlMatrix.row(0) << 1,          1,          0,      0,          0,      0;      //X
-    controlMatrix.row(1) << 0,          0,          0,      1,          0.2,     0;      //Y
-    controlMatrix.row(2) << 0,          0,          1,      0,          0,      0.2;    //Z
-    controlMatrix.row(3) << 0,          0,          0,      -0.2,       1,      0;      //Yaw
-    controlMatrix.row(4) << 0,          0,          0,      0,          0,      1;      //Pitch
-    controlMatrix.row(5) << 0,          0,          0,      0,          0,      0;      //Roll
-    Eigen::Quaterniond current_orientation = body_state.orientation;
 
-    
-
-
-    Eigen::Quaterniond target_orientation = Eigen::AngleAxisd(motion_command.heading, Eigen::Vector3d::UnitX())
-                                            * Eigen::AngleAxisd(_pitch_target.get(), Eigen::Vector3d::UnitY())
-                                            * Eigen::AngleAxisd(_roll_target.get(), Eigen::Vector3d::UnitZ());
-  
-*/
     base::Angle currentYaw      = base::Angle::fromRad(body_state.getYaw());
     base::Angle currentPitch    = base::Angle::fromRad(body_state.getPitch());
     base::Angle currentRoll     = base::Angle::fromRad(body_state.getRoll());
@@ -129,7 +129,8 @@ void Task::updateHook()
     Eigen::Vector3d currentSpeed;
     if(_use_rbs_for_speed.get()){
         if(!body_state.hasValidVelocity()){
-            error(INVALID_RBS);
+            printf("Invalid RBS for speed\n");
+            return error(INVALID_RBS);
         }
         currentSpeed=body_state.velocity;
     }else{
@@ -167,15 +168,6 @@ void Task::updateHook()
     movementVector.block(3,0,3,1) = rotationVector;
     Eigen::Matrix<double,6,1> resultingThrusterValue = controlMatrix.transpose() * movementVector ;
     
-    printf("Resulting Vector:  %+1.3f, %+1.3f, %+1.3f, %+1.3f, %+1.3f, %+1.3f\n",
-            resultingThrusterValue[0],
-            resultingThrusterValue[1],
-            resultingThrusterValue[2],
-            resultingThrusterValue[3],
-            resultingThrusterValue[4],
-            resultingThrusterValue[5]
-    );
-
     for(int i=0;i<6;i++){
         motorCommands.mode[i] = base::actuators::DM_PWM;
         resultingThrusterValue[i] = correct_pwm_value(resultingThrusterValue[i], i);
