@@ -23,9 +23,15 @@ Orocos::Process.run 'test' do |p|
     driver.orientation_samples.connect_to task.pose_samples
     writer = task.motion_commands.writer
     sample = writer.new_sample
-    sample.x_speed = 1
+    sample.x_speed = 0 
     sample.y_speed = 0
-    sample.z = 0
+    sample.z = -1 
+    task.thruster_control_matrix =  1,          1,          0,      0,          0,      0, 
+     0,          0,          0,      1,          0.2,     0,
+     0,          0,          1,      0,          0,      0.2,
+     0,          0,          0,      -0.2,       1,      0, 
+     0,          0,          0,      0,          0,      1, 
+     0,          0,          0,      0,          0,      0 
    
 
     pid = task.controller_yaw
@@ -34,6 +40,9 @@ Orocos::Process.run 'test' do |p|
     task.controller_yaw = pid
     task.controller_pitch = pid
     task.controller_roll = pid
+    task.controller_x = pid
+    task.controller_y = pid
+    task.controller_z = pid
 
 
 

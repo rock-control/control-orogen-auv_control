@@ -11,12 +11,8 @@ type_export_policy :used
 
 task_context 'Task' do
     
-    #property("controller_x","motor_controller::PIDSettings")
-    #property("controller_y","motor_controller::PIDSettings")
-    
-    property("controller_x_facotor","double",1)
-    property("controller_y_factor","double",1)
-    
+    property("controller_x","motor_controller::PIDSettings")
+    property("controller_y","motor_controller::PIDSettings")
     property("controller_z","motor_controller::PIDSettings")
     
     property("controller_yaw","motor_controller::PIDSettings")
@@ -29,6 +25,11 @@ task_context 'Task' do
     property('roll_target','double',0)
     
     property('pitch_roll_comensation','bool',1)
+    property('use_rbs_for_speed','bool',1)
+
+    property('thruster_control_matrix','/base/Matrix6d')
+    
+    property('thruster_death_zones','/std/vector</double>')
 
     # Maximum duration between two commands, in seconds
     property('timeout', 'double', 1)
@@ -43,12 +44,12 @@ task_context 'Task' do
         doc("the input commands")
 
     # The speed commands
-    output_port("hbridge_commands","base/actuators/Command")
+    output_port("motor_commands","base/actuators/Command")
 
     # The internal state of the controller
     #output_port 'debug', '/avalon_control/MotionControllerState'
 
-    error_states :TIMEOUT_COMMAND, :TIMEOUT_RBS
+    error_states :TIMEOUT_COMMAND, :TIMEOUT_RBS, :INVALID_RBS
     runtime_states :WAITING_FOR_RBS, :WAITING_FOR_COMMAND
 
     port_driven :pose_samples

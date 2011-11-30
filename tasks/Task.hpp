@@ -10,18 +10,22 @@ namespace auv_control {
     {
 	friend class TaskBase;
     protected:
-//        motor_controller::PID x_pid;
-//        motor_controller::PID y_pid;
+        motor_controller::PID x_pid;
+        motor_controller::PID y_pid;
         motor_controller::PID z_pid;
 
         motor_controller::PID yaw_pid;
         motor_controller::PID pitch_pid;
         motor_controller::PID roll_pid;
+        
+        base::Time last_motion_command_time; //TODO Temporal solution until motion command has no timestamp
 
-        //double inital_heading = std::numeric_limits<double>::infinity();
         base::samples::RigidBodyState body_state;
-        //States last_state;
         base::AUVMotionCommand motion_command;
+        
+        base::actuators::Command motorCommands;
+
+        double correct_pwm_value(double value, int motorIndex) const;
 
     public:
         Task(std::string const& name = "auv_control::Task", TaskCore::TaskState initial_state = Stopped);
