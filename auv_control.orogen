@@ -5,10 +5,6 @@ using_library 'motor_controller'
 import_types_from 'base'
 import_types_from 'motor_controller/PID.hpp'
 
-using_task_library "xsens_imu"
-
-type_export_policy :used
-
 task_context 'Task' do
     
     property("controller_x","motor_controller::PIDSettings")
@@ -49,8 +45,3 @@ task_context 'Task' do
 
 end
 
-deployment "test" do
-    task("auv_control","Task")
-    task("xsens","xsens_imu::Task")
-    do_not_install
-end
