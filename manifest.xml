@@ -1,0 +1,16 @@
+<package>
+  <description brief="control for auv">
+  
+  </description>
+  <author>Tim Lehr/lehr@informatik.uni-bremen.de</author>
+  <license></license>
+  <url>http://</url>
+  <logo>http://</logo>
+  <!--
+   To add any dependencies use the depend tag
+  <depend package="dummy-dependency-0" />
+	...
+  <depend package="dummy-dependency-n-1" />
+  <depend package="dummy-dependency-n" />
+  -->
+</package>
