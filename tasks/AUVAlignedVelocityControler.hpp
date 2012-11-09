@@ -4,6 +4,9 @@
 #define AUV_CONTROL_AUVALIGNEDVELOCITYCONTROLER_TASK_HPP
 
 #include "auv_control/AUVAlignedVelocityControlerBase.hpp"
+#include <Eigen/Dense>
+#include <base/time.h>
+#include <motor_controller/PID.hpp>
 
 namespace auv_control {
 
@@ -25,9 +28,30 @@ namespace auv_control {
     {
 	friend class AUVAlignedVelocityControlerBase;
     protected:
-
-
-
+    
+    control::AlignedVelocityCommand6D mergeCommands(control::AlignedVelocityCommand6D, control::AlignedVelocityCommand6D);
+    void lastTarget(control::AlignedVelocityCommand6D);
+    void holdPosition(control::AlignedVelocityCommand6D);
+    void genVector(control::AlignedVelocityCommand6D, base::Matrix3d, base::Matrix3d, double);
+    
+    Eigen::VectorXd v;
+    control::AlignedVelocityCommand6D current;
+    double target_x;
+    double target_y;
+    double target_z;
+    double target_yaw;
+    double target_pitch;
+    double target_roll;
+   
+    //motor_controller::PIDSettings x_settings;
+    motor_controller::PID x_pid;
+    motor_controller::PID y_pid;
+    motor_controller::PID z_pid;
+    motor_controller::PID yaw_pid;
+    motor_controller::PID pitch_pid;
+    motor_controller::PID roll_pid;
+    
+    base::Time last_body_state_time;
     public:
         /** TaskContext constructor for AUVAlignedVelocityControler
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
@@ -83,7 +107,7 @@ namespace auv_control {
          * component is stopped and recover() needs to be called before starting
          * it again. Finally, FatalError cannot be recovered.
          */
-        // void updateHook();
+        void updateHook();
 
         /** This hook is called by Orocos when the component is in the
          * RunTimeError state, at each activity step. See the discussion in

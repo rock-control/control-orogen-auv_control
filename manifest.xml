@@ -6,5 +6,6 @@
   <license></license>
   <url>http://</url>
   <logo>http://</logo>
-    <depend package="base/orogen/types"/>
+  <depend package="base/types"/>
+  <depend package="control/motor_controller"/>
 </package>

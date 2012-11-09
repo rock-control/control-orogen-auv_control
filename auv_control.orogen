@@ -10,37 +10,45 @@ version "0.1"
 # projects, these projects should be imported there as well.
 import_types_from "base"
 import_types_from "6dControl.hpp"
+using_library "motor_controller"
 
 # Declare a new task context (i.e., a component)
 #
 # The corresponding C++ class can be edited in tasks/Task.hpp and
 # tasks/Task.cpp, and will be put in the auv_control namespace.
 task_context "AUVAlignedVelocityControler" do
-    input_port("aligned_velocity_command_aligned", "control::Command6D")
-    input_port("aligned_velocity_command_direct", "control::Command6D")
+    input_port("aligned_velocity_command_aligned", "control::AlignedVelocityCommand6D")
+    input_port("aligned_velocity_command_direct", "control::AlignedVelocityCommand6D")
     input_port("position_sample", "base::samples::RigidBodyState")
+    
+    periodic (1.0)
     
     output_port("force_command", "base/actuators/Command")
     
-    property("controler", "control::Controler6D")
+    property("controller", "control::AlignedVelocityController6D")
+    property("isASV", "bool", false)
 end
 
 task_context "AUVAlignedControler" do
-    input_port("aligned_command_world", "control::Command6D")
-    input_port("aligned_command_direct", "control::Command3D")
+    input_port("aligned_command_world", "control::AlignedCommand6D")
+    input_port("aligned_command_direct", "control::AlignedCommand3D")
     input_port("position_sample", "base::samples::RigidBodyState")
     
-    output_port("aligned_velocity_command", "control::Command6D")
+    periodic (1.0)
     
-    property("controler", "control::Controler6D")
+    output_port("aligned_velocity_command", "control::AlignedVelocityCommand6D")
+    
+    property("controller", "control::AlignedController6D")
 end
 
 task_context "AUVWorldControler" do
-    input_port("world_command_direct", "control::Command6D")
+    input_port("world_command_direct", "control::WorldCommand6D")
     input_port("position_sample", "base::samples::RigidBodyState")
     
-    output_port("aligned_command", "control::Command6D")
+    periodic (1.0)
     
-    property("controler", "control::Controler6D")
+    output_port("aligned_command", "control::AlignedCommand6D")
+    
+    property("controller", "control::WorldController6D")
 end
 
