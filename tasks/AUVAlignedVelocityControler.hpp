@@ -7,6 +7,7 @@
 #include <Eigen/Dense>
 #include <base/time.h>
 #include <motor_controller/PID.hpp>
+#include <base/actuators/commands.h>
 
 namespace auv_control {
 
@@ -32,9 +33,12 @@ namespace auv_control {
     control::AlignedVelocityCommand6D mergeCommands(control::AlignedVelocityCommand6D, control::AlignedVelocityCommand6D);
     void lastTarget(control::AlignedVelocityCommand6D);
     void holdPosition(control::AlignedVelocityCommand6D);
-    void genVector(control::AlignedVelocityCommand6D, base::Matrix3d, base::Matrix3d, double);
+    void genVector(control::AlignedVelocityCommand6D, base::Vector3d, base::Vector3d, double);
+    base::actuators::Command genMotionCommand();
     
-    Eigen::VectorXd v;
+    base::Vector6d vector_command;
+    base::Matrix6d calibration;
+    
     control::AlignedVelocityCommand6D current;
     double target_x;
     double target_y;
@@ -84,14 +88,14 @@ namespace auv_control {
          end
          \endverbatim
          */
-        // bool configureHook();
+        bool configureHook();
 
         /** This hook is called by Orocos when the state machine transitions
          * from Stopped to Running. If it returns false, then the component will
          * stay in Stopped. Otherwise, it goes into Running and updateHook()
          * will be called.
          */
-        // bool startHook();
+        bool startHook();
 
         /** This hook is called by Orocos when the component is in the Running
          * state, at each activity step. Here, the activity gives the "ticks"
@@ -115,18 +119,18 @@ namespace auv_control {
          *
          * Call recover() to go back in the Runtime state.
          */
-        // void errorHook();
+        void errorHook();
 
         /** This hook is called by Orocos when the state machine transitions
          * from Running to Stopped after stop() has been called.
          */
-        // void stopHook();
+        void stopHook();
 
         /** This hook is called by Orocos when the state machine transitions
          * from Stopped to PreOperational, requiring the call to configureHook()
          * before calling start() again.
          */
-        // void cleanupHook();
+        void cleanupHook();
     };
 }
 

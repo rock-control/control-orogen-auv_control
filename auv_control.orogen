@@ -12,6 +12,7 @@ import_types_from "base"
 import_types_from "6dControl.hpp"
 using_library "motor_controller"
 
+
 # Declare a new task context (i.e., a component)
 #
 # The corresponding C++ class can be edited in tasks/Task.hpp and
@@ -20,13 +21,17 @@ task_context "AUVAlignedVelocityControler" do
     input_port("aligned_velocity_command_aligned", "control::AlignedVelocityCommand6D")
     input_port("aligned_velocity_command_direct", "control::AlignedVelocityCommand6D")
     input_port("position_sample", "base::samples::RigidBodyState")
+    port_driven "position_sample"
     
-    periodic (1.0)
-    
-    output_port("force_command", "base/actuators/Command")
+    output_port("force_command", "base::actuators::Command")
     
     property("controller", "control::AlignedVelocityController6D")
     property("isASV", "bool", false)
+    property("calibration", "base::Matrix6d") 
+    
+
+    exception_states :MERGE_ERROR, :INPUT_ERROR, :COMMAND_ERROR
+
 end
 
 task_context "AUVAlignedControler" do

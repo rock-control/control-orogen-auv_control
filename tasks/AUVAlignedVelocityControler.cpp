@@ -24,20 +24,44 @@ AUVAlignedVelocityControler::~AUVAlignedVelocityControler()
 // hooks defined by Orocos::RTT. See AUVAlignedVelocityControler.hpp for more detailed
 // documentation about them.
 
-// bool AUVAlignedVelocityControler::configureHook()
-// {
-//     if (! AUVAlignedVelocityControlerBase::configureHook())
-//         return false;
-//     return true;
-// }
-// bool AUVAlignedVelocityControler::startHook()
-// {
-//     if (! AUVAlignedVelocityControlerBase::startHook())
-//         return false;
-//     return true;
-// }
+bool AUVAlignedVelocityControler::configureHook(){
+     return true;
+}
+
+bool AUVAlignedVelocityControler::startHook() {
+     //reset the PIDS
+     x_pid.reset();
+     y_pid.reset();
+     z_pid.reset();
+     yaw_pid.reset();
+     pitch_pid.reset();
+     roll_pid.reset();
+     
+     //set PID settings
+     control::AlignedVelocityController6D controller = _controller.get();
+     x_pid.setPIDSettings(controller.x_settings);
+     y_pid.setPIDSettings(controller.y_settings);
+     z_pid.setPIDSettings(controller.z_settings);
+     yaw_pid.setPIDSettings(controller.yaw_settings);
+     pitch_pid.setPIDSettings(controller.pitch_settings);
+     roll_pid.setPIDSettings(controller.roll_settings);
+     
+     //set targets on zero
+     target_x = 0;
+     target_y = 0;
+     target_z = 0;
+     target_yaw = 0;
+     target_pitch = 0;
+     target_roll = 0;
+     
+     //set calibration
+     calibration = _calibration.get();
+     
+     return true;
+}
 void AUVAlignedVelocityControler::updateHook()
 {
+    base::actuators::Command force_command;
     control::AlignedVelocityCommand6D direct_new;
     control::AlignedVelocityCommand6D aligned_new;
     control::AlignedVelocityCommand6D next_command;
@@ -50,6 +74,8 @@ void AUVAlignedVelocityControler::updateHook()
     
     if(_position_sample.read(body_state)!=RTT::NoData){
         //ERROR: no new BodyState
+        exception(INPUT_ERROR);
+
     }
     
     
@@ -66,32 +92,38 @@ void AUVAlignedVelocityControler::updateHook()
         next_command = this->mergeCommands(aligned_new, direct_new);
     } else{
         //ERROR: no input
+        exception(INPUT_ERROR);
+
     }
     
     if(next_command.AllSet()){
         //Error
+        exception(COMMAND_ERROR);
+
     }
     
     
     delta_time = ((body_state.time - last_body_state_time).toSeconds());
-    //this->genVector(next_command, body_state.velocity, body_state.angular_velocity, delta_time);
+    this->genVector(next_command, body_state.velocity, body_state.angular_velocity, delta_time);
     
     
+    force_command = this->genMotionCommand();
+    force_command.time = body_state.time;
+    last_body_state_time = body_state.time;
     
+    _force_command.write(force_command);
+
     
 }
-// void AUVAlignedVelocityControler::errorHook()
-// {
-//     AUVAlignedVelocityControlerBase::errorHook();
-// }
-// void AUVAlignedVelocityControler::stopHook()
-// {
-//     AUVAlignedVelocityControlerBase::stopHook();
-// }
-// void AUVAlignedVelocityControler::cleanupHook()
-// {
-//     AUVAlignedVelocityControlerBase::cleanupHook();
-// }
+void AUVAlignedVelocityControler::errorHook()
+{
+}
+void AUVAlignedVelocityControler::stopHook()
+{
+}
+void AUVAlignedVelocityControler::cleanupHook()
+{
+}
 
 
 control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(control::AlignedVelocityCommand6D command1, control::AlignedVelocityCommand6D command2){
@@ -106,6 +138,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.x_mode = command2.x_mode;
     } else{
         //ERROR cant merge
+        exception(MERGE_ERROR);
         
     }
     
@@ -118,7 +151,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.y_mode = command2.y_mode;
     } else{
         //ERROR cant merge
-        
+        exception(MERGE_ERROR);
     }
     
     //Merge Z
@@ -130,7 +163,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.z_mode = command2.z_mode;
     } else{
         //ERROR cant merge
-        
+        exception(MERGE_ERROR);
     }
     
     //Merge Yaw
@@ -142,7 +175,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.yaw_mode = command2.yaw_mode;
     } else{
         //ERROR cant merge
-        
+        exception(MERGE_ERROR);
     }
     
     //Merge Pitch
@@ -154,7 +187,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.pitch_mode = command2.pitch_mode;
     } else{
         //ERROR cant merge
-        
+        exception(MERGE_ERROR);
     }
     
     //Merge Roll
@@ -166,7 +199,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.roll_mode = command2.roll_mode;
     } else{
         //ERROR cant merge
-        
+        exception(MERGE_ERROR);
     }
     
     return merged_command;
@@ -190,10 +223,11 @@ void AUVAlignedVelocityControler::holdPosition(control::AlignedVelocityCommand6D
 }
 
 void AUVAlignedVelocityControler::genVector(control::AlignedVelocityCommand6D command, 
-                                            base::Matrix3d velocity, 
-                                            base::Matrix3d angel_velocity,
+                                            base::Vector3d velocity, 
+                                            base::Vector3d angel_velocity,
                                             double delta_time){
-    Eigen::VectorXd vector_command(6); 
+    vector_command(6);
+     
     vector_command[0] = x_pid.update(velocity(0) ,command.x, delta_time);
     vector_command[1] = y_pid.update(velocity(1) ,command.y, delta_time);
     vector_command[2] = z_pid.update(velocity(2) ,command.z, delta_time);
@@ -202,4 +236,25 @@ void AUVAlignedVelocityControler::genVector(control::AlignedVelocityCommand6D co
     vector_command[5] = roll_pid.update(velocity(2) ,command.roll, delta_time);
 }
 
+base::actuators::Command AUVAlignedVelocityControler::genMotionCommand(){
+    Eigen:: VectorXd result = ((vector_command.transpose()) * calibration).transpose();
+    
+    base::actuators::Command command;
+    
+    if(_isASV.get()){
+        command.resize(4);
+        for (int i = 0; i<4; i++){
+            command.mode.at(i)=base::actuators::DM_PWM;
+            command.target.at(i)=result(i);
+        }
+    } else {
+        command.resize(6);
+        for (int i = 0; i<6; i++){
+            command.mode.at(i)=base::actuators::DM_PWM;
+            command.target.at(i)=result(i);
+        }
+    }
+    return command;
+    
+}
 
