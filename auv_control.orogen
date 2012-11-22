@@ -22,14 +22,14 @@ task_context "AUVAlignedVelocityControler" do
     input_port("aligned_velocity_command_direct", "control::AlignedVelocityCommand6D")
     input_port("position_sample", "base::samples::RigidBodyState")
     port_driven "position_sample"
-    
+    port_driven "aligned_velocity_command_direct"
     output_port("force_command", "base::actuators::Command")
     
     property("controller", "control::AlignedVelocityController6D")
     property("isASV", "bool", false)
-    property("calibration", "base::Matrix6d") 
+    property("calibration", "std::vector<std::vector<double>>") 
     
-
+    runtime_states :WAIT_FOR_COMMAND, :WAIT_FOR_RBS
     exception_states :MERGE_ERROR, :INPUT_ERROR, :COMMAND_ERROR
 
 end

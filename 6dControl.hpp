@@ -66,12 +66,12 @@ namespace control{
                      yaw_mode != NOT_SET &&
                      pitch_mode != NOT_SET &&
                      roll_mode != NOT_SET) && 
-                    (isnan(x) &&
-                     isnan(y) &&
-                     isnan(z) &&
-                     isnan(yaw) &&
-                     isnan(pitch) &&
-                     isnan(roll)));
+                    (!isnan(x) &&
+                     !isnan(y) &&
+                     !isnan(z) &&
+                     !isnan(yaw) &&
+                     !isnan(pitch) &&
+                     !isnan(roll)));
         }
     };
     

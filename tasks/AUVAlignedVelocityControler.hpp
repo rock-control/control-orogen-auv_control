@@ -34,6 +34,7 @@ namespace auv_control {
     void lastTarget(control::AlignedVelocityCommand6D);
     void holdPosition(control::AlignedVelocityCommand6D);
     void genVector(control::AlignedVelocityCommand6D, base::Vector3d, base::Vector3d, double);
+    void stopActuators();
     base::actuators::Command genMotionCommand();
     
     base::Vector6d vector_command;

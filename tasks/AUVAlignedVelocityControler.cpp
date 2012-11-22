@@ -1,8 +1,10 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "AUVAlignedVelocityControler.hpp"
+#include <iostream>
 
 using namespace auv_control;
+using namespace std;
 
 AUVAlignedVelocityControler::AUVAlignedVelocityControler(std::string const& name, TaskCore::TaskState initial_state)
     : AUVAlignedVelocityControlerBase(name, initial_state)
@@ -55,12 +57,45 @@ bool AUVAlignedVelocityControler::startHook() {
      target_roll = 0;
      
      //set calibration
-     calibration = _calibration.get();
      
+    //To test
+    //calibration = _calibration.get();
+     
+    calibration(0,0) = 1;
+    calibration(0,1) = 1;
+    calibration(0,2) = 0;
+    calibration(0,3) = 0;
+
+    calibration(1,0) = 0;
+    calibration(1,1) = 0;
+    calibration(1,2) = -1;
+    calibration(1,3) = -1;
+
+    calibration(2,0) = 0;
+    calibration(2,1) = 0;
+    calibration(2,2) = 0;
+    calibration(2,3) = 0;
+
+    calibration(3,0) = 0;
+    calibration(3,1) = 0;
+    calibration(3,2) = 0;
+    calibration(3,3) = 0;
+
+    calibration(4,0) = 0;
+    calibration(4,1) = 0;
+    calibration(4,2) = 0;
+    calibration(4,3) = 0;
+
+    calibration(5,0) = -1;
+    calibration(5,1) = 1;
+    calibration(5,2) = -1;
+    calibration(5,3) = 1;
      return true;
 }
 void AUVAlignedVelocityControler::updateHook()
 {
+    //cout << "UPDATE-HOCK" << endl;
+    
     base::actuators::Command force_command;
     control::AlignedVelocityCommand6D direct_new;
     control::AlignedVelocityCommand6D aligned_new;
@@ -72,9 +107,13 @@ void AUVAlignedVelocityControler::updateHook()
     
     double delta_time;
     
-    if(_position_sample.read(body_state)!=RTT::NoData){
+    if(_position_sample.read(body_state)==RTT::NoData){
         //ERROR: no new BodyState
-        exception(INPUT_ERROR);
+        cout << "Kein neuer RidgedBodyState" << endl;
+        state(WAIT_FOR_RBS);
+    
+        this->stopActuators();
+        return;
 
     }
     
@@ -83,27 +122,50 @@ void AUVAlignedVelocityControler::updateHook()
     data_on_aligned = _aligned_velocity_command_aligned.read(aligned_new)!=RTT::NoData;
     data_on_direct = _aligned_velocity_command_direct.read(direct_new)!=RTT::NoData;  
     
+        cout << "DATA_ON_ALIGNED:"<< data_on_aligned << endl; 
+        cout << "DATA_ON_DIRECT :"<< data_on_direct << endl; 
     
     if(data_on_aligned && !data_on_direct){
+        cout << "Nur Aligned:" << endl; 
         next_command = aligned_new;
     } else if (!data_on_aligned && data_on_direct){
+        cout << "Nur Driect:" << endl; 
         next_command = direct_new;
     } else if (data_on_aligned && data_on_direct){
+        cout << "Mergen:" << endl; 
         next_command = this->mergeCommands(aligned_new, direct_new);
     } else{
         //ERROR: no input
-        exception(INPUT_ERROR);
+        cout << "Kein bewegungskomando" << endl;
+        state(WAIT_FOR_COMMAND);
 
+        this->stopActuators();
+        return;
     }
-    
-    if(next_command.AllSet()){
-        //Error
+    /*cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" << endl;
+    cout << "X:" << next_command.x << endl;
+    cout << "Y:" << next_command.y << endl;    
+    cout << "Z:" << next_command.z << endl;
+    cout << "YAW:" << next_command.yaw << endl;
+    cout << "PITCH:" << next_command.pitch << endl;    
+    cout << "ROLL:" << next_command.roll << endl;    
+    cout << "X-mode:" << next_command.x_mode << endl;
+    cout << "Y-mode:" << next_command.y_mode << endl;    
+    cout << "Z-mode:" << next_command.z_mode << endl;
+    cout << "YAW-mode:" << next_command.yaw_mode << endl;
+    cout << "PITCH-mode:" << next_command.pitch_mode << endl;    
+    cout << "ROLL-mode:" << next_command.roll_mode << endl;    
+    */
+    if(!next_command.AllSet()){
+        cout << "Nicht alle Parameter des Komandos wurden gesetzt" << endl;
         exception(COMMAND_ERROR);
-
+        this->stopActuators();
+        return;
     }
     
     
     delta_time = ((body_state.time - last_body_state_time).toSeconds());
+    //cout << "Delta T:" << delta_time << endl;
     this->genVector(next_command, body_state.velocity, body_state.angular_velocity, delta_time);
     
     
@@ -112,7 +174,8 @@ void AUVAlignedVelocityControler::updateHook()
     last_body_state_time = body_state.time;
     
     _force_command.write(force_command);
-
+    state(RUNNING);
+    return;
     
 }
 void AUVAlignedVelocityControler::errorHook()
@@ -138,6 +201,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.x_mode = command2.x_mode;
     } else{
         //ERROR cant merge
+        this->stopActuators();
         exception(MERGE_ERROR);
         
     }
@@ -151,6 +215,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.y_mode = command2.y_mode;
     } else{
         //ERROR cant merge
+        this->stopActuators();
         exception(MERGE_ERROR);
     }
     
@@ -163,6 +228,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.z_mode = command2.z_mode;
     } else{
         //ERROR cant merge
+        this->stopActuators();
         exception(MERGE_ERROR);
     }
     
@@ -175,6 +241,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.yaw_mode = command2.yaw_mode;
     } else{
         //ERROR cant merge
+        this->stopActuators();
         exception(MERGE_ERROR);
     }
     
@@ -187,6 +254,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.pitch_mode = command2.pitch_mode;
     } else{
         //ERROR cant merge
+        this->stopActuators();
         exception(MERGE_ERROR);
     }
     
@@ -199,6 +267,7 @@ control::AlignedVelocityCommand6D AUVAlignedVelocityControler::mergeCommands(con
         merged_command.roll_mode = command2.roll_mode;
     } else{
         //ERROR cant merge
+        this->stopActuators();
         exception(MERGE_ERROR);
     }
     
@@ -226,19 +295,30 @@ void AUVAlignedVelocityControler::genVector(control::AlignedVelocityCommand6D co
                                             base::Vector3d velocity, 
                                             base::Vector3d angel_velocity,
                                             double delta_time){
-    vector_command(6);
-     
-    vector_command[0] = x_pid.update(velocity(0) ,command.x, delta_time);
-    vector_command[1] = y_pid.update(velocity(1) ,command.y, delta_time);
-    vector_command[2] = z_pid.update(velocity(2) ,command.z, delta_time);
-    vector_command[3] = yaw_pid.update(velocity(0) ,command.yaw, delta_time);
-    vector_command[4] = pitch_pid.update(velocity(1) ,command.pitch, delta_time);
-    vector_command[5] = roll_pid.update(velocity(2) ,command.roll, delta_time);
+    //cout << "Command X:  " << command.x <<endl;
+    //cout << "Velocity X: " << velocity(0) << endl;
+    vector_command(0) = x_pid.update(velocity(1) ,command.x, delta_time);
+    vector_command(1) = y_pid.update(velocity(0) ,command.y, delta_time);
+    vector_command(2) = z_pid.update(velocity(2) ,command.z, delta_time);
+    vector_command(3) = roll_pid.update(velocity(0) ,command.roll, delta_time);
+    vector_command(4) = pitch_pid.update(velocity(1) ,command.pitch, delta_time);
+    vector_command(5) = yaw_pid.update(velocity(2) ,command.yaw, delta_time);
+    //To Test:
+    /*vector_command(0) = 0.9;
+    vector_command(1) = 0;
+    vector_command(2) = 0;
+    vector_command(3) = 0;
+    vector_command(4) = 0;
+    vector_command(5) = 0;*/
 }
 
 base::actuators::Command AUVAlignedVelocityControler::genMotionCommand(){
     Eigen:: VectorXd result = ((vector_command.transpose()) * calibration).transpose();
-    
+    /*
+    cout <<"Command:\n" << vector_command.transpose() << endl;
+    cout <<"Calibration:\n" << calibration<< endl;
+    cout <<"Result:\n" << result << endl;
+    */
     base::actuators::Command command;
     
     if(_isASV.get()){
@@ -246,6 +326,10 @@ base::actuators::Command AUVAlignedVelocityControler::genMotionCommand(){
         for (int i = 0; i<4; i++){
             command.mode.at(i)=base::actuators::DM_PWM;
             command.target.at(i)=result(i);
+            /*double diff = 0.00001;
+            if (command.target.at(i) > (-diff) && command.target.at(i) < diff){
+                command.target.at(i) = 0;
+            }*/
         }
     } else {
         command.resize(6);
@@ -255,6 +339,24 @@ base::actuators::Command AUVAlignedVelocityControler::genMotionCommand(){
         }
     }
     return command;
+}
     
+void AUVAlignedVelocityControler::stopActuators(){
+    base::actuators::Command force_command;
+    if(_isASV.get()){
+        force_command.resize(4);
+        for (int i = 0; i<4; i++){
+            force_command.mode.at(i)=base::actuators::DM_PWM;
+            force_command.target.at(i)=0.0;
+        }
+    } else {
+        force_command.resize(6);
+        for (int i = 0; i<6; i++){
+            force_command.mode.at(i)=base::actuators::DM_PWM;
+            force_command.target.at(i)=0.0;
+        }
+    }
+    _force_command.write(force_command);
+    return;
 }
 
