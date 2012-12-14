@@ -1,13 +1,14 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_AUVWORLDCONTROLER_TASK_HPP
-#define AUV_CONTROL_AUVWORLDCONTROLER_TASK_HPP
+#ifndef AUV_CONTROL_AUVFORCETORQUECONTROLLER_TASK_HPP
+#define AUV_CONTROL_AUVFORCETORQUECONTROLLER_TASK_HPP
 
-#include "auv_control/AUVWorldControlerBase.hpp"
+#include "auv_control/AUVForceTorqueControllerBase.hpp"
+#include <Eigen/Dense>
 
 namespace auv_control {
 
-    /*! \class AUVWorldControler 
+    /*! \class AUVForceTorqueController 
      * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
      * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
      * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
@@ -16,35 +17,36 @@ namespace auv_control {
      * The name of a TaskContext is primarily defined via:
      \verbatim
      deployment 'deployment_name'
-         task('custom_task_name','auv_control::AUVWorldControler')
+         task('custom_task_name','auv_control::AUVForceTorqueController')
      end
      \endverbatim
      *  It can be dynamically adapted when the deployment is called with a prefix argument. 
      */
-    class AUVWorldControler : public AUVWorldControlerBase
+    class AUVForceTorqueController : public AUVForceTorqueControllerBase
     {
-	friend class AUVWorldControlerBase;
+	friend class AUVForceTorqueControllerBase;
     protected:
-
+    
+    base::MatrixXd calibration;
 
 
     public:
-        /** TaskContext constructor for AUVWorldControler
+        /** TaskContext constructor for AUVForceTorqueController
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        AUVWorldControler(std::string const& name = "auv_control::AUVWorldControler", TaskCore::TaskState initial_state = Stopped);
+        AUVForceTorqueController(std::string const& name = "auv_control::AUVForceTorqueController", TaskCore::TaskState initial_state = Stopped);
 
-        /** TaskContext constructor for AUVWorldControler 
+        /** TaskContext constructor for AUVForceTorqueController 
          * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
          * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        AUVWorldControler(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        AUVForceTorqueController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
 
-        /** Default deconstructor of AUVWorldControler
+        /** Default deconstructor of AUVForceTorqueController
          */
-	~AUVWorldControler();
+	~AUVForceTorqueController();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the
@@ -67,7 +69,7 @@ namespace auv_control {
          * stay in Stopped. Otherwise, it goes into Running and updateHook()
          * will be called.
          */
-        // bool startHook();
+         bool startHook();
 
         /** This hook is called by Orocos when the component is in the Running
          * state, at each activity step. Here, the activity gives the "ticks"
@@ -83,7 +85,7 @@ namespace auv_control {
          * component is stopped and recover() needs to be called before starting
          * it again. Finally, FatalError cannot be recovered.
          */
-        // void updateHook();
+         void updateHook();
 
         /** This hook is called by Orocos when the component is in the
          * RunTimeError state, at each activity step. See the discussion in

@@ -17,43 +17,50 @@ using_library "motor_controller"
 #
 # The corresponding C++ class can be edited in tasks/Task.hpp and
 # tasks/Task.cpp, and will be put in the auv_control namespace.
-task_context "AUVAlignedVelocityControler" do
-    input_port("aligned_velocity_command_aligned", "control::AlignedVelocityCommand6D")
-    input_port("aligned_velocity_command_direct", "control::AlignedVelocityCommand6D")
-    input_port("position_sample", "base::samples::RigidBodyState")
-    port_driven "position_sample"
-    port_driven "aligned_velocity_command_direct"
-    output_port("force_command", "base::actuators::Command")
-    
-    property("controller", "control::AlignedVelocityController6D")
-    property("isASV", "bool", false)
-    property("calibration", "std::vector<std::vector<double>>") 
-    
-    runtime_states :WAIT_FOR_COMMAND, :WAIT_FOR_RBS
-    exception_states :MERGE_ERROR, :INPUT_ERROR, :COMMAND_ERROR
+task_context "Controller_Base" do
+    property("expected_inputs", "auv_control::ExpectedInputs")
+    input_port("cascade", "base::LinearAngular6DCommand")
+    input_port("cmd_in", "base::LinearAngular6DCommand")
 
+    periodic(0.01)
+    #port_driven "cascade"
+    #port_driven "cmd_in"
+    output_port("cmd_out", "base::LinearAngular6DCommand")
+
+    operation("addCommandInput").
+        argument("name", "string")
+    dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
+
+    error_states :INPUT_MISSING, :INPUT_COLLIDING
 end
 
-task_context "AUVAlignedControler" do
-    input_port("aligned_command_world", "control::AlignedCommand6D")
-    input_port("aligned_command_direct", "control::AlignedCommand3D")
-    input_port("position_sample", "base::samples::RigidBodyState")
-    
-    periodic (1.0)
-    
-    output_port("aligned_velocity_command", "control::AlignedVelocityCommand6D")
-    
-    property("controller", "control::AlignedController6D")
+task_context "AUVForceTorqueController" do
+    input_port ("cascade", "base::LinearAngular6DCommand")
+    port_driven "cascade"    
+    #periodic(0.01)
+
+    output_port("motor_command", "base::actuators::Command")
+
+    property("calibration", "base::MatrixXd")
+
+    exception_states :INPUT_MISSING
 end
 
-task_context "AUVWorldControler" do
-    input_port("world_command_direct", "control::WorldCommand6D")
-    input_port("position_sample", "base::samples::RigidBodyState")
-    
-    periodic (1.0)
-    
-    output_port("aligned_command", "control::AlignedCommand6D")
-    
-    property("controller", "control::WorldController6D")
+task_context "AUVAlignedVelocityController" do
+    subclasses "Controller_Base"
+    input_port("pose_sample", "base::samples::RigidBodyState")
+    property("pid_settings", "base::LinearAngular6DPIDSettings")
 end
+
+task_context "AUVAlignedController" do
+    subclasses "Controller_Base"
+    input_port("pose_sample", " base::samples::RigidBodyState")
+    property("pid_settings", "base::LinearAngular6DPIDSettings")
+end
+
+task_context "AUVWorldController" do
+    subclasses "Controller_Base"
+    input_port("pose_sample", " base::samples::RigidBodyState")
+end
+
 

@@ -3,6 +3,29 @@
 
 #include <motor_controller/PID.hpp> 
 #include <math.h>
+#include <base/time.h>
+#include <base/eigen.h>
+
+namespace auv_control{
+    struct ExpectedInputs{
+        bool linear[3];
+        bool angular[3];
+    };
+}    
+
+namespace base{
+    struct LinearAngular6DCommand{
+        base::Time stamp;
+        base::Vector3d linear;
+        base::Vector3d angular;
+    };
+
+    struct LinearAngular6DPIDSettings{
+        motor_controller::PIDSettings linear[3];
+        motor_controller::PIDSettings angular[3];
+    };
+}
+
 
 namespace control{
     enum controlMode{

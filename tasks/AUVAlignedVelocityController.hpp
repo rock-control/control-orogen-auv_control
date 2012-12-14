@@ -1,13 +1,14 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_AUVALIGNEDCONTROLER_TASK_HPP
-#define AUV_CONTROL_AUVALIGNEDCONTROLER_TASK_HPP
+#ifndef AUV_CONTROL_AUVALIGNEDVELOCITYCONTROLLER_TASK_HPP
+#define AUV_CONTROL_AUVALIGNEDVELOCITYCONTROLLER_TASK_HPP
 
-#include "auv_control/AUVAlignedControlerBase.hpp"
+#include "auv_control/AUVAlignedVelocityControllerBase.hpp"
+#include <motor_controller/PID.hpp>
 
 namespace auv_control {
 
-    /*! \class AUVAlignedControler 
+    /*! \class AUVAlignedVelocityController 
      * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
      * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
      * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
@@ -16,35 +17,38 @@ namespace auv_control {
      * The name of a TaskContext is primarily defined via:
      \verbatim
      deployment 'deployment_name'
-         task('custom_task_name','auv_control::AUVAlignedControler')
+         task('custom_task_name','auv_control::AUVAlignedVelocityController')
      end
      \endverbatim
      *  It can be dynamically adapted when the deployment is called with a prefix argument. 
      */
-    class AUVAlignedControler : public AUVAlignedControlerBase
+    class AUVAlignedVelocityController : public AUVAlignedVelocityControllerBase
     {
-	friend class AUVAlignedControlerBase;
+	friend class AUVAlignedVelocityControllerBase;
     protected:
-
+        bool on_start;
+        motor_controller::PID linear_pid[3];
+        motor_controller::PID angular_pid[3];
+        base::Time last_pose_sample_time;
 
 
     public:
-        /** TaskContext constructor for AUVAlignedControler
+        /** TaskContext constructor for AUVAlignedVelocityController
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        AUVAlignedControler(std::string const& name = "auv_control::AUVAlignedControler", TaskCore::TaskState initial_state = Stopped);
+        AUVAlignedVelocityController(std::string const& name = "auv_control::AUVAlignedVelocityController", TaskCore::TaskState initial_state = Stopped);
 
-        /** TaskContext constructor for AUVAlignedControler 
+        /** TaskContext constructor for AUVAlignedVelocityController 
          * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
          * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        AUVAlignedControler(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        AUVAlignedVelocityController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
 
-        /** Default deconstructor of AUVAlignedControler
+        /** Default deconstructor of AUVAlignedVelocityController
          */
-	~AUVAlignedControler();
+	~AUVAlignedVelocityController();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the
@@ -67,7 +71,7 @@ namespace auv_control {
          * stay in Stopped. Otherwise, it goes into Running and updateHook()
          * will be called.
          */
-        // bool startHook();
+        bool startHook();
 
         /** This hook is called by Orocos when the component is in the Running
          * state, at each activity step. Here, the activity gives the "ticks"
@@ -83,7 +87,7 @@ namespace auv_control {
          * component is stopped and recover() needs to be called before starting
          * it again. Finally, FatalError cannot be recovered.
          */
-        // void updateHook();
+        void updateHook();
 
         /** This hook is called by Orocos when the component is in the
          * RunTimeError state, at each activity step. See the discussion in
