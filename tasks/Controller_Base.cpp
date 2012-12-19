@@ -34,40 +34,6 @@ void Controller_Base::genDefaultInput()
     input_ports.push_back(info);
 }
 
-/// The following lines are template definitions for the various state machine
-// hooks defined by Orocos::RTT. See Controller_Base.hpp for more detailed
-// documentation about them.
-
-// bool Controller_Base::configureHook()
-// {
-//     if (! Controller_BaseBase::configureHook())
-//         return false;
-//     return true;
-// }
-// bool Controller_Base::startHook()
-// {
-//     if (! Controller_BaseBase::startHook())
-//         return false;
-//     return true;
-// }
-// void Controller_Base::updateHook()
-// {
-//     Controller_BaseBase::updateHook();
-// }
-// void Controller_Base::errorHook()
-// {
-//     Controller_BaseBase::errorHook();
-// }
-// void Controller_Base::stopHook()
-// {
-//     Controller_BaseBase::stopHook();
-// }
-// void Controller_Base::cleanupHook()
-// {
-//     Controller_BaseBase::cleanupHook();
-// }
-
-
 bool Controller_Base::gatherInputCommand(){
     bool linear_is_set[] = {false, false, false};    
     bool angular_is_set[] = {false, false, false};    
@@ -144,7 +110,5 @@ void Controller_Base::addCommandInput(std::string const & name){
     provides()->addPort(*info.input_port);
 
     input_ports.push_back(info);
-
-    
 
 }

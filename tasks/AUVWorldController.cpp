@@ -2,8 +2,6 @@
 
 #include "AUVWorldController.hpp"
 
-#define PI 3.14159265
-
 using namespace auv_control;
 
 AUVWorldController::AUVWorldController(std::string const& name, TaskCore::TaskState initial_state)
@@ -22,16 +20,6 @@ AUVWorldController::~AUVWorldController()
 
 
 
-/// The following lines are template definitions for the various state machine
-// hooks defined by Orocos::RTT. See AUVWorldController.hpp for more detailed
-// documentation about them.
-
-// bool AUVWorldController::configureHook()
-// {
-//     if (! AUVWorldControllerBase::configureHook())
-//         return false;
-//     return true;
-// }
 bool AUVWorldController::startHook()
 {
     on_start = true;
@@ -85,14 +73,12 @@ void AUVWorldController::updateHook()
             if(base::isUnset(merged_command.linear(2))){
                 merged_command.linear(2) = 0;
                 z_nan = true;
-                std::cout << "Hier ist NaN!" << std::endl;
             }
             //rotate the target around the current position to get the target position in aligned frame
             output_command.linear = ((merged_command.linear - pose_sample.position).transpose() * rotation.toRotationMatrix()).transpose();
             //if z was NaN: Set it back to NaN
             if(z_nan){
                 output_command.linear(2) = base::unset<double>();
-                std::cout << "Setze zu  NaN!" << std::endl;
             }
         } else{
             //set x and y to unset
@@ -115,16 +101,4 @@ void AUVWorldController::updateHook()
     }
     return;
 }
-// void AUVWorldController::errorHook()
-// {
-//     AUVWorldControllerBase::errorHook();
-// }
-// void AUVWorldController::stopHook()
-// {
-//     AUVWorldControllerBase::stopHook();
-// }
-// void AUVWorldController::cleanupHook()
-// {
-//     AUVWorldControllerBase::cleanupHook();
-// }
 

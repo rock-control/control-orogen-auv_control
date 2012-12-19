@@ -63,4 +63,8 @@ task_context "AUVWorldController" do
     input_port("pose_sample", " base::samples::RigidBodyState")
 end
 
+task_context "AUVTargetOrientationController" do
+    subclasses "Controller_Base"
+    input_port("pose_sample", " base::samples::RigidBodyState")
+end
 

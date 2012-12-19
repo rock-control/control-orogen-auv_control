@@ -18,18 +18,6 @@ AUVForceTorqueController::~AUVForceTorqueController()
 {
 }
 
-
-
-/// The following lines are template definitions for the various state machine
-// hooks defined by Orocos::RTT. See AUVForceTorqueController.hpp for more detailed
-// documentation about them.
-
-// bool AUVForceTorqueController::configureHook()
-// {
-//     if (! AUVForceTorqueControllerBase::configureHook())
-//         return false;
-//     return true;
-// }
 bool AUVForceTorqueController::startHook()
 {
     //take the calibration-matrix from the calibration property
@@ -61,14 +49,6 @@ void AUVForceTorqueController::updateHook()
         }
 
         output_vector = (input_vector.transpose() * calibration).transpose();
-        /*
-        //dividate the vector thougth his highest (or -1*)coefficient, if his highest coefficient
-        //is over 1 (or under -1)
-        if(output_vector.minCoeff() < -1 || output_vector.minCoeff()*-1 > output_vector.maxCoeff()){
-            output_vector /= (output_vector.minCoeff() * -1);
-        }else if(output_vector.maxCoeff() > 1){
-            output_vector /= output_vector.maxCoeff();
-        }*/
 
         //Cut values at 1 (or -1) if they are over 1 (or under -1). That shault not happend if the calibration
         //matrix is right.
@@ -93,16 +73,4 @@ void AUVForceTorqueController::updateHook()
     }
     return;
 }
-// void AUVForceTorqueController::errorHook()
-// {
-//     AUVForceTorqueControllerBase::errorHook();
-// }
-// void AUVForceTorqueController::stopHook()
-// {
-//     AUVForceTorqueControllerBase::stopHook();
-// }
-// void AUVForceTorqueController::cleanupHook()
-// {
-//     AUVForceTorqueControllerBase::cleanupHook();
-// }
 

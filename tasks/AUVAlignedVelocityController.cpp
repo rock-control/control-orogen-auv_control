@@ -1,5 +1,3 @@
-/* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
-
 #include "AUVAlignedVelocityController.hpp"
 
 using namespace auv_control;
@@ -19,17 +17,6 @@ AUVAlignedVelocityController::~AUVAlignedVelocityController()
 }
 
 
-
-/// The following lines are template definitions for the various state machine
-// hooks defined by Orocos::RTT. See AUVAlignedVelocityController.hpp for more detailed
-// documentation about them.
-
-// bool AUVAlignedVelocityController::configureHook()
-// {
-//     if (! AUVAlignedVelocityControllerBase::configureHook())
-//         return false;
-//     return true;
-// }
 bool AUVAlignedVelocityController::startHook()
 {
     on_start = true;
@@ -99,16 +86,4 @@ void AUVAlignedVelocityController::updateHook()
     //write the command
     _cmd_out.write(output_command);
 }
-// void AUVAlignedVelocityController::errorHook()
-// {
-//     AUVAlignedVelocityControllerBase::errorHook();
-// }
-// void AUVAlignedVelocityController::stopHook()
-// {
-//     AUVAlignedVelocityControllerBase::stopHook();
-// }
-// void AUVAlignedVelocityController::cleanupHook()
-// {
-//     AUVAlignedVelocityControllerBase::cleanupHook();
-// }
 
