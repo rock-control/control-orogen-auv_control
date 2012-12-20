@@ -46,35 +46,9 @@ bool Controller_Base::gatherInputCommand(){
             if(current_port.stamp > max_stamp){
                 max_stamp = current_port.stamp;
             }
-
-            for(int j = 0; j < 3; j++){
-                //merge linear
-                if(!linear_is_set[j] && !base::isUnset(current_port.linear(j))){
-                    //No value of this type in the merged value and the value is set on this
-                    //port. So write the Value from this Port in the merged value.
-                    merged_command.linear(j) = current_port.linear(j);
-                    linear_is_set[j] = true;
-                    //std::cout << "linear i, j :" << i << ", " << j << std::endl;
-                }else if(linear_is_set[j] && !base::isUnset(current_port.linear(j))){
-                    //Ther is a value in the merged value and the value is set on this port.
-                    //This is an error!
-                    std::cout << "Their is a collison on the input ports. (linear(" << j <<"))!" << std::endl;
-                    error(INPUT_COLLIDING);
-                    return false; 
-                }
-                //merge angular
-                if(!angular_is_set[j] && !base::isUnset(current_port.angular(j))){
-                    //No value of this type in the merged value and the value is set on this
-                    //port. So write the Value from this Port in the merged value.
-                    merged_command.angular(j) = current_port.angular(j);
-                    angular_is_set[j] = true;
-                }else if(angular_is_set[j] && !base::isUnset(current_port.angular(j))){
-                    //Ther is a value in the merged value and the value is set on this port.
-                    //This is an error!
-                    std::cout << "Their is a collison on the input ports. (angular(" << j <<"))!" << std::endl;
-                    error(INPUT_COLLIDING);
-                    return false;
-                }
+            if(!(merge(&_expected_inputs.get().linear[0], &linear_is_set[0], &current_port.linear, &merged_command.linear) &&
+                       merge(&_expected_inputs.get().angular[0] ,&angular_is_set[0], &current_port.angular, &merged_command.angular))){
+               return false;
             }
         }
     }
@@ -111,4 +85,29 @@ void Controller_Base::addCommandInput(std::string const & name){
 
     input_ports.push_back(info);
 
+}
+
+bool Controller_Base::merge(bool *expected, bool *is_set, base::Vector3d *current,
+        base::Vector3d *merged){
+    for(int i = 0; i < 3; i++){
+        //merge linear
+        if(expected[i] && !is_set[i] && !base::isUnset((*current)(i))){
+            //No value of this type in the merged value and the value is set on this
+            //port. So write the Value from this Port in the merged value.
+            (*merged)(i) = (*current)(i);
+            is_set[i] = true;
+            //std::cout << "linear i, j :" << i << ", " << j << std::endl;
+        }else if(expected[i] && is_set[i] && !base::isUnset((*current)(i))){
+            //Ther is a value in the merged value and the value is set on this port.
+            //This is an error!
+            std::cout << "Their is a collison on the input ports. (" << i <<")!" << std::endl;
+            error(INPUT_COLLIDING);
+            return false; 
+        }else if(!expected[i] && !base::isUnset((*current)(i))){
+            error(INPUT_UNEXPECTED);
+            return false;
+        }
+
+    }
+    return true;
 }

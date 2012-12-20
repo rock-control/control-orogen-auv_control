@@ -31,7 +31,7 @@ task_context "Controller_Base" do
         argument("name", "string")
     dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
 
-    error_states :INPUT_MISSING, :INPUT_COLLIDING
+    error_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED
 end
 
 task_context "AUVForceTorqueController" do

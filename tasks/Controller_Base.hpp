@@ -38,6 +38,9 @@ namespace auv_control {
 
 	~Controller_Base();
 
+    private:
+        bool merge(bool *expected, bool *is_set, base::Vector3d *current, base::Vector3d *merged);
+        
  
     };
 }
