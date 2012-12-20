@@ -42,7 +42,11 @@ void AUVAlignedVelocityController::updateHook()
 
     //hold current position if ther are no BodyState or at firts time
     if(_pose_sample.read(pose_sample) == RTT::NoData || on_start){
-        on_start = false;
+        if(on_start){
+            on_start = false;
+        }else{
+            state(POSE_SAMPLE_MISSING);
+        }
         //set the force and torque on all axsis to zero.
         for(int i = 0; i < 3; i++){
             output_command.linear(i) = 0;

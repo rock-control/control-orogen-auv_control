@@ -45,7 +45,11 @@ void AUVAlignedController::updateHook()
 
     //if it excists no BodyState or on the first  update
     if(_pose_sample.read(pose_sample) == RTT::NoData || on_start){
-        on_start = false;
+        if(on_start){
+            on_start = false;
+        }else{
+            state(POSE_SAMPLE_MISSING);
+        }
         output_command = this->dontMove();
         //write the command
         _cmd_out.write(output_command);

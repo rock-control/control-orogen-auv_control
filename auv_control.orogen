@@ -32,6 +32,7 @@ task_context "Controller_Base" do
     dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
 
     error_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED
+
 end
 
 task_context "AUVForceTorqueController" do
@@ -50,17 +51,20 @@ task_context "AUVAlignedVelocityController" do
     subclasses "Controller_Base"
     input_port("pose_sample", "base::samples::RigidBodyState")
     property("pid_settings", "base::LinearAngular6DPIDSettings")
+    runtime_states :POSE_SAMPLE_MISSING
 end
 
 task_context "AUVAlignedController" do
     subclasses "Controller_Base"
     input_port("pose_sample", " base::samples::RigidBodyState")
     property("pid_settings", "base::LinearAngular6DPIDSettings")
+    runtime_states :POSE_SAMPLE_MISSING
 end
 
 task_context "AUVWorldController" do
     subclasses "Controller_Base"
     input_port("pose_sample", " base::samples::RigidBodyState")
+    runtime_states :POSE_SAMPLE_MISSING
 end
 
 task_context "AUVTargetOrientationController" do

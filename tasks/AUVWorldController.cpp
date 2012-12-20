@@ -34,8 +34,7 @@ void AUVWorldController::updateHook()
     bool z_nan = false;
 
     if(_pose_sample.read(pose_sample) == RTT::NoData){
-        //Thear are no Body State
-        std::cout << "Error: No RigidBodyState!" << std::endl;
+        state(POSE_SAMPLE_MISSING);
         return;
     }
     
