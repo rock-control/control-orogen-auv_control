@@ -67,14 +67,14 @@ void AUVWorldController::updateHook()
         //can only rotate, if ther are an value for x and y
         if( !(base::isUnset(merged_command.linear(0)) && base::isUnset( merged_command.linear(1)))){
             yaw = base::getYaw(pose_sample.orientation);
-            rotation = base::Quaterniond(cos(yaw/2),0,0,sin(yaw/2));
+            rotation = base::Quaterniond(Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()));
             //if z is NaN set it on 0. Else evry point is after the rotation NaN
             if(base::isUnset(merged_command.linear(2))){
                 merged_command.linear(2) = 0;
                 z_nan = true;
             }
             //rotate the target around the current position to get the target position in aligned frame
-            output_command.linear = ((merged_command.linear - pose_sample.position).transpose() * rotation.toRotationMatrix()).transpose();
+            output_command.linear = rotation.conjugate() * (merged_command.linear - pose_sample.position);
             //if z was NaN: Set it back to NaN
             if(z_nan){
                 output_command.linear(2) = base::unset<double>();
