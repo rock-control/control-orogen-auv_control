@@ -20,12 +20,16 @@ AUVForceTorqueController::~AUVForceTorqueController()
 
 bool AUVForceTorqueController::startHook()
 {
+    AUVForceTorqueControllerBase::startHook();
+
     //take the calibration-matrix from the calibration property
     calibration = _calibration.get();
     return true;
 }
 void AUVForceTorqueController::updateHook()
 {
+    AUVForceTorqueControllerBase::updateHook();
+
     base::Vector6d input_vector;
     base::VectorXd output_vector;
     base::LinearAngular6DCommand cmd;

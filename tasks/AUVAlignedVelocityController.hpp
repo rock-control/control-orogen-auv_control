@@ -16,6 +16,8 @@ namespace auv_control {
         motor_controller::PID linear_pid[3];
         motor_controller::PID angular_pid[3];
         base::Time last_pose_sample_time;
+        base::LinearAngular6DPIDSettings last_pid_settings;
+        void setPIDSettings(base::LinearAngular6DPIDSettings new_settings);
 
 
     public:

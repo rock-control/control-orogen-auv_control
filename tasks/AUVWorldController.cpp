@@ -22,11 +22,15 @@ AUVWorldController::~AUVWorldController()
 
 bool AUVWorldController::startHook()
 {
+    AUVWorldControllerBase::startHook();
+    
     on_start = true;
     return true;
 }
 void AUVWorldController::updateHook()
 {
+    AUVWorldControllerBase::updateHook();
+        
     base::LinearAngular6DCommand output_command;
     base::Quaterniond rotation;
     base::samples::RigidBodyState pose_sample;
@@ -36,6 +40,8 @@ void AUVWorldController::updateHook()
     if(_pose_sample.read(pose_sample) == RTT::NoData){
         state(POSE_SAMPLE_MISSING);
         return;
+    } else{
+        state(RUNNING);
     }
     
     //Hold position at first update

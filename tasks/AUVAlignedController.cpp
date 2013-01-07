@@ -21,27 +21,31 @@ AUVAlignedController::~AUVAlignedController()
 
 bool AUVAlignedController::startHook()
 {
+    AUVAlignedControllerBase::startHook();
+
     on_start = true;
     //reset the pids and set the pid-settings from the property
-    for(int i = 0; i < 3; i++){
-        linear_pid[i].reset();
-        linear_pid[i].setPIDSettings(_pid_settings.get().linear[i]);
-        //linear_pid[i].enableIntegral();
-        //linear_pid[i].enableDerivative();
-
-        angular_pid[i].reset();
-        angular_pid[i].setPIDSettings(_pid_settings.get().angular[i]);
-        //angular_pid[i].enableIntegral();
-        //angular_pid[i].enableDerivative();
-    }
+    std::cout << _pid_settings.get().linear[1].Ti << std::endl;
+    
+    setPIDSettings(_pid_settings.get());
     return true;
+
 }
 
 void AUVAlignedController::updateHook()
 {
+    AUVAlignedControllerBase::updateHook();
+
     base::LinearAngular6DCommand output_command;
     base::samples::RigidBodyState pose_sample;
     double delta_time;
+
+    base::LinearAngular6DPIDSettings new_pid_settings = _pid_settings.get();
+
+    if(last_pid_settings != new_pid_settings){
+        setPIDSettings(new_pid_settings);
+    }
+
 
     //if it excists no BodyState or on the first  update
     if(_pose_sample.read(pose_sample) == RTT::NoData || on_start){
@@ -54,6 +58,8 @@ void AUVAlignedController::updateHook()
         //write the command
         _cmd_out.write(output_command);
         return;
+    } else{
+        state(RUNNING);
     }
 
     //if the input command is vallid
@@ -128,3 +134,44 @@ base::LinearAngular6DCommand AUVAlignedController::dontMove(){
     return output_command;
 
 }
+
+void AUVAlignedController::setPIDSettings(base::LinearAngular6DPIDSettings new_settings){
+    //reset the pids and set the pid-settings from the property
+    std::cout << "Aendere PID-Settings in AUVAlignedController" << std::endl;
+    for(int i = 0; i < 3; i++){
+        
+        linear_pid[i].reset();
+        linear_pid[i].setPIDSettings(new_settings.linear[i]);
+        
+        if(new_settings.linear[i].Ti != 0){
+            linear_pid[i].enableIntegral();
+        } else{
+            linear_pid[i].disableIntegral();
+        }
+
+        if(new_settings.linear[i].Td != 0){
+            linear_pid[i].enableDerivative();
+        } else{
+            linear_pid[i].disableDerivative();
+        }
+        
+
+        angular_pid[i].reset();
+        angular_pid[i].setPIDSettings(new_settings.angular[i]);
+        
+        if(new_settings.angular[i].Ti != 0){
+            angular_pid[i].enableIntegral();
+        } else{
+            angular_pid[i].disableIntegral();
+        }
+
+        if(new_settings.linear[i].Td != 0){
+            angular_pid[i].enableDerivative();
+        } else{
+            angular_pid[i].disableDerivative();
+        }
+    }
+
+    last_pid_settings = new_settings;
+    return;
+}   
