@@ -25,65 +25,15 @@ namespace base{
         motor_controller::PIDSettings angular[3];
 
         bool operator==(const LinearAngular6DPIDSettings& rhs) const{
-            bool linear;
-            bool angular;
             for(int i = 0; i < 3; i++){
-                linear = this->linear[i].Ts    == rhs.linear[i].Ts   &&
-                         this->linear[i].K     == rhs.linear[i].K    &&
-                         this->linear[i].Ti    == rhs.linear[i].Ti   &&
-                         this->linear[i].Td    == rhs.linear[i].Td   &&
-                         this->linear[i].N     == rhs.linear[i].N    &&
-                         this->linear[i].B     == rhs.linear[i].B    &&
-                         this->linear[i].Tt    == rhs.linear[i].Tt   &&
-                         this->linear[i].YMin  == rhs.linear[i].YMin &&
-                         this->linear[i].YMax  == rhs.linear[i].YMax;
-                
-                angular = this->angular[i].Ts    == rhs.angular[i].Ts   &&
-                          this->angular[i].K     == rhs.angular[i].K    &&
-                          this->angular[i].Ti    == rhs.angular[i].Ti   &&
-                          this->angular[i].Td    == rhs.angular[i].Td   &&
-                          this->angular[i].N     == rhs.angular[i].N    &&
-                          this->angular[i].B     == rhs.angular[i].B    &&
-                          this->angular[i].Tt    == rhs.angular[i].Tt   &&
-                          this->angular[i].YMin  == rhs.angular[i].YMin &&
-                          this->angular[i].YMax  == rhs.angular[i].YMax;
-
-                if(!linear || !angular){
+                if(this->linear[i] != rhs.linear[i] || this->angular[i] != rhs.angular[i])
                     return false;
-                }
             }
             return true;
         }
         
         bool operator!=(const LinearAngular6DPIDSettings& rhs) const{
-            bool linear;
-            bool angular;
-            for(int i = 0; i < 3; i++){
-                linear = this->linear[i].Ts    != rhs.linear[i].Ts   ||
-                         this->linear[i].K     != rhs.linear[i].K    ||
-                         this->linear[i].Ti    != rhs.linear[i].Ti   ||
-                         this->linear[i].Td    != rhs.linear[i].Td   ||
-                         this->linear[i].N     != rhs.linear[i].N    ||
-                         this->linear[i].B     != rhs.linear[i].B    ||
-                         this->linear[i].Tt    != rhs.linear[i].Tt   ||
-                         this->linear[i].YMin  != rhs.linear[i].YMin ||
-                         this->linear[i].YMax  != rhs.linear[i].YMax;
-                
-                angular = this->angular[i].Ts    != rhs.angular[i].Ts   ||
-                          this->angular[i].K     != rhs.angular[i].K    ||
-                          this->angular[i].Ti    != rhs.angular[i].Ti   ||
-                          this->angular[i].Td    != rhs.angular[i].Td   ||
-                          this->angular[i].N     != rhs.angular[i].N    ||
-                          this->angular[i].B     != rhs.angular[i].B    ||
-                          this->angular[i].Tt    != rhs.angular[i].Tt   ||
-                          this->angular[i].YMin  != rhs.angular[i].YMin ||
-                          this->angular[i].YMax  != rhs.angular[i].YMax;
-
-                if(linear || angular){
-                    return true;
-                }
-            }
-            return false;
+            return !(*this != rhs);
         }
     };
 }
