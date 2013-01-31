@@ -36,7 +36,7 @@ void AUVAlignedVelocityController::updateHook()
     double delta_time;
 
     base::LinearAngular6DPIDSettings new_pid_settings = _pid_settings.get();
-
+	
     if(last_pid_settings != new_pid_settings){
         setPIDSettings(new_pid_settings);
     }

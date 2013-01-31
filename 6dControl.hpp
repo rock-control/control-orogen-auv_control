@@ -33,7 +33,7 @@ namespace base{
         }
         
         bool operator!=(const LinearAngular6DPIDSettings& rhs) const{
-            return !(*this != rhs);
+            return !(*this == rhs);
         }
     };
 }
