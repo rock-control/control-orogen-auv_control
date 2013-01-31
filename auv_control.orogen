@@ -19,7 +19,7 @@ using_library "motor_controller"
 # tasks/Task.cpp, and will be put in the auv_control namespace.
 task_context "Controller_Base" do
     property("expected_inputs", "auv_control::ExpectedInputs")
-    input_port("cascade", "base::LinearAngular6DCommand")
+    input_port('cascade', 'base::LinearAngular6DCommand')
     input_port("cmd_in", "base::LinearAngular6DCommand")
 
     periodic(0.01)
@@ -36,7 +36,7 @@ task_context "Controller_Base" do
 end
 
 task_context "AUVForceTorqueController" do
-    input_port ("cascade", "base::LinearAngular6DCommand")
+    input_port('cascade', "base::LinearAngular6DCommand")
     port_driven "cascade"    
     #periodic(0.01)
 
