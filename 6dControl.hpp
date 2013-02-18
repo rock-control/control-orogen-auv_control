@@ -5,6 +5,7 @@
 #include <math.h>
 #include <base/time.h>
 #include <base/eigen.h>
+#include <base/float.h>
 
 namespace auv_control{
     struct ExpectedInputs{
@@ -18,6 +19,13 @@ namespace base{
         base::Time stamp;
         base::Vector3d linear;
         base::Vector3d angular;
+
+        LinearAngular6DCommand(){
+            for(int i = 0; i < 3; i++){
+                linear(i) = base::unset<double>();
+                angular(i) = base::unset<double>();
+            }
+        }
     };
 
     struct LinearAngular6DPIDSettings{
