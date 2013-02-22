@@ -43,6 +43,7 @@ task_context "AUVForceTorqueController" do
     output_port("motor_command", "base::actuators::Command")
 
     property("calibration", "base::MatrixXd")
+    property("cut_off", "std::vector<double>")
 
     exception_states :INPUT_MISSING
 end

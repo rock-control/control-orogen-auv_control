@@ -53,14 +53,20 @@ void AUVForceTorqueController::updateHook()
         }
 
         output_vector = (input_vector.transpose() * calibration).transpose();
+        std::vector<double> cut_off = _cut_off.get();
+        int cut_off_size = cut_off.size();
+        cut_off.resize(output_vector.size());
+        for(int i = cut_off_size; i < output_vector.size(); i++){
+            cut_off[i] = 1;
+        }
 
         //Cut values at 1 (or -1) if they are over 1 (or under -1). That shault not happend if the calibration
         //matrix is right.
         for(int i = 0; i < output_vector.size(); i++){
-            if(output_vector(i) > 1){
-                output_vector(i) = 1;
-            } else if(output_vector(i) < -1){
-                output_vector(i) = -1;
+            if(output_vector(i) > cut_off[i]){
+                output_vector(i) = cut_off[i];
+            } else if(output_vector(i) < -cut_off[i]){
+                output_vector(i) = -cut_off[i];
             }
         }
         
