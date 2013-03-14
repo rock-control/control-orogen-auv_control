@@ -19,6 +19,12 @@ namespace auv_control {
 
         base::LinearAngular6DCommand dontMove();
         void setPIDSettings(base::LinearAngular6DPIDSettings new_settings);
+        
+        bool last[6];
+        base::Time pos_start[6];
+        double avg[6];
+        int cnt[6];
+    
     public:
         AUVAlignedController(std::string const& name = "auv_control::AUVAlignedController", TaskCore::TaskState initial_state = Stopped);
 

@@ -24,10 +24,15 @@ bool AUVAlignedController::startHook()
     AUVAlignedControllerBase::startHook();
 
     on_start = true;
-    //reset the pids and set the pid-settings from the property
-    std::cout << _pid_settings.get().linear[1].Ti << std::endl;
     
+    //reset the pids and set the pid-settings from the property
     setPIDSettings(_pid_settings.get());
+    
+    for (int i = 0; i < 6; i++){
+        avg[i] = 0;
+        cnt[i] = 0;
+    }
+
     return true;
 
 }
@@ -107,6 +112,31 @@ void AUVAlignedController::updateHook()
             }
             output_command.angular(2) = angular_pid[2].update(current, merged_command.angular(2), delta_time);
         }
+        for(int i = 0; i < 3; i++){
+            //Calculate the avarage Periode
+            if (output_command.linear(i) > 0 && !last[i]){
+                if (cnt[i] > 1){
+                    avg[i] = (avg[i]*(cnt[i]-1) + (base::Time::now() - pos_start[i]).toSeconds())/(cnt[i]) ;
+                }
+                cnt[i] ++;
+                pos_start[i] = base::Time::now();
+                last[i] = true;
+            } else if (output_command.linear(i) <= 0){
+                last[i] = false;
+            }
+            
+            if (output_command.angular(i) > 0 && !last[3+i]){
+                if (cnt[3+i] > 1){
+                    avg[3+i] = (avg[3+i]*(cnt[3+i]-1) + (base::Time::now() - pos_start[3+i]).toSeconds())/(cnt[3+i]) ;
+                }
+                cnt[3+i] ++;
+                pos_start[3+i] = base::Time::now();
+                last[3+i] = true;
+            } else if (output_command.linear(i) <= 0){
+                last[3+i] = false;
+            }
+            
+        }
     } else{
         //if the input command are not vallid, dont move!
         output_command = this->dontMove();
@@ -114,6 +144,15 @@ void AUVAlignedController::updateHook()
     output_command.stamp = merged_command.stamp;
     //write the command on the output port
     _cmd_out.write(output_command);
+    
+    base::LinearAngular6DCommand avg_out;
+    
+    for(int i = 0; i < 3; i++){
+        avg_out.linear(i) = avg[i];
+        avg_out.angular(i) = avg[3+i];
+    }
+
+    _avg_periode.write(avg_out);
 }
 
 base::LinearAngular6DCommand AUVAlignedController::dontMove(){

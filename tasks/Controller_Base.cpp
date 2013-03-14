@@ -50,8 +50,9 @@ bool Controller_Base::gatherInputCommand(){
                        merge(&_expected_inputs.get().angular[0] ,&angular_is_set[0], &current_port.angular, &merged_command.angular))){
                return false;
             }
-        }
+        }   
     }
+    
     for(int j = 0; j < 3; j++){
        
             //If the Value is on evry port unset set the value in the merged_command unset too. 
@@ -59,13 +60,15 @@ bool Controller_Base::gatherInputCommand(){
             if(!linear_is_set[j] && ! _expected_inputs.get().linear[j]){
                 merged_command.linear(j) = base::unset<double>(); 
             } else if(linear_is_set[j] != _expected_inputs.get().linear[j]){
-                error(INPUT_MISSING);
+                std::cout << "INPUT_MISSING (Linear " << j << ")" << std::endl;
+                //error(INPUT_MISSING);
                 return false;
             }
             if(!angular_is_set[j] && ! _expected_inputs.get().angular[j]){
                 merged_command.angular(j) = base::unset<double>(); 
             } else if(angular_is_set[j] != _expected_inputs.get().angular[j]){
-                error(INPUT_MISSING);
+                std::cout << "INPUT_MISSING (Angular " << j << ")" << std::endl;
+                //error(INPUT_MISSING);
                 return false;
             }
         

@@ -53,7 +53,8 @@ void AUVForceTorqueController::updateHook()
         }
 
         output_vector = (input_vector.transpose() * calibration).transpose();
-        std::vector<double> cut_off = _cut_off.get();
+        std::vector<double> cut_off;
+        cut_off = _cut_off.get();
         int cut_off_size = cut_off.size();
         cut_off.resize(output_vector.size());
         for(int i = cut_off_size; i < output_vector.size(); i++){
@@ -69,7 +70,7 @@ void AUVForceTorqueController::updateHook()
                 output_vector(i) = -cut_off[i];
             }
         }
-        
+
         //Resize the actuatos command on the Size of the output_vector. The size of the output_vetor are
         //the same like the calibration-matrix have collumns.
         actuators_command.resize(output_vector.size());

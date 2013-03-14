@@ -52,12 +52,15 @@ task_context "AUVAlignedVelocityController" do
     subclasses "Controller_Base"
     input_port("pose_sample", "base::samples::RigidBodyState")
     property("pid_settings", "base::LinearAngular6DPIDSettings")
+    property("drive_simple", "bool", false)
+    output_port("avg_periode", "base::LinearAngular6DCommand")
     runtime_states :POSE_SAMPLE_MISSING
 end
 
 task_context "AUVAlignedController" do
     subclasses "Controller_Base"
     input_port("pose_sample", " base::samples::RigidBodyState")
+    output_port("avg_periode", "base::LinearAngular6DCommand")
     property("pid_settings", "base::LinearAngular6DPIDSettings")
     runtime_states :POSE_SAMPLE_MISSING
 end
