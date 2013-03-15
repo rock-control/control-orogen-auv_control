@@ -76,12 +76,13 @@ void AUVAlignedVelocityController::updateHook()
         //time of the last reglementation
         last_pose_sample_time = pose_sample.time;
 
+        //rotate the linear Vector, to get better Values 
         roll = base::getRoll(pose_sample.orientation);
         pitch = base::getPitch(pose_sample.orientation);
         rotation = base::Quaterniond(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())) * base::Quaterniond(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
-        std::cout << "Vorher:" << merged_command.linear << std::endl;
+        //std::cout << "Vorher:" << merged_command.linear << std::endl;
         merged_command.linear = rotation.conjugate() * merged_command.linear;
-        std::cout << "Nachher:" << merged_command.linear << std::endl;
+        //std::cout << "Nachher:" << merged_command.linear << std::endl;
     
         //set unset valus from the input command in teh output comman unset too.
         //else reglementate the output command by update the pids
