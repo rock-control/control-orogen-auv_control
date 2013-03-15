@@ -41,7 +41,11 @@ void AUVAlignedVelocityController::updateHook()
     double delta_time;
 
     base::LinearAngular6DPIDSettings new_pid_settings = _pid_settings.get();
-	
+    double roll;
+    double pitch;
+    base::Quaterniond rotation;
+
+
     if(last_pid_settings != new_pid_settings){
         setPIDSettings(new_pid_settings);
     }
@@ -71,6 +75,13 @@ void AUVAlignedVelocityController::updateHook()
         delta_time = ((pose_sample.time - last_pose_sample_time).toSeconds());
         //time of the last reglementation
         last_pose_sample_time = pose_sample.time;
+
+        roll = base::getRoll(pose_sample.orientation);
+        pitch = base::getPitch(pose_sample.orientation);
+        rotation = base::Quaterniond(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())) * base::Quaterniond(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
+        std::cout << "Vorher:" << merged_command.linear << std::endl;
+        merged_command.linear = rotation.conjugate() * merged_command.linear;
+        std::cout << "Nachher:" << merged_command.linear << std::endl;
     
         //set unset valus from the input command in teh output comman unset too.
         //else reglementate the output command by update the pids

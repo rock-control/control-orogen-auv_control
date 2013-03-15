@@ -47,7 +47,9 @@ void AUVWorldController::updateHook()
     //Hold position at first update
     if(on_start){
         on_start = false;
-        output_command.linear = pose_sample.position;
+        output_command.linear(0) = 0.0;
+        output_command.linear(1) = 0.0;
+        output_command.linear(2) = 0.0;
         output_command.angular(0) = base::getRoll(pose_sample.orientation);
         output_command.angular(1) = base::getPitch(pose_sample.orientation);
         output_command.angular(2) = base::getYaw(pose_sample.orientation);
