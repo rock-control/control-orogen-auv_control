@@ -77,6 +77,7 @@ void AUVWorldController::updateHook()
             yaw = base::getYaw(pose_sample.orientation);
             rotation = base::Quaterniond(Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()));
             //if z is NaN set it on 0. Else evry point is after the rotation NaN
+            
             if(base::isUnset(merged_command.linear(2))){
                 merged_command.linear(2) = 0;
                 z_nan = true;

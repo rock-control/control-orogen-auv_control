@@ -46,6 +46,8 @@ bool Controller_Base::gatherInputCommand(){
             if(current_port.stamp > max_stamp){
                 max_stamp = current_port.stamp;
             }
+            //std::cout << "Input-Port" << current_port.linear << std::endl;
+
             if(!(merge(&_expected_inputs.get().linear[0], &linear_is_set[0], &current_port.linear, &merged_command.linear) &&
                        merge(&_expected_inputs.get().angular[0] ,&angular_is_set[0], &current_port.angular, &merged_command.angular))){
                return false;

@@ -77,11 +77,11 @@ void AUVAlignedVelocityController::updateHook()
         last_pose_sample_time = pose_sample.time;
 
         //rotate the linear Vector, to get better Values 
-        roll = base::getRoll(pose_sample.orientation);
-        pitch = base::getPitch(pose_sample.orientation);
-        rotation = base::Quaterniond(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())) * base::Quaterniond(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
+        //roll = base::getRoll(pose_sample.orientation);
+        //pitch = base::getPitch(pose_sample.orientation);
+        //rotation = base::Quaterniond(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())) * base::Quaterniond(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
         //std::cout << "Vorher:" << merged_command.linear << std::endl;
-        merged_command.linear = rotation.conjugate() * merged_command.linear;
+        //merged_command.linear = rotation.conjugate() * merged_command.linear;
         //std::cout << "Nachher:" << merged_command.linear << std::endl;
     
         //set unset valus from the input command in teh output comman unset too.
@@ -103,7 +103,13 @@ void AUVAlignedVelocityController::updateHook()
             if(base::isUnset(merged_command.angular(i))){
                 output_command.angular(i) = base::unset<double>();
             } else{
-                output_command.angular(i) = angular_pid[i].update(pose_sample.angular_velocity(i), merged_command.angular(i), delta_time);
+               /* if (i == 1){
+                    output_command.angular(i) = angular_pid[i].update(-pose_sample.angular_velocity(i), merged_command.angular(i), delta_time);
+            
+                } else {
+*/
+                    output_command.angular(i) = angular_pid[i].update(pose_sample.angular_velocity(i), merged_command.angular(i), delta_time);
+  //              }
             }
            
             //Calculate the avarage Periode
