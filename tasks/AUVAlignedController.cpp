@@ -66,7 +66,8 @@ void AUVAlignedController::updateHook()
     } else{
         state(RUNNING);
     }
-
+    
+    //std::cout << "ALIGNED" << std::endl;
     //if the input command is vallid
     if (this->gatherInputCommand()){
         
@@ -96,7 +97,7 @@ void AUVAlignedController::updateHook()
         if(base::isUnset(merged_command.angular(1))){
             output_command.angular(1) = base::unset<double>();
         } else{
-            output_command.angular(1) = angular_pid[1].update(-(base::getPitch(pose_sample.orientation)), merged_command.angular(1), delta_time);
+            output_command.angular(1) = angular_pid[1].update((base::getPitch(pose_sample.orientation)), merged_command.angular(1), delta_time);
         }
 
 
@@ -138,6 +139,7 @@ void AUVAlignedController::updateHook()
             
         }
     } else{
+        //std::cout << "ELSE ALIGNED" << std::endl;
         //if the input command are not vallid, dont move!
         output_command = this->dontMove();
     }

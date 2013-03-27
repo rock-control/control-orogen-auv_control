@@ -54,7 +54,9 @@ bool Controller_Base::gatherInputCommand(){
             }
         }   
     }
-    
+    //std::cout << linear_is_set[0] << std::endl;    
+    //std::cout <<  _expected_inputs.get().linear[0]<< std::endl;    
+    //std::cout <<  merged_command.linear<< std::endl;    
     for(int j = 0; j < 3; j++){
        
             //If the Value is on evry port unset set the value in the merged_command unset too. 
@@ -94,6 +96,7 @@ void Controller_Base::addCommandInput(std::string const & name){
 
 bool Controller_Base::merge(bool *expected, bool *is_set, base::Vector3d *current,
         base::Vector3d *merged){
+    //std::cout << *current << std::endl;
     for(int i = 0; i < 3; i++){
         //merge linear
         if(expected[i] && !is_set[i] && !base::isUnset((*current)(i))){
@@ -111,6 +114,8 @@ bool Controller_Base::merge(bool *expected, bool *is_set, base::Vector3d *curren
         }else if(!expected[i] && !base::isUnset((*current)(i))){
             error(INPUT_UNEXPECTED);
             return false;
+        }else {
+            std::cout << "I: " << i << std::endl;
         }
 
     }

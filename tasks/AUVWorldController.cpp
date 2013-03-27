@@ -39,6 +39,7 @@ void AUVWorldController::updateHook()
 
     if(_pose_sample.read(pose_sample) == RTT::NoData){
         state(POSE_SAMPLE_MISSING);
+	std::cout << "POSE_SAMPLE_MISSING" << std::endl;
         return;
     } else{
         state(RUNNING);
@@ -66,10 +67,10 @@ void AUVWorldController::updateHook()
         _cmd_out.write(output_command);
         return;
     }
-    
+    //std::cout << "WORLD" << std::endl;
     //validate the input comand
     if(this->gatherInputCommand()){
-
+    
         output_command.stamp = merged_command.stamp;
         
         //can only rotate, if ther are an value for x and y
