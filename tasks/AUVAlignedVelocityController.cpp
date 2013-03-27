@@ -69,20 +69,13 @@ void AUVAlignedVelocityController::updateHook()
         state(RUNNING);
     }
 
+    //std::cout << "ALIGNED VELOCITY" << std::endl;
     //if the inputs are valid
     if(this->gatherInputCommand()){
         //time since the last reglementation    
         delta_time = ((pose_sample.time - last_pose_sample_time).toSeconds());
         //time of the last reglementation
         last_pose_sample_time = pose_sample.time;
-
-        //rotate the linear Vector, to get better Values 
-        //roll = base::getRoll(pose_sample.orientation);
-        //pitch = base::getPitch(pose_sample.orientation);
-        //rotation = base::Quaterniond(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())) * base::Quaterniond(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
-        //std::cout << "Vorher:" << merged_command.linear << std::endl;
-        //merged_command.linear = rotation.conjugate() * merged_command.linear;
-        //std::cout << "Nachher:" << merged_command.linear << std::endl;
     
         //set unset valus from the input command in teh output comman unset too.
         //else reglementate the output command by update the pids
@@ -136,6 +129,8 @@ void AUVAlignedVelocityController::updateHook()
             }
         }
     } else{
+        
+        //std::cout << "ELSE ALIGNED VELOCITY" << std::endl;
         //dont move if the command is not valid
         for(int i = 0; i < 3; i++){
             output_command.linear(i) = 0;
@@ -143,6 +138,21 @@ void AUVAlignedVelocityController::updateHook()
         } 
     }
     output_command.stamp = merged_command.stamp;
+    
+    //rotate the linear Vector, to get better Values 
+    roll = base::getRoll(pose_sample.orientation);
+    pitch = base::getPitch(pose_sample.orientation);
+    rotation = base::Quaterniond(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())) * base::Quaterniond(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
+    std::cout << "Pitch:" << pitch << std::endl;
+    std::cout << "Quaternion Pitch:" << base::getPitch(rotation) << std::endl;
+    std::cout << "Roll:" << roll << std::endl;
+    std::cout << "Quaternion Roll:" << base::getRoll(rotation) << std::endl;
+    
+    
+    std::cout << "Vorher:" << output_command.linear << std::endl;
+    output_command.linear = rotation.conjugate() * output_command.linear;
+    std::cout << "Nachher:" << output_command.linear << std::endl;
+    
     //write the command
     _cmd_out.write(output_command);
 

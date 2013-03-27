@@ -66,7 +66,8 @@ void AUVAlignedController::updateHook()
     } else{
         state(RUNNING);
     }
-
+    
+    //std::cout << "ALIGNED" << std::endl;
     //if the input command is vallid
     if (this->gatherInputCommand()){
         
@@ -138,6 +139,7 @@ void AUVAlignedController::updateHook()
             
         }
     } else{
+        //std::cout << "ELSE ALIGNED" << std::endl;
         //if the input command are not vallid, dont move!
         output_command = this->dontMove();
     }
