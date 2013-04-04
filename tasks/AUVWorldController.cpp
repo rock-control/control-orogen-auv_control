@@ -41,10 +41,8 @@ void AUVWorldController::updateHook()
         state(POSE_SAMPLE_MISSING);
 	std::cout << "POSE_SAMPLE_MISSING" << std::endl;
         return;
-    } else{
-        state(RUNNING);
     }
-    
+
     //Hold position at first update
     if(on_start){
         on_start = false;
@@ -106,6 +104,7 @@ void AUVWorldController::updateHook()
         output_command.stamp = merged_command.stamp;
         //write command
         _cmd_out.write(output_command);
+        state(RUNNING);
 
     }
     return;

@@ -34,9 +34,28 @@ void AUVForceTorqueController::updateHook()
     base::VectorXd output_vector;
     base::LinearAngular6DCommand cmd;
     base::actuators::Command actuators_command;
-    
+    base::samples::RigidBodyState pose_sample;
+    double roll;
+    double pitch;
+    base::Quaterniond rotation;
     //if ther are datas on the Input port, make one vector with force and torque
     if(_cascade.read(cmd) != RTT::NoData){ 
+        if(_pose_sample.read(pose_sample) != RTT::NoData){
+            //rotate the linear Vector, to get better Values 
+            roll = base::getRoll(pose_sample.orientation);
+            pitch = base::getPitch(pose_sample.orientation);
+            rotation = base::Quaterniond(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())) * base::Quaterniond(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
+            std::cout << "Pitch:" << pitch << std::endl;
+            std::cout << "Quaternion Pitch:" << base::getPitch(rotation) << std::endl;
+            std::cout << "Roll:" << roll << std::endl;
+            std::cout << "Quaternion Roll:" << base::getRoll(rotation) << std::endl;
+    
+    
+            std::cout << "Vorher:" << cmd.linear << std::endl;
+            cmd.linear = rotation.conjugate() * cmd.linear;
+            std::cout << "Nachher:" << cmd.linear << std::endl;
+        }
+
         input_vector(0) = cmd.linear(0);
         input_vector(1) = cmd.linear(1);
         input_vector(2) = cmd.linear(2);

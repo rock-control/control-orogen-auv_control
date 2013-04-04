@@ -41,9 +41,6 @@ void AUVAlignedVelocityController::updateHook()
     double delta_time;
 
     base::LinearAngular6DPIDSettings new_pid_settings = _pid_settings.get();
-    double roll;
-    double pitch;
-    base::Quaterniond rotation;
 
 
     if(last_pid_settings != new_pid_settings){
@@ -65,8 +62,6 @@ void AUVAlignedVelocityController::updateHook()
         //write the command
         _cmd_out.write(output_command);
         return;
-    } else{
-        state(RUNNING);
     }
 
     //std::cout << "ALIGNED VELOCITY" << std::endl;
@@ -84,7 +79,7 @@ void AUVAlignedVelocityController::updateHook()
                 output_command.linear(i) = base::unset<double>();
             } else{
                 //to use the PIDs in drive_simple wihout speeds
-                if (i == 2){
+                if (! base::isUnset(pose_sample.velocity(i))){
                 
                     output_command.linear(i) = linear_pid[i].update(pose_sample.velocity(i), merged_command.linear(i), delta_time);
                     
@@ -139,22 +134,10 @@ void AUVAlignedVelocityController::updateHook()
     }
     output_command.stamp = merged_command.stamp;
     
-    //rotate the linear Vector, to get better Values 
-    roll = base::getRoll(pose_sample.orientation);
-    pitch = base::getPitch(pose_sample.orientation);
-    rotation = base::Quaterniond(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())) * base::Quaterniond(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
-    std::cout << "Pitch:" << pitch << std::endl;
-    std::cout << "Quaternion Pitch:" << base::getPitch(rotation) << std::endl;
-    std::cout << "Roll:" << roll << std::endl;
-    std::cout << "Quaternion Roll:" << base::getRoll(rotation) << std::endl;
-    
-    
-    std::cout << "Vorher:" << output_command.linear << std::endl;
-    output_command.linear = rotation.conjugate() * output_command.linear;
-    std::cout << "Nachher:" << output_command.linear << std::endl;
     
     //write the command
     _cmd_out.write(output_command);
+    state(RUNNING);
 
     base::LinearAngular6DCommand avg_out;
     

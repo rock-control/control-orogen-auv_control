@@ -31,12 +31,14 @@ task_context "Controller_Base" do
         argument("name", "string")
     dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
 
-    error_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED
+    runtime_states :POSE_SAMPLE_MISSING, :INPUT_MISSING
+    error_states :INPUT_COLLIDING, :INPUT_UNEXPECTED
 
 end
 
 task_context "AUVForceTorqueController" do
     input_port('cascade', "base::LinearAngular6DCommand")
+    input_port("pose_sample", "base::samples::RigidBodyState")
     port_driven "cascade"    
     #periodic(0.01)
 
@@ -54,7 +56,6 @@ task_context "AUVAlignedVelocityController" do
     property("pid_settings", "base::LinearAngular6DPIDSettings")
     property("drive_simple", "bool", false)
     output_port("avg_periode", "base::LinearAngular6DCommand")
-    runtime_states :POSE_SAMPLE_MISSING
 end
 
 task_context "AUVAlignedController" do
@@ -62,22 +63,14 @@ task_context "AUVAlignedController" do
     input_port("pose_sample", " base::samples::RigidBodyState")
     output_port("avg_periode", "base::LinearAngular6DCommand")
     property("pid_settings", "base::LinearAngular6DPIDSettings")
-    runtime_states :POSE_SAMPLE_MISSING
 end
 
 task_context "AUVWorldController" do
     subclasses "Controller_Base"
     input_port("pose_sample", " base::samples::RigidBodyState")
-    runtime_states :POSE_SAMPLE_MISSING
 end
 
 task_context "AUVRelativeController" do
-    subclasses "Controller_Base"
-    input_port("pose_sample", " base::samples::RigidBodyState")
-    runtime_states :POSE_SAMPLE_MISSING
-end
-
-task_context "AUVTargetOrientationController" do
     subclasses "Controller_Base"
     input_port("pose_sample", " base::samples::RigidBodyState")
 end

@@ -65,14 +65,14 @@ bool Controller_Base::gatherInputCommand(){
                 merged_command.linear(j) = base::unset<double>(); 
             } else if(linear_is_set[j] != _expected_inputs.get().linear[j]){
                 std::cout << "INPUT_MISSING (Linear " << j << ")" << std::endl;
-                //error(INPUT_MISSING);
+                state(INPUT_MISSING);
                 return false;
             }
             if(!angular_is_set[j] && ! _expected_inputs.get().angular[j]){
                 merged_command.angular(j) = base::unset<double>(); 
             } else if(angular_is_set[j] != _expected_inputs.get().angular[j]){
                 std::cout << "INPUT_MISSING (Angular " << j << ")" << std::endl;
-                //error(INPUT_MISSING);
+                state(INPUT_MISSING);
                 return false;
             }
         

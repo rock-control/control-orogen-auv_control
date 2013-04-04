@@ -63,10 +63,8 @@ void AUVAlignedController::updateHook()
         //write the command
         _cmd_out.write(output_command);
         return;
-    } else{
-        state(RUNNING);
     }
-    
+
     //std::cout << "ALIGNED" << std::endl;
     //if the input command is vallid
     if (this->gatherInputCommand()){
@@ -146,6 +144,7 @@ void AUVAlignedController::updateHook()
     output_command.stamp = merged_command.stamp;
     //write the command on the output port
     _cmd_out.write(output_command);
+    state(RUNNING);
     
     base::LinearAngular6DCommand avg_out;
     
