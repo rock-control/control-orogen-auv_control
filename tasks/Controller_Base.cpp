@@ -114,10 +114,7 @@ bool Controller_Base::merge(bool *expected, bool *is_set, base::Vector3d *curren
         }else if(!expected[i] && !base::isUnset((*current)(i))){
             error(INPUT_UNEXPECTED);
             return false;
-        }else {
-            std::cout << "I: " << i << std::endl;
         }
-
     }
     return true;
 }
