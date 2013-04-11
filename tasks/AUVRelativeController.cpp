@@ -90,15 +90,26 @@ void AUVRelativeController::updateHook()
         _cmd_out.write(output_command);
         return;
     }
-
+    
+    
     if(this->gatherInputCommand()){
-        for(int i = 0; i < 3; i++){
+       double orientation[] = {base::getRoll(pose_sample.orientation), base::getPitch(pose_sample.orientation), base::getYaw(pose_sample.orientation)}; 
+	for(int i = 0; i < 3; i++){
             if(!base::isInfinity<double>(merged_command.linear(i))){
-                output_command.linear(i) = merged_command.linear(i);
-            }
+               
+		 output_command.linear(i) = merged_command.linear(i);
+	    }
             if(!base::isInfinity<double>(merged_command.angular(i))){
-                output_command.angular(i) += merged_command.angular(i);
-            }
+                
+		 output_command.angular(i) = orientation[i] + merged_command.angular(i);
+		 while (output_command.angular(i) < - M_PI){
+		   output_command.angular(i) += 2*M_PI;
+		 }
+		 while (output_command.angular(i) > M_PI){
+		   output_command.angular(i) -= 2*M_PI;
+		 }
+	    }
+            
         }
     }
     
