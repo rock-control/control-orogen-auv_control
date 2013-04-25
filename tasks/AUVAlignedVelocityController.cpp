@@ -151,7 +151,7 @@ void AUVAlignedVelocityController::updateHook()
 
 void AUVAlignedVelocityController::setPIDSettings(base::LinearAngular6DPIDSettings new_settings){
     //reset the pids and set the pid-settings from the property
-    std::cout << "Aendere PID-Settings in AUVAlignedVelocityController" << std::endl;
+    std::cout << "Change PID-Settings in AUVAlignedVelocityController" << std::endl;
     for(int i = 0; i < 3; i++){
         
         linear_pid[i].reset();
