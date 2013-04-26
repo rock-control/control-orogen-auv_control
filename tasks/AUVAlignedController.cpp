@@ -131,7 +131,7 @@ void AUVAlignedController::updateHook()
                 cnt[3+i] ++;
                 pos_start[3+i] = base::Time::now();
                 last[3+i] = true;
-            } else if (output_command.linear(i) <= 0){
+            } else if (output_command.angular(i) <= 0){
                 last[3+i] = false;
             }
             
