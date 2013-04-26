@@ -84,6 +84,17 @@ void AUVAlignedController::updateHook()
             }
         }
 
+        //catch to large or small angles
+        for(int i = 0; i < 3; i++){
+            while(merged_command.angular(i) < (- M_PI)){
+                merged_command.angular(i) += 2 * M_PI;
+            }
+        
+            while(merged_command.angular(i) >  M_PI){
+                merged_command.angular(i) -= 2 * M_PI;
+            }
+        }
+
         //Reglementation for Roll
         if(base::isUnset(merged_command.angular(0))){
             output_command.angular(0) = base::unset<double>();
