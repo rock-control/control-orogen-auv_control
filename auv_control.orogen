@@ -19,6 +19,9 @@ using_library "motor_controller"
 # tasks/Task.cpp, and will be put in the auv_control namespace.
 task_context "Controller_Base" do
     property("expected_inputs", "auv_control::ExpectedInputs")
+    property("timeout_cascade", "double", 1)
+    property("timeout_cmd_in", "double", 1)
+    
     input_port('cascade', 'base::LinearAngular6DCommand')
     input_port("cmd_in", "base::LinearAngular6DCommand")
     input_port("pose_sample", "base::samples::RigidBodyState")
@@ -29,11 +32,12 @@ task_context "Controller_Base" do
     output_port("cmd_out", "base::LinearAngular6DCommand")
 
     operation("addCommandInput").
-        argument("name", "string")
+        argument("name", "string").
+        argument("timeout", "double")
     dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
 
-    runtime_states :POSE_SAMPLE_MISSING, :INPUT_MISSING
-    error_states :INPUT_COLLIDING, :INPUT_UNEXPECTED
+    runtime_states :POSE_SAMPLE_MISSING, :INPUT_MISSING, :WAIT_FOR_INPUT
+    error_states :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT
 
 end
 
@@ -62,11 +66,46 @@ task_context "AUVAlignedController" do
     property("pid_settings", "base::LinearAngular6DPIDSettings")
 end
 
+task_context "AUVOptimalOrientationController" do
+    subclasses "Controller_Base"
+    property("opt_orientation_distance", "double")
+    property("opt_orientation", "base::Vector3d")
+end
+
 task_context "AUVWorldController" do
     subclasses "Controller_Base"
+    input_port("opt_orientation_distance", "double")
+    input_port("opt_orientation", "base::Vector3d")
 end
 
 task_context "AUVRelativeController" do
     subclasses "Controller_Base"
 end
 
+task_context "AUVWaypointNavigator" do
+    input_port("trajectory", "std::vector<base::LinearAngular6DWaypoint").
+        doc("Input Trajectory the auv should follow")
+    
+    input_port("pose_sample", "base::samples::RigidBodyState").
+        doc("current pose retrieved from any localization")
+
+    output_port("cmd_out", "base::LinearAngular6DCommand").
+        doc("command for AUVWorldController")
+    
+    output_port("current_delta", "base::LinearAngular6DCommand").
+        doc("shows error between current and desired waypoint for debugging")
+
+    output_port("current_waypoint", "base::LinearAngular6DWaypoint").
+        doc("current waypoint that is navigated by this controller")
+
+    output_port("queue_size", "int").
+        doc("remaining waypoints to follow")
+
+    property("timeout", "double", 30).
+        doc("The navigator is going into fatal if no pose_samples are incoming")
+
+    runtime_states :WAIT_FOR_WAYPOINTS, :KEEP_WAYPOINT, :DYNAMIC_NAVIGATION, :STATIC_NAVIGATION
+    exception_states :NO_POSE_SAMPLES
+
+    periodic(0.01)
+end

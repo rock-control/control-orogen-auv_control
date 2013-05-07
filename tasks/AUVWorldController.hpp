@@ -15,6 +15,7 @@ namespace auv_control {
     protected:
         bool on_start;
 
+        void doNothing();
 
     public:
         AUVWorldController(std::string const& name = "auv_control::AUVWorldController", TaskCore::TaskState initial_state = Stopped);

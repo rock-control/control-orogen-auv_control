@@ -45,15 +45,15 @@ void AUVForceTorqueController::updateHook()
             roll = base::getRoll(pose_sample.orientation);
             pitch = base::getPitch(pose_sample.orientation);
             rotation = base::Quaterniond(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())) * base::Quaterniond(Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX()));
-            std::cout << "Pitch:" << pitch << std::endl;
+         /*   std::cout << "Pitch:" << pitch << std::endl;
             std::cout << "Quaternion Pitch:" << base::getPitch(rotation) << std::endl;
             std::cout << "Roll:" << roll << std::endl;
             std::cout << "Quaternion Roll:" << base::getRoll(rotation) << std::endl;
     
     
-            std::cout << "Vorher:" << cmd.linear << std::endl;
+            std::cout << "Vorher:" << cmd.linear << std::endl;*/
             cmd.linear = rotation.conjugate() * cmd.linear;
-            std::cout << "Nachher:" << cmd.linear << std::endl;
+         //   std::cout << "Nachher:" << cmd.linear << std::endl;
         }
 
         input_vector(0) = cmd.linear(0);

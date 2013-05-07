@@ -42,7 +42,6 @@ void AUVAlignedController::updateHook()
     AUVAlignedControllerBase::updateHook();
 
     base::LinearAngular6DCommand output_command;
-    base::samples::RigidBodyState pose_sample;
     double delta_time;
 
     base::LinearAngular6DPIDSettings new_pid_settings = _pid_settings.get();
@@ -53,17 +52,16 @@ void AUVAlignedController::updateHook()
 
 
     //if it excists no BodyState or on the first  update
-    if(_pose_sample.read(pose_sample) == RTT::NoData || on_start){
+    if(!this->getPoseSample() || on_start){
         if(on_start){
             on_start = false;
-        }else{
-            state(POSE_SAMPLE_MISSING);
         }
         output_command = this->dontMove();
         //write the command
         _cmd_out.write(output_command);
         return;
     }
+
 
     //std::cout << "ALIGNED" << std::endl;
     //if the input command is vallid
@@ -225,4 +223,8 @@ void AUVAlignedController::setPIDSettings(base::LinearAngular6DPIDSettings new_s
 
     last_pid_settings = new_settings;
     return;
-}   
+} 
+
+void AUVAlignedController::doNothing(){
+    std::cout << "doNothig" << std::endl;
+}

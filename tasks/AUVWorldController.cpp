@@ -24,6 +24,8 @@ bool AUVWorldController::startHook()
 {
     AUVWorldControllerBase::startHook();
     
+    this->setDefaultTimeout();
+
     on_start = true;
     return true;
 }
@@ -33,13 +35,11 @@ void AUVWorldController::updateHook()
         
     base::LinearAngular6DCommand output_command;
     base::Quaterniond rotation;
-    base::samples::RigidBodyState pose_sample;
+
     double yaw;
     bool z_nan = false;
 
-    if(_pose_sample.read(pose_sample) == RTT::NoData){
-        state(POSE_SAMPLE_MISSING);
-	std::cout << "POSE_SAMPLE_MISSING" << std::endl;
+    if(!this->getPoseSample()){
         return;
     }
 
@@ -102,11 +102,17 @@ void AUVWorldController::updateHook()
         output_command.angular = merged_command.angular;
         
         output_command.stamp = merged_command.stamp;
+        
         //write command
         _cmd_out.write(output_command);
         state(RUNNING);
 
+    } else {
+        std::cout << "im AUVWorldController" << std::endl;
     }
     return;
 }
 
+void AUVWorldController::doNothing(){
+    std::cout << "doNothig" << std::endl;
+}

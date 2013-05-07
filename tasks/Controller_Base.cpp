@@ -24,14 +24,32 @@ void Controller_Base::genDefaultInput()
 {
     InputPortInfo info;
     info.name = "cascade";
+    info.timeout = _timeout_cascade.get();
     info.input_port = &_cascade;
 
     input_ports.push_back(info);
     
     info.name = "in";
+    info.timeout = _timeout_cmd_in.get();
     info.input_port = &_cmd_in;
     
     input_ports.push_back(info);
+}
+
+void Controller_Base::setDefaultTimeout()
+{
+    input_ports.at(0).timeout = _timeout_cascade.get();
+    input_ports.at(1).timeout = _timeout_cmd_in.get();
+}
+
+bool Controller_Base::getPoseSample(){      
+    if(_pose_sample.read(pose_sample) == RTT::NoData){
+        state(POSE_SAMPLE_MISSING);
+        //TODO: Don't Move
+        //write the comman
+        return false;
+    }
+    return true;
 }
 
 bool Controller_Base::gatherInputCommand(){
@@ -39,54 +57,70 @@ bool Controller_Base::gatherInputCommand(){
     bool angular_is_set[] = {false, false, false};    
     base::LinearAngular6DCommand current_port;    
     base::Time max_stamp;
+    RTT::FlowStatus status;
     //std::cout << "Bin in gatherInputCommand()" << std::endl;
-
     for(int i = 0; i < input_ports.size(); i++){
-        if(input_ports.at(i).input_port->read(current_port) != RTT::NoData){
+        status = input_ports.at(i).input_port->read(current_port);
+        if(input_ports.at(i).input_port->connected()){
+            if(status == RTT::NoData){
+                std::cout << "[WARNING] Ther are no Input on port " << input_ports.at(i).name << std::endl;
+                std::cout << "Timeout:" << input_ports.at(i).timeout << std::endl;
+                state(WAIT_FOR_INPUT);
+                return false;
+            } else if(status == RTT::NewData){
+                input_ports.at(i).last_time = pose_sample.time;
+                //std::cout << "New Input on port " << input_ports.at(i).name << std::endl;
+            } else if(input_ports.at(i).timeout > 0 && (pose_sample.time - input_ports.at(i).last_time).toSeconds() > input_ports.at(i).timeout){
+                error(TIMEOUT);
+                std::cout << "[ERROR] Timeout on port " << input_ports.at(i).name << std::endl;
+                return false;
+            }
+
             if(current_port.stamp > max_stamp){
                 max_stamp = current_port.stamp;
-            }
+             }
             //std::cout << "Input-Port" << current_port.linear << std::endl;
 
             if(!(merge(&_expected_inputs.get().linear[0], &linear_is_set[0], &current_port.linear, &merged_command.linear) &&
-                       merge(&_expected_inputs.get().angular[0] ,&angular_is_set[0], &current_port.angular, &merged_command.angular))){
-               return false;
-            }
-        }   
+                    merge(&_expected_inputs.get().angular[0] ,&angular_is_set[0], &current_port.angular, &merged_command.angular))){
+                return false;
+            }   
+        }
     }
     //std::cout << linear_is_set[0] << std::endl;    
     //std::cout <<  _expected_inputs.get().linear[0]<< std::endl;    
     //std::cout <<  merged_command.linear<< std::endl;    
     for(int j = 0; j < 3; j++){
        
-            //If the Value is on evry port unset set the value in the merged_command unset too. 
-            //std::cout << linear_is_set[j] << _expected_inputs.get().linear[j] << std::endl;
-            if(!linear_is_set[j] && ! _expected_inputs.get().linear[j]){
-                merged_command.linear(j) = base::unset<double>(); 
-            } else if(linear_is_set[j] != _expected_inputs.get().linear[j]){
-                //std::cout << "INPUT_MISSING (Linear " << j << ")" << std::endl;
-                state(INPUT_MISSING);
-                return false;
-            }
-            if(!angular_is_set[j] && ! _expected_inputs.get().angular[j]){
-                merged_command.angular(j) = base::unset<double>(); 
-            } else if(angular_is_set[j] != _expected_inputs.get().angular[j]){
-                //std::cout << "INPUT_MISSING (Angular " << j << ")" << std::endl;
-                state(INPUT_MISSING);
-                return false;
-            }
+        //If the Value is on evry port unset set the value in the merged_command unset too. 
+        //std::cout << linear_is_set[j] << _expected_inputs.get().linear[j] << std::endl;
+        if(!linear_is_set[j] && ! _expected_inputs.get().linear[j]){
+            merged_command.linear(j) = base::unset<double>(); 
+        } else if(linear_is_set[j] != _expected_inputs.get().linear[j]){
+            //std::cout << "INPUT_MISSING (Linear " << j << ")" << std::endl;
+            state(INPUT_MISSING);
+            return false;
+        }
+        if(!angular_is_set[j] && ! _expected_inputs.get().angular[j]){
+            merged_command.angular(j) = base::unset<double>(); 
+        } else if(angular_is_set[j] != _expected_inputs.get().angular[j]){
+            //std::cout << "INPUT_MISSING (Angular " << j << ")" << std::endl;
+            state(INPUT_MISSING);
+            return false;
+        }
         
     }
     merged_command.stamp = max_stamp;
     return true;           
 }
 
-void Controller_Base::addCommandInput(std::string const & name){
+void Controller_Base::addCommandInput(std::string const & name, double timeout){
     if(provides()->hasService("cmd_" + name)){
         //Fehler werfen! Port bereits vorhanden
     }
     InputPortInfo info;
     info.name = name;
+    info.timeout = timeout;
     info.input_port = new InputPortType("cmd_" + name);
     provides()->addPort(*info.input_port);
 
@@ -117,4 +151,8 @@ bool Controller_Base::merge(bool *expected, bool *is_set, base::Vector3d *curren
         }
     }
     return true;
+}
+
+void Controller_Base::doNothing(){
+    
 }

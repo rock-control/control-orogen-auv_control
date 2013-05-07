@@ -16,6 +16,8 @@ namespace auv_control {
         typedef RTT::InputPort<base::LinearAngular6DCommand> InputPortType;
         struct InputPortInfo{
             std::string name;
+            double timeout;
+            base::Time last_time;
             InputPortType *input_port;
             InputPortInfo()
                 :input_port(0){}
@@ -23,13 +25,16 @@ namespace auv_control {
     
         std::vector<InputPortInfo> input_ports;
         base::LinearAngular6DCommand merged_command;        
+        base::samples::RigidBodyState pose_sample;
 
         bool gatherInputCommand();
-        
+        bool getPoseSample();        
         void genDefaultInput();
+        void setDefaultTimeout();
 
-        virtual void addCommandInput(::std::string const & name);
+        virtual void addCommandInput(::std::string const & name, double timeout);
         
+        virtual void doNothing();
         
     public:
         Controller_Base(std::string const& name = "auv_control::Controller_Base", TaskCore::TaskState initial_state = Stopped);

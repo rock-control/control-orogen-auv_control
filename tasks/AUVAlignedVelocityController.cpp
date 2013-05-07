@@ -37,7 +37,6 @@ void AUVAlignedVelocityController::updateHook()
     AUVAlignedVelocityControllerBase::updateHook();
 
     base::LinearAngular6DCommand output_command;
-    base::samples::RigidBodyState pose_sample;
     double delta_time;
 
     base::LinearAngular6DPIDSettings new_pid_settings = _pid_settings.get();
@@ -48,7 +47,7 @@ void AUVAlignedVelocityController::updateHook()
     }
 
     //hold current position if ther are no BodyState or at firts time
-    if(_pose_sample.read(pose_sample) == RTT::NoData || on_start){
+    if(!this->getPoseSample() || on_start){
         if(on_start){
             on_start = false;
         }else{
@@ -188,4 +187,8 @@ void AUVAlignedVelocityController::setPIDSettings(base::LinearAngular6DPIDSettin
 
     last_pid_settings = new_settings;
     return;
+}
+
+void AUVAlignedVelocityController::doNothing(){
+    std::cout << "doNothig" << std::endl;
 }

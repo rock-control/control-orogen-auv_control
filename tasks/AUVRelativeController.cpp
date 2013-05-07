@@ -61,12 +61,10 @@ void AUVRelativeController::updateHook()
     auv_control::Controller_Base::updateHook();    
     base::samples::RigidBodyState pose_sample;
 
-    if(_pose_sample.read(pose_sample) == RTT::NoData){
-        state(POSE_SAMPLE_MISSING);
+    if(!this->getPoseSample()){
         return;
-    } else{
-        state(RUNNING);
-    }
+    } 
+    
     
     //Hold position at first update
     if(on_start){
@@ -114,7 +112,7 @@ void AUVRelativeController::updateHook()
     }
     
     _cmd_out.write(output_command);
-
+    state(RUNNING);
     
 }
 
@@ -157,3 +155,6 @@ void AUVRelativeController::cleanupHook()
     
 }
 
+void AUVRelativeController::doNothing(){
+    std::cout << "doNothing" << std::endl;
+}

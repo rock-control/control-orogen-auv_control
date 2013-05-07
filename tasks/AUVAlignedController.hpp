@@ -19,7 +19,9 @@ namespace auv_control {
 
         base::LinearAngular6DCommand dontMove();
         void setPIDSettings(base::LinearAngular6DPIDSettings new_settings);
-        
+ 
+        void doNothing();
+
         bool last[6];
         base::Time pos_start[6];
         double avg[6];
