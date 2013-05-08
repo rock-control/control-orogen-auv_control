@@ -7,17 +7,120 @@ using namespace auv_control;
 Controller_Base::Controller_Base(std::string const& name, TaskCore::TaskState initial_state)
     : Controller_BaseBase(name, initial_state)
 {
-    genDefaultInput();
+    this->genDefaultInput();
 }
 
 Controller_Base::Controller_Base(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
     : Controller_BaseBase(name, engine, initial_state)
 {
-    genDefaultInput();
+    this->genDefaultInput();
 }
 
 Controller_Base::~Controller_Base()
 {
+}
+
+/// The following lines are template definitions for the various state machine
+// hooks defined by Orocos::RTT. See Controller_Base.hpp for more detailed
+// documentation about them.
+
+
+
+
+bool Controller_Base::configureHook()
+{
+    
+    if (! RTT::TaskContext::configureHook())
+        return false;
+    
+
+    
+
+    
+    return true;
+    
+}
+
+
+
+bool Controller_Base::startHook()
+{
+    
+    if (! RTT::TaskContext::startHook())
+        return false;
+    
+    this->setDefaultTimeout();
+    
+
+    
+    return true;
+    
+}
+
+
+
+void Controller_Base::updateHook()
+{
+    
+    RTT::TaskContext::updateHook();
+    
+    if(!this->getPoseSample())
+        this->doNothing();
+        return;
+
+    if(!this->gatherInputCommand()){
+        this->doNothing();
+        return;
+    }
+
+    if(!this->calcOutput()){
+        this->doNothing();
+        return;
+    }
+
+    _cmd_out.write(output_command);
+    state(RUNNING);
+    return;
+}
+
+
+
+void Controller_Base::errorHook()
+{
+    
+    RTT::TaskContext::errorHook();
+   
+    this->doNothing();
+
+    
+
+    
+}
+
+
+
+void Controller_Base::stopHook()
+{
+    
+    RTT::TaskContext::stopHook();
+    
+
+    
+
+    
+}
+
+
+
+void Controller_Base::cleanupHook()
+{
+    
+    RTT::TaskContext::cleanupHook();
+    
+
+    
+
+    
 }
 
 void Controller_Base::genDefaultInput()
@@ -45,8 +148,6 @@ void Controller_Base::setDefaultTimeout()
 bool Controller_Base::getPoseSample(){      
     if(_pose_sample.read(pose_sample) == RTT::NoData){
         state(POSE_SAMPLE_MISSING);
-        //TODO: Don't Move
-        //write the comman
         return false;
     }
     return true;
@@ -63,16 +164,14 @@ bool Controller_Base::gatherInputCommand(){
         status = input_ports.at(i).input_port->read(current_port);
         if(input_ports.at(i).input_port->connected()){
             if(status == RTT::NoData){
-                std::cout << "[WARNING] Ther are no Input on port " << input_ports.at(i).name << std::endl;
-                std::cout << "Timeout:" << input_ports.at(i).timeout << std::endl;
                 state(WAIT_FOR_INPUT);
                 return false;
             } else if(status == RTT::NewData){
                 input_ports.at(i).last_time = pose_sample.time;
                 //std::cout << "New Input on port " << input_ports.at(i).name << std::endl;
             } else if(input_ports.at(i).timeout > 0 && (pose_sample.time - input_ports.at(i).last_time).toSeconds() > input_ports.at(i).timeout){
+                std::cout << "[ERROR] Timeout" << std::endl;
                 error(TIMEOUT);
-                std::cout << "[ERROR] Timeout on port " << input_ports.at(i).name << std::endl;
                 return false;
             }
 
@@ -153,6 +252,11 @@ bool Controller_Base::merge(bool *expected, bool *is_set, base::Vector3d *curren
     return true;
 }
 
+
 void Controller_Base::doNothing(){
     
+}
+
+bool Controller_Base::calcOutput(){
+    return false;
 }

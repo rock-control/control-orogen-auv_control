@@ -12,6 +12,7 @@ namespace auv_control {
 	friend class AUVRelativeControllerBase;
     protected:
         void doNothing();
+        bool calcOutput();
 
         base::LinearAngular6DCommand output_command;
         bool on_start;

@@ -26,6 +26,7 @@ namespace auv_control {
 	friend class AUVOptimalOrientationControllerBase;
     protected: 
         void doNothing();
+        bool calcOutput();
     public:
         /** TaskContext constructor for AUVOptimalOrientationController
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.

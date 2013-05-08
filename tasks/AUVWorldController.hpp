@@ -16,6 +16,7 @@ namespace auv_control {
         bool on_start;
 
         void doNothing();
+        bool calcOutput();
 
     public:
         AUVWorldController(std::string const& name = "auv_control::AUVWorldController", TaskCore::TaskState initial_state = Stopped);

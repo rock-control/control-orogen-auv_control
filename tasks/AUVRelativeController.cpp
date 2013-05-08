@@ -158,3 +158,8 @@ void AUVRelativeController::cleanupHook()
 void AUVRelativeController::doNothing(){
     std::cout << "doNothing" << std::endl;
 }
+
+bool AUVRelativeController::calcOutput(){
+    std::cout << "calcOutput" << std::endl;
+    return true;
+}

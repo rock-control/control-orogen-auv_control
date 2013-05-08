@@ -55,7 +55,7 @@ void AUVOptimalOrientationController::updateHook()
 {
     
     auv_control::Controller_Base::updateHook();
-    
+/*    
     if(!this->getPoseSample()){
         return;
     }
@@ -77,7 +77,7 @@ void AUVOptimalOrientationController::updateHook()
         }
         _cmd_out.write(output_command);
         state(RUNNING);
-    }
+    }*/
     return;
     
 }
@@ -123,5 +123,37 @@ void AUVOptimalOrientationController::cleanupHook()
 
 
 void AUVOptimalOrientationController::doNothing(){
-    std::cout << "doNothig" << std::endl;
+    
+    for(int i = 0; i < 3; i++){
+        if(_expected_inputs.get().linear[i]){
+            output_command.linear(i) = 0;
+        } else{
+            output_command.linear(i) = base::unset<double>();
+        }
+
+        if(_expected_inputs.get().angular[i]){
+            output_command.angular(i) = 0;
+        } else{
+            output_command.angular(i) = base::unset<double>();
+        }
+    }
+
+    _cmd_out.write(output_command);
+}
+
+bool AUVOptimalOrientationController::calcOutput(){
+    
+    base::Vector3d opt_orientation;
+    double opt_orientation_distance;
+
+    opt_orientation = _opt_orientation.get();
+    opt_orientation_distance = _opt_orientation_distance.get(); 
+
+    output_command = merged_command;
+    //take optimal heading
+
+    if(merged_command.linear.norm() > opt_orientation_distance){
+        output_command.angular(2) = atan2(merged_command.linear(1), merged_command.linear(0))+base::getYaw(pose_sample.orientation) + opt_orientation(2);
+    }
+    return true;
 }

@@ -19,6 +19,7 @@ namespace auv_control {
         base::LinearAngular6DPIDSettings last_pid_settings;
         void setPIDSettings(base::LinearAngular6DPIDSettings new_settings);
         void doNothing();
+        bool calcOutput();
         bool last[6];
         base::Time pos_start[6];
         double avg[6];

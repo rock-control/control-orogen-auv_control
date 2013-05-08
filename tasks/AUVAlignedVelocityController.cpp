@@ -19,30 +19,24 @@ AUVAlignedVelocityController::~AUVAlignedVelocityController()
 
 bool AUVAlignedVelocityController::startHook()
 {
-    AUVAlignedVelocityControllerBase::startHook();
+    auv_control::Controller_Base::startHook();
 
-    on_start = true;
     //reset the Pids and set the settings from the property
     setPIDSettings(_pid_settings.get());
-
-    for (int i = 0; i < 6; i++){
-        avg[i] = 0;
-        cnt[i] = 0;
-    }
     
     return true;
 }
 void AUVAlignedVelocityController::updateHook()
 {
-    AUVAlignedVelocityControllerBase::updateHook();
-
-    base::LinearAngular6DCommand output_command;
-    double delta_time;
-
     base::LinearAngular6DPIDSettings new_pid_settings = _pid_settings.get();
-
-
     if(last_pid_settings != new_pid_settings){
+        setPIDSettings(new_pid_settings);
+    }
+
+    auv_control::Controller_Base::updateHook();
+
+
+/*    if(last_pid_settings != new_pid_settings){
         setPIDSettings(new_pid_settings);
     }
 
@@ -90,11 +84,11 @@ void AUVAlignedVelocityController::updateHook()
             if(base::isUnset(merged_command.angular(i))){
                 output_command.angular(i) = base::unset<double>();
             } else{
-               /* if (i == 1){
+                if (i == 1){
                     output_command.angular(i) = angular_pid[i].update(-pose_sample.angular_velocity(i), merged_command.angular(i), delta_time);
             
                 } else {
-*/
+
                     output_command.angular(i) = angular_pid[i].update(pose_sample.angular_velocity(i), merged_command.angular(i), delta_time);
   //              }
             }
@@ -136,7 +130,7 @@ void AUVAlignedVelocityController::updateHook()
     
     //write the command
     _cmd_out.write(output_command);
-    state(RUNNING);
+    state(RUNNING);*/
 
     base::LinearAngular6DCommand avg_out;
     
@@ -146,6 +140,8 @@ void AUVAlignedVelocityController::updateHook()
     }
 
     _avg_periode.write(avg_out);
+
+    return;
 }
 
 void AUVAlignedVelocityController::setPIDSettings(base::LinearAngular6DPIDSettings new_settings){
@@ -186,9 +182,88 @@ void AUVAlignedVelocityController::setPIDSettings(base::LinearAngular6DPIDSettin
     }
 
     last_pid_settings = new_settings;
+    
+    for (int i = 0; i < 6; i++){
+        avg[i] = 0;
+        cnt[i] = 0;
+    }
+    
     return;
 }
 
 void AUVAlignedVelocityController::doNothing(){
-    std::cout << "doNothig" << std::endl;
+    output_command.stamp = pose_sample.time;
+
+    output_command.linear(0) = 0;
+    output_command.linear(1) = 0;
+    output_command.linear(2) = 0;
+    
+    output_command.angular(0) = 0;
+    output_command.angular(1) = 0;
+    output_command.angular(2) = 0;
+
+    _cmd_out.write(output_command);
+}
+
+bool AUVAlignedVelocityController::calcOutput(){
+    double delta_time;
+    //time since the last reglementation    
+    delta_time = ((pose_sample.time - last_pose_sample_time).toSeconds());
+    //time of the last reglementation
+    last_pose_sample_time = pose_sample.time;
+
+    //set unset valus from the input command in teh output comman unset too.
+    //else reglementate the output command by update the pids
+    for(int i = 0; i < 3; i++){
+        if(base::isUnset(merged_command.linear(i))){
+            output_command.linear(i) = base::unset<double>();
+        } else{
+            //to use the PIDs in drive_simple wihout speeds
+            if (! base::isUnset(pose_sample.velocity(i))){
+
+                output_command.linear(i) = linear_pid[i].update(pose_sample.velocity(i), merged_command.linear(i), delta_time);
+
+            } else{
+                output_command.linear(i) = linear_pid[i].update(0, merged_command.linear(i), delta_time);
+            }
+        }
+
+        if(base::isUnset(merged_command.angular(i))){
+            output_command.angular(i) = base::unset<double>();
+        } else{
+            /* if (i == 1){
+               output_command.angular(i) = angular_pid[i].update(-pose_sample.angular_velocity(i), merged_command.angular(i), delta_time);
+
+               } else {
+               */
+            output_command.angular(i) = angular_pid[i].update(pose_sample.angular_velocity(i), merged_command.angular(i), delta_time);
+            //              }
+        }
+
+        //Calculate the avarage Periode
+        if (output_command.linear(i) > 0 && !last[i]){
+            if (cnt[i] > 1){
+                avg[i] = (avg[i]*(cnt[i]-1) + (base::Time::now() - pos_start[i]).toSeconds())/(cnt[i]) ;
+            }
+            cnt[i] ++;
+            pos_start[i] = base::Time::now();
+            last[i] = true;
+        } else if (output_command.linear(i) <= 0){
+            last[i] = false;
+        }
+
+        if (output_command.angular(i) > 0 && !last[3+i]){
+            if (cnt[3+i] > 1){
+                avg[3+i] = (avg[3+i]*(cnt[3+i]-1) + (base::Time::now() - pos_start[3+i]).toSeconds())/(cnt[3+i]) ;
+            }
+            cnt[3+i] ++;
+            pos_start[3+i] = base::Time::now();
+            last[3+i] = true;
+        } else if (output_command.angular(i) <= 0){
+            last[3+i] = false;
+        }
+    }
+    output_command.stamp = merged_command.stamp;
+
+    return true;
 }
