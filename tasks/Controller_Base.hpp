@@ -35,7 +35,7 @@ namespace auv_control {
 
         virtual void addCommandInput(::std::string const & name, double timeout);
         
-        virtual void doNothing();
+        virtual void holdPosition();
         virtual bool calcOutput();
         
     public:

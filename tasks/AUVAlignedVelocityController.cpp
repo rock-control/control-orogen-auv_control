@@ -191,7 +191,7 @@ void AUVAlignedVelocityController::setPIDSettings(base::LinearAngular6DPIDSettin
     return;
 }
 
-void AUVAlignedVelocityController::doNothing(){
+void AUVAlignedVelocityController::holdPosition(){
     output_command.stamp = pose_sample.time;
 
     output_command.linear(0) = 0;

@@ -31,7 +31,7 @@ void AUVWorldController::updateHook()
     return;
 }
 
-void AUVWorldController::doNothing(){
+void AUVWorldController::holdPosition(){
     output_command.stamp = pose_sample.time;
 
     output_command.linear(0) = pose_sample.position(0); 

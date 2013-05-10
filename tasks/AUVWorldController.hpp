@@ -15,7 +15,7 @@ namespace auv_control {
     protected:
         bool on_start;
 
-        void doNothing();
+        void holdPosition();
         bool calcOutput();
 
     public:

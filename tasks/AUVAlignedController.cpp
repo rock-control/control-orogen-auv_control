@@ -101,7 +101,7 @@ void AUVAlignedController::setPIDSettings(base::LinearAngular6DPIDSettings new_s
     return;
 } 
 
-void AUVAlignedController::doNothing(){
+void AUVAlignedController::holdPosition(){
     for(int i = 0; i < 3; i++){
         if(_expected_inputs.get().linear[i]){
             output_command.linear(i) = 0;

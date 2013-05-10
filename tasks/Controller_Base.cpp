@@ -65,16 +65,15 @@ void Controller_Base::updateHook()
     RTT::TaskContext::updateHook();
     
     if(!this->getPoseSample())
-        this->doNothing();
         return;
 
     if(!this->gatherInputCommand()){
-        this->doNothing();
+        this->holdPosition();
         return;
     }
 
     if(!this->calcOutput()){
-        this->doNothing();
+        this->holdPosition();
         return;
     }
 
@@ -90,7 +89,7 @@ void Controller_Base::errorHook()
     
     RTT::TaskContext::errorHook();
    
-    this->doNothing();
+    this->holdPosition();
 
     
 
@@ -253,7 +252,7 @@ bool Controller_Base::merge(bool *expected, bool *is_set, base::Vector3d *curren
 }
 
 
-void Controller_Base::doNothing(){
+void Controller_Base::holdPosition(){
     
 }
 
