@@ -28,6 +28,8 @@ namespace auv_control {
         std::list<base::LinearAngular6DWaypoint> waypoints;
         base::samples::RigidBodyState last_pose;
 
+        base::LinearAngular6DWaypoint wp;
+        bool keep_position;
 
     public:
         /** TaskContext constructor for AUVWaypointNavigator

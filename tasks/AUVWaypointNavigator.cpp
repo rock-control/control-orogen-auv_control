@@ -68,29 +68,24 @@ void AUVWaypointNavigator::updateHook()
     std::vector<base::LinearAngular6DWaypoint> trajectory;
 
     if(_pose_sample.read(pose) == RTT::NoData) {
-        //TODO: Fehler werfen
-        std::cout << "POSE_SAMPLE MISSING" << std::endl;
+        state(POSE_SAMPLE_MISSING);
         return;
     }
     last_pose = pose;
 
-    if(_trajectory.read(trajectory) != RTT::NoData) {
+    if(_trajectory.read(trajectory) == RTT::NewData) {
+        std::cout << "NEUE Wegpunkte" << std::endl;
         waypoints.clear();
         waypoints.resize(trajectory.size());
         std::copy(trajectory.begin(), trajectory.end(), waypoints.begin());
-
-        //keeping_position = false;
-         
-        _trajectory.clear();
+        keep_position = false;
+        state(FOLLOWING_WAYPOINTS);
     }
     
     if(!waypoints.empty()){
-        base::LinearAngular6DWaypoint wp;
         base::LinearAngular6DCommand delta;
         
         wp = waypoints.front();
-        wp.cmd.stamp = base::Time::now();
-        _cmd_out.write(wp.cmd);
         
         delta.stamp = base::Time::now();
         delta.linear = wp.cmd.linear - pose.position;
@@ -100,11 +95,20 @@ void AUVWaypointNavigator::updateHook()
         _current_delta.write(delta);
         if (delta.linear.norm() <= wp.linear_tolerance && delta.angular.norm() <= wp.angular_tolerance){
             waypoints.pop_front();
+            if (waypoints.size() == 0){
+                keep_position = true;
+                state(KEEP_WAYPOINT);
+            }
         }
-        _queue_size.write(waypoints.size());
-        _current_waypoint.write(wp);
 
+
+    } else if(!keep_position) {
+        state(WAIT_FOR_WAYPOINTS);
     }
+    _queue_size.write(waypoints.size());
+    wp.cmd.stamp = base::Time::now();
+    _cmd_out.write(wp.cmd);
+    _current_waypoint.write(wp);
 
     return;
 

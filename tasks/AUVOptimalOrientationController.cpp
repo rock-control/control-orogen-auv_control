@@ -130,7 +130,9 @@ bool AUVOptimalOrientationController::calcOutput(){
     //take optimal heading
 
     if(merged_command.linear.norm() > opt_orientation_distance){
+        output_command.linear(1) = 0;
         output_command.angular(2) = atan2(merged_command.linear(1), merged_command.linear(0))+base::getYaw(pose_sample.orientation) + opt_orientation(2);
+        std::cout << "Optimal" << std::endl;
     }
     return true;
 }

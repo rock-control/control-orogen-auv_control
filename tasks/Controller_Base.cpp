@@ -167,9 +167,9 @@ bool Controller_Base::gatherInputCommand(){
                 return false;
             } else if(status == RTT::NewData){
                 input_ports.at(i).last_time = pose_sample.time;
-                //std::cout << "New Input on port " << input_ports.at(i).name << std::endl;
+                std::cout << "New Input on port " << input_ports.at(i).name << " at " << pose_sample.time << std::endl;
             } else if(input_ports.at(i).timeout > 0 && (pose_sample.time - input_ports.at(i).last_time).toSeconds() > input_ports.at(i).timeout){
-                std::cout << "[ERROR] Timeout" << std::endl;
+                std::cout << "[ERROR] Timeout on " <<  input_ports.at(i).name << " at " << pose_sample.time <<  std::endl;
                 error(TIMEOUT);
                 return false;
             }

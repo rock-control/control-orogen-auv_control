@@ -104,8 +104,6 @@ task_context "AUVWaypointNavigator" do
     property("timeout", "double", 30).
         doc("The navigator is going into fatal if no pose_samples are incoming")
 
-    runtime_states :WAIT_FOR_WAYPOINTS, :KEEP_WAYPOINT, :DYNAMIC_NAVIGATION, :STATIC_NAVIGATION
-    exception_states :NO_POSE_SAMPLES
-
+    runtime_states :WAIT_FOR_WAYPOINTS, :KEEP_WAYPOINT, :FOLLOWING_WAYPOINTS, :POSE_SAMPLE_MISSING
     periodic(0.01)
 end
