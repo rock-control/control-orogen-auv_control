@@ -49,9 +49,13 @@ void AUVForceTorqueController::updateHook()
             std::cout << "Quaternion Pitch:" << base::getPitch(rotation) << std::endl;
             std::cout << "Roll:" << roll << std::endl;
             std::cout << "Quaternion Roll:" << base::getRoll(rotation) << std::endl;
-    
-    
             std::cout << "Vorher:" << cmd.linear << std::endl;*/
+
+            for(int i=0; i<3 ; i++){
+            	if (base::isUnset(cmd.linear(i)))
+            		cmd.linear(i) = 0;
+            }
+
             cmd.linear = rotation.conjugate() * cmd.linear;
          //   std::cout << "Nachher:" << cmd.linear << std::endl;
         }

@@ -178,6 +178,7 @@ void AUVRelativeController::holdPosition(){
 
 bool AUVRelativeController::calcOutput(){
     double orientation[] = {base::getRoll(pose_sample.orientation), base::getPitch(pose_sample.orientation), base::getYaw(pose_sample.orientation)}; 
+  
     for(int i = 0; i < 3; i++){
         if(!base::isInfinity<double>(merged_command.linear(i))){
 
@@ -195,5 +196,5 @@ bool AUVRelativeController::calcOutput(){
         }
 
     }
-    return true;
+   return true;
 }

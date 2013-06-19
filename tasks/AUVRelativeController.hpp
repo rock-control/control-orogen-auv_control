@@ -14,7 +14,7 @@ namespace auv_control {
         void holdPosition();
         bool calcOutput();
 
-        base::LinearAngular6DCommand output_command;
+
         bool on_start;
 
 
