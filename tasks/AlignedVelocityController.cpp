@@ -1,23 +1,23 @@
-#include "AUVAlignedVelocityController.hpp"
+#include "AlignedVelocityController.hpp"
 
 using namespace auv_control;
 
-AUVAlignedVelocityController::AUVAlignedVelocityController(std::string const& name, TaskCore::TaskState initial_state)
-    : AUVAlignedVelocityControllerBase(name, initial_state)
+AlignedVelocityController::AlignedVelocityController(std::string const& name, TaskCore::TaskState initial_state)
+    : AlignedVelocityControllerBase(name, initial_state)
 {
 }
 
-AUVAlignedVelocityController::AUVAlignedVelocityController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : AUVAlignedVelocityControllerBase(name, engine, initial_state)
+AlignedVelocityController::AlignedVelocityController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
+    : AlignedVelocityControllerBase(name, engine, initial_state)
 {
 }
 
-AUVAlignedVelocityController::~AUVAlignedVelocityController()
+AlignedVelocityController::~AlignedVelocityController()
 {
 }
 
 
-bool AUVAlignedVelocityController::startHook()
+bool AlignedVelocityController::startHook()
 {
     auv_control::Base::startHook();
 
@@ -26,7 +26,7 @@ bool AUVAlignedVelocityController::startHook()
     
     return true;
 }
-void AUVAlignedVelocityController::updateHook()
+void AlignedVelocityController::updateHook()
 {
     base::LinearAngular6DPIDSettings new_pid_settings = _pid_settings.get();
     if(last_pid_settings != new_pid_settings){
@@ -144,9 +144,9 @@ void AUVAlignedVelocityController::updateHook()
     return;
 }
 
-void AUVAlignedVelocityController::setPIDSettings(base::LinearAngular6DPIDSettings new_settings){
+void AlignedVelocityController::setPIDSettings(base::LinearAngular6DPIDSettings new_settings){
     //reset the pids and set the pid-settings from the property
-    std::cout << "Change PID-Settings in AUVAlignedVelocityController" << std::endl;
+    std::cout << "Change PID-Settings in AlignedVelocityController" << std::endl;
     for(int i = 0; i < 3; i++){
         
         linear_pid[i].reset();
@@ -191,7 +191,7 @@ void AUVAlignedVelocityController::setPIDSettings(base::LinearAngular6DPIDSettin
     return;
 }
 
-void AUVAlignedVelocityController::holdPosition(){
+void AlignedVelocityController::holdPosition(){
     output_command.stamp = pose_sample.time;
 
     output_command.linear(0) = 0;
@@ -205,7 +205,7 @@ void AUVAlignedVelocityController::holdPosition(){
     _cmd_out.write(output_command);
 }
 
-bool AUVAlignedVelocityController::calcOutput(){
+bool AlignedVelocityController::calcOutput(){
     double delta_time;
     //time since the last reglementation    
     delta_time = ((pose_sample.time - last_pose_sample_time).toSeconds());

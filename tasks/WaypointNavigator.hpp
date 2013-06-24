@@ -1,31 +1,53 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_AUVRELATIVECONTROLLER_TASK_HPP
-#define AUV_CONTROL_AUVRELATIVECONTROLLER_TASK_HPP
+#ifndef AUV_CONTROL_WAYPOINTNAVIGATOR_TASK_HPP
+#define AUV_CONTROL_WAYPOINTNAVIGATOR_TASK_HPP
 
-#include "auv_control/AUVRelativeControllerBase.hpp"
+#include "auv_control/WaypointNavigatorBase.hpp"
 
 namespace auv_control {
 
-    class AUVRelativeController : public AUVRelativeControllerBase
+    /*! \class WaypointNavigator 
+     * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
+     * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
+     * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
+     * 
+     * \details
+     * The name of a TaskContext is primarily defined via:
+     \verbatim
+     deployment 'deployment_name'
+         task('custom_task_name','auv_control::WaypointNavigator')
+     end
+     \endverbatim
+     *  It can be dynamically adapted when the deployment is called with a prefix argument. 
+     */
+    class WaypointNavigator : public WaypointNavigatorBase
     {
-	friend class AUVRelativeControllerBase;
+	friend class WaypointNavigatorBase;
     protected:
-        void holdPosition();
-        bool calcOutput();
+        std::list<base::LinearAngular6DWaypoint> waypoints;
+        base::samples::RigidBodyState last_pose;
 
-
-        bool on_start;
-
+        base::LinearAngular6DWaypoint wp;
+        bool keep_position;
 
     public:
-        AUVRelativeController(std::string const& name = "auv_control::AUVRelativeController", TaskCore::TaskState initial_state = Stopped);
-
-        AUVRelativeController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
-
-        /** Default deconstructor of AUVRelativeController
+        /** TaskContext constructor for WaypointNavigator
+         * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
+         * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-	~AUVRelativeController();
+        WaypointNavigator(std::string const& name = "auv_control::WaypointNavigator", TaskCore::TaskState initial_state = Stopped);
+
+        /** TaskContext constructor for WaypointNavigator 
+         * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
+         * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
+         * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
+         */
+        WaypointNavigator(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+
+        /** Default deconstructor of WaypointNavigator
+         */
+	~WaypointNavigator();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the
@@ -41,14 +63,14 @@ namespace auv_control {
          end
          \endverbatim
          */
-        bool configureHook();
+//        bool configureHook();
 
         /** This hook is called by Orocos when the state machine transitions
          * from Stopped to Running. If it returns false, then the component will
          * stay in Stopped. Otherwise, it goes into Running and updateHook()
          * will be called.
          */
-        bool startHook();
+  //      bool startHook();
 
         /** This hook is called by Orocos when the component is in the Running
          * state, at each activity step. Here, the activity gives the "ticks"

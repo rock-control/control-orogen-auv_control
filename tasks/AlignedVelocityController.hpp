@@ -1,16 +1,16 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_AUVALIGNEDVELOCITYCONTROLLER_TASK_HPP
-#define AUV_CONTROL_AUVALIGNEDVELOCITYCONTROLLER_TASK_HPP
+#ifndef AUV_CONTROL_ALIGNEDVELOCITYCONTROLLER_TASK_HPP
+#define AUV_CONTROL_ALIGNEDVELOCITYCONTROLLER_TASK_HPP
 
-#include "auv_control/AUVAlignedVelocityControllerBase.hpp"
+#include "auv_control/AlignedVelocityControllerBase.hpp"
 #include <motor_controller/PID.hpp>
 
 namespace auv_control {
 
-    class AUVAlignedVelocityController : public AUVAlignedVelocityControllerBase
+    class AlignedVelocityController : public AlignedVelocityControllerBase
     {
-	friend class AUVAlignedVelocityControllerBase;
+	friend class AlignedVelocityControllerBase;
     protected:
         bool on_start;
         motor_controller::PID linear_pid[3];
@@ -26,11 +26,11 @@ namespace auv_control {
         int cnt[6];
 
     public:
-        AUVAlignedVelocityController(std::string const& name = "auv_control::AUVAlignedVelocityController", TaskCore::TaskState initial_state = Stopped);
+        AlignedVelocityController(std::string const& name = "auv_control::AlignedVelocityController", TaskCore::TaskState initial_state = Stopped);
 
-        AUVAlignedVelocityController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        AlignedVelocityController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
 
-	    ~AUVAlignedVelocityController();
+	    ~AlignedVelocityController();
 
         bool startHook();
 

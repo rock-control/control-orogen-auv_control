@@ -41,7 +41,7 @@ task_context "Base" do
 
 end
 
-task_context "AUVForceTorqueController" do
+task_context "ForceTorqueController" do
     input_port('cascade', "base::LinearAngular6DCommand")
     input_port("pose_sample", "base::samples::RigidBodyState")
     port_driven "cascade"    
@@ -54,35 +54,35 @@ task_context "AUVForceTorqueController" do
 
 end
 
-task_context "AUVAlignedVelocityController" do
+task_context "AlignedVelocityController" do
     subclasses "Base"
     property("pid_settings", "base::LinearAngular6DPIDSettings")
     output_port("avg_periode", "base::LinearAngular6DCommand")
 end
 
-task_context "AUVAlignedController" do
+task_context "AlignedController" do
     subclasses "Base"
     output_port("avg_periode", "base::LinearAngular6DCommand")
     property("pid_settings", "base::LinearAngular6DPIDSettings")
 end
 
-task_context "AUVOptimalOrientationController" do
+task_context "OptimalOrientationController" do
     subclasses "Base"
     property("opt_orientation_distance", "double")
     property("opt_orientation", "base::Vector3d")
 end
 
-task_context "AUVWorldController" do
+task_context "WorldController" do
     subclasses "Base"
     input_port("opt_orientation_distance", "double")
     input_port("opt_orientation", "base::Vector3d")
 end
 
-task_context "AUVRelativeController" do
+task_context "RelativeController" do
     subclasses "Base"
 end
 
-task_context "AUVWaypointNavigator" do
+task_context "WaypointNavigator" do
     input_port("trajectory", "std::vector<base::LinearAngular6DWaypoint").
         doc("Input Trajectory the auv should follow")
     

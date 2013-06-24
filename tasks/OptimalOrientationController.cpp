@@ -1,25 +1,25 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
-#include "AUVOptimalOrientationController.hpp"
+#include "OptimalOrientationController.hpp"
 
 using namespace auv_control;
 
-AUVOptimalOrientationController::AUVOptimalOrientationController(std::string const& name, TaskCore::TaskState initial_state)
-    : AUVOptimalOrientationControllerBase(name, initial_state)
+OptimalOrientationController::OptimalOrientationController(std::string const& name, TaskCore::TaskState initial_state)
+    : OptimalOrientationControllerBase(name, initial_state)
 {
 }
 
-AUVOptimalOrientationController::AUVOptimalOrientationController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : AUVOptimalOrientationControllerBase(name, engine, initial_state)
+OptimalOrientationController::OptimalOrientationController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
+    : OptimalOrientationControllerBase(name, engine, initial_state)
 {
 }
 
-AUVOptimalOrientationController::~AUVOptimalOrientationController()
+OptimalOrientationController::~OptimalOrientationController()
 {
 }
 
 
-bool AUVOptimalOrientationController::configureHook()
+bool OptimalOrientationController::configureHook()
 {
     
     if (! auv_control::Base::configureHook())
@@ -35,7 +35,7 @@ bool AUVOptimalOrientationController::configureHook()
 
 
 
-bool AUVOptimalOrientationController::startHook()
+bool OptimalOrientationController::startHook()
 {
     
     if (! auv_control::Base::startHook())
@@ -51,7 +51,7 @@ bool AUVOptimalOrientationController::startHook()
 
 
 
-void AUVOptimalOrientationController::updateHook()
+void OptimalOrientationController::updateHook()
 {
     
     auv_control::Base::updateHook();
@@ -61,7 +61,7 @@ void AUVOptimalOrientationController::updateHook()
 
 
 
-void AUVOptimalOrientationController::errorHook()
+void OptimalOrientationController::errorHook()
 {
     
     auv_control::Base::errorHook();
@@ -74,7 +74,7 @@ void AUVOptimalOrientationController::errorHook()
 
 
 
-void AUVOptimalOrientationController::stopHook()
+void OptimalOrientationController::stopHook()
 {
     
     auv_control::Base::stopHook();
@@ -87,7 +87,7 @@ void AUVOptimalOrientationController::stopHook()
 
 
 
-void AUVOptimalOrientationController::cleanupHook()
+void OptimalOrientationController::cleanupHook()
 {
     
     auv_control::Base::cleanupHook();
@@ -99,7 +99,7 @@ void AUVOptimalOrientationController::cleanupHook()
 }
 
 
-void AUVOptimalOrientationController::holdPosition(){
+void OptimalOrientationController::holdPosition(){
     
     for(int i = 0; i < 3; i++){
         if(_expected_inputs.get().linear[i]){
@@ -118,7 +118,7 @@ void AUVOptimalOrientationController::holdPosition(){
     _cmd_out.write(output_command);
 }
 
-bool AUVOptimalOrientationController::calcOutput(){
+bool OptimalOrientationController::calcOutput(){
     
     base::Vector3d opt_orientation;
     double opt_orientation_distance;

@@ -1,33 +1,33 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
-#include "AUVRelativeController.hpp"
+#include "RelativeController.hpp"
 #include <float.h>
 using namespace auv_control;
 
-AUVRelativeController::AUVRelativeController(std::string const& name, TaskCore::TaskState initial_state)
-    : AUVRelativeControllerBase(name, initial_state)
+RelativeController::RelativeController(std::string const& name, TaskCore::TaskState initial_state)
+    : RelativeControllerBase(name, initial_state)
 {
 }
 
-AUVRelativeController::AUVRelativeController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : AUVRelativeControllerBase(name, engine, initial_state)
+RelativeController::RelativeController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
+    : RelativeControllerBase(name, engine, initial_state)
 {
 }
 
-AUVRelativeController::~AUVRelativeController()
+RelativeController::~RelativeController()
 {
 }
 
 
 
 /// The following lines are template definitions for the various state machine
-// hooks defined by Orocos::RTT. See AUVRelativeController.hpp for more detailed
+// hooks defined by Orocos::RTT. See RelativeController.hpp for more detailed
 // documentation about them.
 
 
 
 
-bool AUVRelativeController::configureHook()
+bool RelativeController::configureHook()
 {
     
     if (! auv_control::Base::configureHook())
@@ -43,7 +43,7 @@ bool AUVRelativeController::configureHook()
 
 
 
-bool AUVRelativeController::startHook()
+bool RelativeController::startHook()
 {
     
     if (! auv_control::Base::startHook())
@@ -56,7 +56,7 @@ bool AUVRelativeController::startHook()
 
 
 
-void AUVRelativeController::updateHook()
+void RelativeController::updateHook()
 {
     auv_control::Base::updateHook();    
     /*base::samples::RigidBodyState pose_sample;
@@ -118,7 +118,7 @@ void AUVRelativeController::updateHook()
 
 
 
-void AUVRelativeController::errorHook()
+void RelativeController::errorHook()
 {
     
     auv_control::Base::errorHook();
@@ -131,7 +131,7 @@ void AUVRelativeController::errorHook()
 
 
 
-void AUVRelativeController::stopHook()
+void RelativeController::stopHook()
 {
     
     auv_control::Base::stopHook();
@@ -144,7 +144,7 @@ void AUVRelativeController::stopHook()
 
 
 
-void AUVRelativeController::cleanupHook()
+void RelativeController::cleanupHook()
 {
     
     auv_control::Base::cleanupHook();
@@ -155,7 +155,7 @@ void AUVRelativeController::cleanupHook()
     
 }
 
-void AUVRelativeController::holdPosition(){
+void RelativeController::holdPosition(){
     output_command.linear(0) = 0.0;
     output_command.linear(1) = 0.0;
     output_command.linear(2) = 0.0;
@@ -176,7 +176,7 @@ void AUVRelativeController::holdPosition(){
     return;
 }
 
-bool AUVRelativeController::calcOutput(){
+bool RelativeController::calcOutput(){
     double orientation[] = {base::getRoll(pose_sample.orientation), base::getPitch(pose_sample.orientation), base::getYaw(pose_sample.orientation)}; 
   
     for(int i = 0; i < 3; i++){

@@ -1,15 +1,15 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_AUVALIGNEDCONTROLLER_TASK_HPP
-#define AUV_CONTROL_AUVALIGNEDCONTROLLER_TASK_HPP
+#ifndef AUV_CONTROL_ALIGNEDCONTROLLER_TASK_HPP
+#define AUV_CONTROL_ALIGNEDCONTROLLER_TASK_HPP
 
-#include "auv_control/AUVAlignedControllerBase.hpp"
+#include "auv_control/AlignedControllerBase.hpp"
 
 namespace auv_control {
 
-    class AUVAlignedController : public AUVAlignedControllerBase
+    class AlignedController : public AlignedControllerBase
     {
-	friend class AUVAlignedControllerBase;
+	friend class AlignedControllerBase;
     protected:
         bool on_start;
         motor_controller::PID linear_pid[3];
@@ -28,11 +28,11 @@ namespace auv_control {
         int cnt[6];
     
     public:
-        AUVAlignedController(std::string const& name = "auv_control::AUVAlignedController", TaskCore::TaskState initial_state = Stopped);
+        AlignedController(std::string const& name = "auv_control::AlignedController", TaskCore::TaskState initial_state = Stopped);
 
-        AUVAlignedController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        AlignedController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
 
-	    ~AUVAlignedController();
+	    ~AlignedController();
 
         bool startHook();
 

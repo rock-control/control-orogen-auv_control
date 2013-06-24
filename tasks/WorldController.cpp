@@ -1,37 +1,37 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
-#include "AUVWorldController.hpp"
+#include "WorldController.hpp"
 
 using namespace auv_control;
 
-AUVWorldController::AUVWorldController(std::string const& name, TaskCore::TaskState initial_state)
-    : AUVWorldControllerBase(name, initial_state)
+WorldController::WorldController(std::string const& name, TaskCore::TaskState initial_state)
+    : WorldControllerBase(name, initial_state)
 {
 }
 
-AUVWorldController::AUVWorldController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : AUVWorldControllerBase(name, engine, initial_state)
+WorldController::WorldController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
+    : WorldControllerBase(name, engine, initial_state)
 {
 }
 
-AUVWorldController::~AUVWorldController()
+WorldController::~WorldController()
 {
 }
 
 
 
-bool AUVWorldController::startHook()
+bool WorldController::startHook()
 {
     auv_control::Base::startHook();
     return true;
 }
-void AUVWorldController::updateHook()
+void WorldController::updateHook()
 {
     auv_control::Base::updateHook();
     return;
 }
 
-void AUVWorldController::holdPosition(){
+void WorldController::holdPosition(){
     output_command.stamp = pose_sample.time;
 
     output_command.linear(0) = pose_sample.position(0); 
@@ -54,7 +54,7 @@ void AUVWorldController::holdPosition(){
     _cmd_out.write(output_command);
 }
 
-bool AUVWorldController::calcOutput(){
+bool WorldController::calcOutput(){
     base::Quaterniond rotation;
 
     double yaw;

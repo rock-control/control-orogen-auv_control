@@ -1,33 +1,33 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
-#include "AUVWaypointNavigator.hpp"
+#include "WaypointNavigator.hpp"
 
 using namespace auv_control;
 
-AUVWaypointNavigator::AUVWaypointNavigator(std::string const& name, TaskCore::TaskState initial_state)
-    : AUVWaypointNavigatorBase(name, initial_state)
+WaypointNavigator::WaypointNavigator(std::string const& name, TaskCore::TaskState initial_state)
+    : WaypointNavigatorBase(name, initial_state)
 {
 }
 
-AUVWaypointNavigator::AUVWaypointNavigator(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : AUVWaypointNavigatorBase(name, engine, initial_state)
+WaypointNavigator::WaypointNavigator(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
+    : WaypointNavigatorBase(name, engine, initial_state)
 {
 }
 
-AUVWaypointNavigator::~AUVWaypointNavigator()
+WaypointNavigator::~WaypointNavigator()
 {
 }
 
 
 
 /// The following lines are template definitions for the various state machine
-// hooks defined by Orocos::RTT. See AUVWaypointNavigator.hpp for more detailed
+// hooks defined by Orocos::RTT. See WaypointNavigator.hpp for more detailed
 // documentation about them.
 
 
 
 
-/*bool AUVWaypointNavigator::configureHook()
+/*bool WaypointNavigator::configureHook()
 {
     
     if (! RTT::TaskContext::configureHook())
@@ -43,7 +43,7 @@ AUVWaypointNavigator::~AUVWaypointNavigator()
 
 
 
-bool AUVWaypointNavigator::startHook()
+bool WaypointNavigator::startHook()
 {
     
     if (! RTT::TaskContext::startHook())
@@ -59,7 +59,7 @@ bool AUVWaypointNavigator::startHook()
 
 
 
-void AUVWaypointNavigator::updateHook()
+void WaypointNavigator::updateHook()
 {
     
     RTT::TaskContext::updateHook();
@@ -119,7 +119,7 @@ void AUVWaypointNavigator::updateHook()
 
 
 
-void AUVWaypointNavigator::errorHook()
+void WaypointNavigator::errorHook()
 {
     
     RTT::TaskContext::errorHook();
@@ -132,7 +132,7 @@ void AUVWaypointNavigator::errorHook()
 
 
 
-void AUVWaypointNavigator::stopHook()
+void WaypointNavigator::stopHook()
 {
     
     RTT::TaskContext::stopHook();
@@ -145,7 +145,7 @@ void AUVWaypointNavigator::stopHook()
 
 
 
-void AUVWaypointNavigator::cleanupHook()
+void WaypointNavigator::cleanupHook()
 {
     
     RTT::TaskContext::cleanupHook();

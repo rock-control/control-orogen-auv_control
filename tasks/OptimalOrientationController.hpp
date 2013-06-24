@@ -1,13 +1,13 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_AUVOPTIMALORIENTATIONCONTROLLER_TASK_HPP
-#define AUV_CONTROL_AUVOPTIMALORIENTATIONCONTROLLER_TASK_HPP
+#ifndef AUV_CONTROL_OPTIMALORIENTATIONCONTROLLER_TASK_HPP
+#define AUV_CONTROL_OPTIMALORIENTATIONCONTROLLER_TASK_HPP
 
-#include "auv_control/AUVOptimalOrientationControllerBase.hpp"
+#include "auv_control/OptimalOrientationControllerBase.hpp"
 
 namespace auv_control {
 
-    /*! \class AUVOptimalOrientationController 
+    /*! \class OptimalOrientationController 
      * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
      * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
      * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
@@ -16,34 +16,34 @@ namespace auv_control {
      * The name of a TaskContext is primarily defined via:
      \verbatim
      deployment 'deployment_name'
-         task('custom_task_name','auv_control::AUVOptimalOrientationController')
+         task('custom_task_name','auv_control::OptimalOrientationController')
      end
      \endverbatim
      *  It can be dynamically adapted when the deployment is called with a prefix argument. 
      */
-    class AUVOptimalOrientationController : public AUVOptimalOrientationControllerBase
+    class OptimalOrientationController : public OptimalOrientationControllerBase
     {
-	friend class AUVOptimalOrientationControllerBase;
+	friend class OptimalOrientationControllerBase;
     protected: 
         void holdPosition();
         bool calcOutput();
     public:
-        /** TaskContext constructor for AUVOptimalOrientationController
+        /** TaskContext constructor for OptimalOrientationController
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        AUVOptimalOrientationController(std::string const& name = "auv_control::AUVOptimalOrientationController", TaskCore::TaskState initial_state = Stopped);
+        OptimalOrientationController(std::string const& name = "auv_control::OptimalOrientationController", TaskCore::TaskState initial_state = Stopped);
 
-        /** TaskContext constructor for AUVOptimalOrientationController 
+        /** TaskContext constructor for OptimalOrientationController 
          * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
          * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        AUVOptimalOrientationController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        OptimalOrientationController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
 
-        /** Default deconstructor of AUVOptimalOrientationController
+        /** Default deconstructor of OptimalOrientationController
          */
-	~AUVOptimalOrientationController();
+	~OptimalOrientationController();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the

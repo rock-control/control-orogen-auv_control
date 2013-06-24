@@ -1,34 +1,34 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
-#include "AUVForceTorqueController.hpp"
+#include "ForceTorqueController.hpp"
 
 using namespace auv_control;
 
-AUVForceTorqueController::AUVForceTorqueController(std::string const& name, TaskCore::TaskState initial_state)
-    : AUVForceTorqueControllerBase(name, initial_state)
+ForceTorqueController::ForceTorqueController(std::string const& name, TaskCore::TaskState initial_state)
+    : ForceTorqueControllerBase(name, initial_state)
 {
 }
 
-AUVForceTorqueController::AUVForceTorqueController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : AUVForceTorqueControllerBase(name, engine, initial_state)
+ForceTorqueController::ForceTorqueController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
+    : ForceTorqueControllerBase(name, engine, initial_state)
 {
 }
 
-AUVForceTorqueController::~AUVForceTorqueController()
+ForceTorqueController::~ForceTorqueController()
 {
 }
 
-bool AUVForceTorqueController::startHook()
+bool ForceTorqueController::startHook()
 {
-    AUVForceTorqueControllerBase::startHook();
+    ForceTorqueControllerBase::startHook();
 
     //take the calibration-matrix from the calibration property
     calibration = _calibration.get();
     return true;
 }
-void AUVForceTorqueController::updateHook()
+void ForceTorqueController::updateHook()
 {
-    AUVForceTorqueControllerBase::updateHook();
+    ForceTorqueControllerBase::updateHook();
 
     base::Vector6d input_vector;
     base::VectorXd output_vector;
