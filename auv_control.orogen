@@ -60,7 +60,7 @@ task_context "AlignedVelocityController" do
     output_port("avg_periode", "base::LinearAngular6DCommand")
 end
 
-task_context "AlignedController" do
+task_context "AlignedPositionController" do
     subclasses "Base"
     output_port("avg_periode", "base::LinearAngular6DCommand")
     property("pid_settings", "base::LinearAngular6DPIDSettings")

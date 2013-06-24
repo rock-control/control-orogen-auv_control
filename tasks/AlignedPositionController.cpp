@@ -1,25 +1,25 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
-#include "AlignedController.hpp"
+#include "AlignedPositionController.hpp"
 #include <math.h>
 
 using namespace auv_control;
 
-AlignedController::AlignedController(std::string const& name, TaskCore::TaskState initial_state)
-    : AlignedControllerBase(name, initial_state)
+AlignedPositionController::AlignedPositionController(std::string const& name, TaskCore::TaskState initial_state)
+    : AlignedPositionControllerBase(name, initial_state)
 {
 }
 
-AlignedController::AlignedController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : AlignedControllerBase(name, engine, initial_state)
+AlignedPositionController::AlignedPositionController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
+    : AlignedPositionControllerBase(name, engine, initial_state)
 {
 }
 
-AlignedController::~AlignedController()
+AlignedPositionController::~AlignedPositionController()
 {
 }
 
-bool AlignedController::startHook()
+bool AlignedPositionController::startHook()
 {
     auv_control::Base::startHook();
     
@@ -30,7 +30,7 @@ bool AlignedController::startHook()
 
 }
 
-void AlignedController::updateHook()
+void AlignedPositionController::updateHook()
 {
     base::LinearAngular6DPIDSettings new_pid_settings = _pid_settings.get();
 
@@ -52,9 +52,9 @@ void AlignedController::updateHook()
     return;
 }
 
-void AlignedController::setPIDSettings(base::LinearAngular6DPIDSettings new_settings){
+void AlignedPositionController::setPIDSettings(base::LinearAngular6DPIDSettings new_settings){
     //reset the pids and set the pid-settings from the property
-    std::cout << "Change PID-Settings in AlignedController" << std::endl;
+    std::cout << "Change PID-Settings in AlignedPositionController" << std::endl;
     for(int i = 0; i < 3; i++){
         
         linear_pid[i].reset();
@@ -101,7 +101,7 @@ void AlignedController::setPIDSettings(base::LinearAngular6DPIDSettings new_sett
     return;
 } 
 
-void AlignedController::holdPosition(){
+void AlignedPositionController::holdPosition(){
     for(int i = 0; i < 3; i++){
         if(_expected_inputs.get().linear[i]){
             output_command.linear(i) = 0;
@@ -120,7 +120,7 @@ void AlignedController::holdPosition(){
 }
 
 
-bool AlignedController::calcOutput(){ 
+bool AlignedPositionController::calcOutput(){ 
     output_command.stamp = merged_command.stamp;
     double delta_time;
 
