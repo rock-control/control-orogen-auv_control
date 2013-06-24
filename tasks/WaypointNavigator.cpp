@@ -74,7 +74,6 @@ void WaypointNavigator::updateHook()
     last_pose = pose;
 
     if(_trajectory.read(trajectory) == RTT::NewData) {
-        std::cout << "NEUE Wegpunkte" << std::endl;
         waypoints.clear();
         waypoints.resize(trajectory.size());
         std::copy(trajectory.begin(), trajectory.end(), waypoints.begin());

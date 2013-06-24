@@ -54,7 +54,6 @@ void AlignedPositionController::updateHook()
 
 void AlignedPositionController::setPIDSettings(base::LinearAngular6DPIDSettings new_settings){
     //reset the pids and set the pid-settings from the property
-    std::cout << "Change PID-Settings in AlignedPositionController" << std::endl;
     for(int i = 0; i < 3; i++){
         
         linear_pid[i].reset();

@@ -38,7 +38,7 @@ task_context "Base" do
     dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
 
     runtime_states :POSE_SAMPLE_MISSING, :INPUT_MISSING, :WAIT_FOR_INPUT
-    error_states :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT
+    exception_states :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT
 
 end
 

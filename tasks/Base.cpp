@@ -163,7 +163,6 @@ bool Base::gatherInputCommand(){
     base::LinearAngular6DCommand current_port;    
     base::Time max_stamp;
     RTT::FlowStatus status;
-    //std::cout << "Bin in gatherInputCommand()" << std::endl;
     for(int i = 0; i < input_ports.size(); i++){
         status = input_ports.at(i).input_port->read(current_port);
         if(input_ports.at(i).input_port->connected()){
@@ -172,17 +171,14 @@ bool Base::gatherInputCommand(){
                 return false;
             } else if(status == RTT::NewData){
                 input_ports.at(i).last_time = pose_sample.time;
-               // std::cout << "New Input on port " << input_ports.at(i).name << " at " << pose_sample.time << std::endl;
             } else if(input_ports.at(i).timeout > 0 && (pose_sample.time - input_ports.at(i).last_time).toSeconds() > input_ports.at(i).timeout){
-                std::cout << "[ERROR] Timeout on " <<  input_ports.at(i).name << " at " << pose_sample.time <<  std::endl;
-                error(TIMEOUT);
+                exception(TIMEOUT);
                 return false;
             }
 
             if(current_port.stamp > max_stamp){
                 max_stamp = current_port.stamp;
              }
-            //std::cout << "Input-Port" << current_port.linear << std::endl;
 
             if(!(merge(&_expected_inputs.get().linear[0], &linear_is_set[0], &current_port.linear, &merged_command.linear) &&
                     merge(&_expected_inputs.get().angular[0] ,&angular_is_set[0], &current_port.angular, &merged_command.angular))){
@@ -190,24 +186,18 @@ bool Base::gatherInputCommand(){
             }   
         }
     }
-    //std::cout << linear_is_set[0] << std::endl;    
-    //std::cout <<  _expected_inputs.get().linear[0]<< std::endl;    
-    //std::cout <<  merged_command.linear<< std::endl;    
     for(int j = 0; j < 3; j++){
        
         //If the Value is on evry port unset set the value in the merged_command unset too. 
-        //std::cout << linear_is_set[j] << _expected_inputs.get().linear[j] << std::endl;
         if(!linear_is_set[j] && ! _expected_inputs.get().linear[j]){
             merged_command.linear(j) = base::unset<double>(); 
         } else if(linear_is_set[j] != _expected_inputs.get().linear[j]){
-            //std::cout << "INPUT_MISSING (Linear " << j << ")" << std::endl;
             state(INPUT_MISSING);
             return false;
         }
         if(!angular_is_set[j] && ! _expected_inputs.get().angular[j]){
             merged_command.angular(j) = base::unset<double>(); 
         } else if(angular_is_set[j] != _expected_inputs.get().angular[j]){
-            //std::cout << "INPUT_MISSING (Angular " << j << ")" << std::endl;
             state(INPUT_MISSING);
             return false;
         }
@@ -233,7 +223,6 @@ void Base::addCommandInput(std::string const & name, double timeout){
 
 bool Base::merge(bool *expected, bool *is_set, base::Vector3d *current,
         base::Vector3d *merged){
-    //std::cout << *current << std::endl;
     for(int i = 0; i < 3; i++){
         //merge linear
         if(expected[i] && !is_set[i] && !base::isUnset((*current)(i))){
@@ -241,15 +230,13 @@ bool Base::merge(bool *expected, bool *is_set, base::Vector3d *current,
             //port. So write the Value from this Port in the merged value.
             (*merged)(i) = (*current)(i);
             is_set[i] = true;
-            //std::cout << "linear i, j :" << i << ", " << j << std::endl;
         }else if(expected[i] && is_set[i] && !base::isUnset((*current)(i))){
             //Ther is a value in the merged value and the value is set on this port.
-            //This is an error!
-            std::cout << "Their is a collison on the input ports. (" << i <<")!" << std::endl;
-            error(INPUT_COLLIDING);
+            //This is an exception!
+            exception(INPUT_COLLIDING);
             return false; 
         }else if(!expected[i] && !base::isUnset((*current)(i))){
-            error(INPUT_UNEXPECTED);
+            exception(INPUT_UNEXPECTED);
             return false;
         }
     }
