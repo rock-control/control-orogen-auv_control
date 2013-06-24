@@ -191,7 +191,7 @@ void AlignedVelocityController::setPIDSettings(base::LinearAngular6DPIDSettings 
     return;
 }
 
-void AlignedVelocityController::holdPosition(){
+void AlignedVelocityController::keepPosition(){
     output_command.stamp = pose_sample.time;
 
     output_command.linear(0) = 0;

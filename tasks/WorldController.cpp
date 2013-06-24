@@ -31,7 +31,7 @@ void WorldController::updateHook()
     return;
 }
 
-void WorldController::holdPosition(){
+void WorldController::keepPosition(){
     output_command.stamp = pose_sample.time;
 
     output_command.linear(0) = pose_sample.position(0); 

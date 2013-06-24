@@ -11,7 +11,7 @@ namespace auv_control {
     {
 	friend class RelativeControllerBase;
     protected:
-        void holdPosition();
+        void keepPosition();
         bool calcOutput();
 
 

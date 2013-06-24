@@ -99,7 +99,7 @@ void OptimalOrientationController::cleanupHook()
 }
 
 
-void OptimalOrientationController::holdPosition(){
+void OptimalOrientationController::keepPosition(){
     
     for(int i = 0; i < 3; i++){
         if(_expected_inputs.get().linear[i]){

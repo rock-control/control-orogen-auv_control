@@ -21,6 +21,7 @@ task_context "Base" do
     property("expected_inputs", "auv_control::ExpectedInputs")
     property("timeout_cascade", "double", 1)
     property("timeout_cmd_in", "double", 1)
+    property("keep_position_on_exception", "bool", 1)
     
     input_port('cascade', 'base::LinearAngular6DCommand')
     input_port("cmd_in", "base::LinearAngular6DCommand")

@@ -155,7 +155,7 @@ void RelativeController::cleanupHook()
     
 }
 
-void RelativeController::holdPosition(){
+void RelativeController::keepPosition(){
     output_command.linear(0) = 0.0;
     output_command.linear(1) = 0.0;
     output_command.linear(2) = 0.0;

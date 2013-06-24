@@ -25,7 +25,7 @@ namespace auv_control {
     {
 	friend class OptimalOrientationControllerBase;
     protected: 
-        void holdPosition();
+        void keepPosition();
         bool calcOutput();
     public:
         /** TaskContext constructor for OptimalOrientationController

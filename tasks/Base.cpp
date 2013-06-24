@@ -68,17 +68,20 @@ void Base::updateHook()
         return;
 
     if(!this->gatherInputCommand()){
-        this->holdPosition();
+        if (_keep_position_on_exception.get()){    
+            this->keepPosition();
+        }
         return;
     }
 
     if(!this->calcOutput()){
-        this->holdPosition();
+        if (_keep_position_on_exception.get()){    
+            this->keepPosition();
+        }
         return;
     }
 
     _cmd_out.write(output_command);
-    state(RUNNING);
     return;
 }
 
@@ -89,7 +92,9 @@ void Base::errorHook()
     
     RTT::TaskContext::errorHook();
    
-    this->holdPosition();
+    if (_keep_position_on_exception.get()){    
+        this->keepPosition();
+    }
 
     
 
@@ -252,7 +257,7 @@ bool Base::merge(bool *expected, bool *is_set, base::Vector3d *current,
 }
 
 
-void Base::holdPosition(){
+void Base::keepPosition(){
     
 }
 

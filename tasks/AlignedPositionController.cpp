@@ -101,7 +101,7 @@ void AlignedPositionController::setPIDSettings(base::LinearAngular6DPIDSettings 
     return;
 } 
 
-void AlignedPositionController::holdPosition(){
+void AlignedPositionController::keepPosition(){
     for(int i = 0; i < 3; i++){
         if(_expected_inputs.get().linear[i]){
             output_command.linear(i) = 0;
