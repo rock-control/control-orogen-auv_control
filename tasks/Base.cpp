@@ -1,33 +1,33 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
-#include "Controller_Base.hpp"
+#include "Base.hpp"
 
 using namespace auv_control;
 
-Controller_Base::Controller_Base(std::string const& name, TaskCore::TaskState initial_state)
-    : Controller_BaseBase(name, initial_state)
+Base::Base(std::string const& name, TaskCore::TaskState initial_state)
+    : BaseBase(name, initial_state)
 {
     this->genDefaultInput();
 }
 
-Controller_Base::Controller_Base(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : Controller_BaseBase(name, engine, initial_state)
+Base::Base(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
+    : BaseBase(name, engine, initial_state)
 {
     this->genDefaultInput();
 }
 
-Controller_Base::~Controller_Base()
+Base::~Base()
 {
 }
 
 /// The following lines are template definitions for the various state machine
-// hooks defined by Orocos::RTT. See Controller_Base.hpp for more detailed
+// hooks defined by Orocos::RTT. See Base.hpp for more detailed
 // documentation about them.
 
 
 
 
-bool Controller_Base::configureHook()
+bool Base::configureHook()
 {
     
     if (! RTT::TaskContext::configureHook())
@@ -43,7 +43,7 @@ bool Controller_Base::configureHook()
 
 
 
-bool Controller_Base::startHook()
+bool Base::startHook()
 {
     
     if (! RTT::TaskContext::startHook())
@@ -59,7 +59,7 @@ bool Controller_Base::startHook()
 
 
 
-void Controller_Base::updateHook()
+void Base::updateHook()
 {
     
     RTT::TaskContext::updateHook();
@@ -84,7 +84,7 @@ void Controller_Base::updateHook()
 
 
 
-void Controller_Base::errorHook()
+void Base::errorHook()
 {
     
     RTT::TaskContext::errorHook();
@@ -98,7 +98,7 @@ void Controller_Base::errorHook()
 
 
 
-void Controller_Base::stopHook()
+void Base::stopHook()
 {
     
     RTT::TaskContext::stopHook();
@@ -111,7 +111,7 @@ void Controller_Base::stopHook()
 
 
 
-void Controller_Base::cleanupHook()
+void Base::cleanupHook()
 {
     
     RTT::TaskContext::cleanupHook();
@@ -122,7 +122,7 @@ void Controller_Base::cleanupHook()
     
 }
 
-void Controller_Base::genDefaultInput()
+void Base::genDefaultInput()
 {
     InputPortInfo info;
     info.name = "cascade";
@@ -138,13 +138,13 @@ void Controller_Base::genDefaultInput()
     input_ports.push_back(info);
 }
 
-void Controller_Base::setDefaultTimeout()
+void Base::setDefaultTimeout()
 {
     input_ports.at(0).timeout = _timeout_cascade.get();
     input_ports.at(1).timeout = _timeout_cmd_in.get();
 }
 
-bool Controller_Base::getPoseSample(){      
+bool Base::getPoseSample(){      
     if(_pose_sample.read(pose_sample) == RTT::NoData){
         state(POSE_SAMPLE_MISSING);
         return false;
@@ -152,7 +152,7 @@ bool Controller_Base::getPoseSample(){
     return true;
 }
 
-bool Controller_Base::gatherInputCommand(){
+bool Base::gatherInputCommand(){
     bool linear_is_set[] = {false, false, false};    
     bool angular_is_set[] = {false, false, false};    
     base::LinearAngular6DCommand current_port;    
@@ -212,7 +212,7 @@ bool Controller_Base::gatherInputCommand(){
     return true;           
 }
 
-void Controller_Base::addCommandInput(std::string const & name, double timeout){
+void Base::addCommandInput(std::string const & name, double timeout){
     if(provides()->hasService("cmd_" + name)){
         //Fehler werfen! Port bereits vorhanden
     }
@@ -226,7 +226,7 @@ void Controller_Base::addCommandInput(std::string const & name, double timeout){
 
 }
 
-bool Controller_Base::merge(bool *expected, bool *is_set, base::Vector3d *current,
+bool Base::merge(bool *expected, bool *is_set, base::Vector3d *current,
         base::Vector3d *merged){
     //std::cout << *current << std::endl;
     for(int i = 0; i < 3; i++){
@@ -252,10 +252,10 @@ bool Controller_Base::merge(bool *expected, bool *is_set, base::Vector3d *curren
 }
 
 
-void Controller_Base::holdPosition(){
+void Base::holdPosition(){
     
 }
 
-bool Controller_Base::calcOutput(){
+bool Base::calcOutput(){
     return false;
 }

@@ -17,7 +17,7 @@ using_library "motor_controller"
 #
 # The corresponding C++ class can be edited in tasks/Task.hpp and
 # tasks/Task.cpp, and will be put in the auv_control namespace.
-task_context "Controller_Base" do
+task_context "Base" do
     property("expected_inputs", "auv_control::ExpectedInputs")
     property("timeout_cascade", "double", 1)
     property("timeout_cmd_in", "double", 1)
@@ -55,31 +55,31 @@ task_context "AUVForceTorqueController" do
 end
 
 task_context "AUVAlignedVelocityController" do
-    subclasses "Controller_Base"
+    subclasses "Base"
     property("pid_settings", "base::LinearAngular6DPIDSettings")
     output_port("avg_periode", "base::LinearAngular6DCommand")
 end
 
 task_context "AUVAlignedController" do
-    subclasses "Controller_Base"
+    subclasses "Base"
     output_port("avg_periode", "base::LinearAngular6DCommand")
     property("pid_settings", "base::LinearAngular6DPIDSettings")
 end
 
 task_context "AUVOptimalOrientationController" do
-    subclasses "Controller_Base"
+    subclasses "Base"
     property("opt_orientation_distance", "double")
     property("opt_orientation", "base::Vector3d")
 end
 
 task_context "AUVWorldController" do
-    subclasses "Controller_Base"
+    subclasses "Base"
     input_port("opt_orientation_distance", "double")
     input_port("opt_orientation", "base::Vector3d")
 end
 
 task_context "AUVRelativeController" do
-    subclasses "Controller_Base"
+    subclasses "Base"
 end
 
 task_context "AUVWaypointNavigator" do

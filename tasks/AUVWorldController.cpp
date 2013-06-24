@@ -22,12 +22,12 @@ AUVWorldController::~AUVWorldController()
 
 bool AUVWorldController::startHook()
 {
-    auv_control::Controller_Base::startHook();
+    auv_control::Base::startHook();
     return true;
 }
 void AUVWorldController::updateHook()
 {
-    auv_control::Controller_Base::updateHook();
+    auv_control::Base::updateHook();
     return;
 }
 

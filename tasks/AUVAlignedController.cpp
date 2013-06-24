@@ -21,7 +21,7 @@ AUVAlignedController::~AUVAlignedController()
 
 bool AUVAlignedController::startHook()
 {
-    auv_control::Controller_Base::startHook();
+    auv_control::Base::startHook();
     
     //reset the pids and set the pid-settings from the property
     setPIDSettings(_pid_settings.get());
@@ -38,7 +38,7 @@ void AUVAlignedController::updateHook()
         setPIDSettings(new_pid_settings);
     }
  
-    auv_control::Controller_Base::updateHook();
+    auv_control::Base::updateHook();
 
     base::LinearAngular6DCommand avg_out;
 

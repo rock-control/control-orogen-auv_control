@@ -1,17 +1,17 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_CONTROLLER_BASE_TASK_HPP
-#define AUV_CONTROL_CONTROLLER_BASE_TASK_HPP
+#ifndef AUV_CONTROL_BASE_TASK_HPP
+#define AUV_CONTROL_BASE_TASK_HPP
 
-#include "auv_control/Controller_BaseBase.hpp"
+#include "auv_control/BaseBase.hpp"
 #include <string.h>
 #include <base/float.h>
 
 namespace auv_control {
 
-    class Controller_Base : public Controller_BaseBase
+    class Base : public BaseBase
     {
-	friend class Controller_BaseBase;
+	friend class BaseBase;
     protected:
         typedef RTT::InputPort<base::LinearAngular6DCommand> InputPortType;
         struct InputPortInfo{
@@ -39,22 +39,22 @@ namespace auv_control {
         virtual bool calcOutput();
         
     public:
-        /** TaskContext constructor for Controller_Base
+        /** TaskContext constructor for Base
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        Controller_Base(std::string const& name = "auv_control::Controller_Base", TaskCore::TaskState initial_state = Stopped);
+        Base(std::string const& name = "auv_control::Base", TaskCore::TaskState initial_state = Stopped);
 
-        /** TaskContext constructor for Controller_Base 
+        /** TaskContext constructor for Base 
          * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
          * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        Controller_Base(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        Base(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
 
-        /** Default deconstructor of Controller_Base
+        /** Default deconstructor of Base
          */
-	~Controller_Base();
+	~Base();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the

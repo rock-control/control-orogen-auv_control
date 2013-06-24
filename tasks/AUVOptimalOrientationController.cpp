@@ -22,7 +22,7 @@ AUVOptimalOrientationController::~AUVOptimalOrientationController()
 bool AUVOptimalOrientationController::configureHook()
 {
     
-    if (! auv_control::Controller_Base::configureHook())
+    if (! auv_control::Base::configureHook())
         return false;
     
 
@@ -38,7 +38,7 @@ bool AUVOptimalOrientationController::configureHook()
 bool AUVOptimalOrientationController::startHook()
 {
     
-    if (! auv_control::Controller_Base::startHook())
+    if (! auv_control::Base::startHook())
         return false;
     
 
@@ -54,7 +54,7 @@ bool AUVOptimalOrientationController::startHook()
 void AUVOptimalOrientationController::updateHook()
 {
     
-    auv_control::Controller_Base::updateHook();
+    auv_control::Base::updateHook();
     return;
     
 }
@@ -64,7 +64,7 @@ void AUVOptimalOrientationController::updateHook()
 void AUVOptimalOrientationController::errorHook()
 {
     
-    auv_control::Controller_Base::errorHook();
+    auv_control::Base::errorHook();
     
 
     
@@ -77,7 +77,7 @@ void AUVOptimalOrientationController::errorHook()
 void AUVOptimalOrientationController::stopHook()
 {
     
-    auv_control::Controller_Base::stopHook();
+    auv_control::Base::stopHook();
     
 
     
@@ -90,7 +90,7 @@ void AUVOptimalOrientationController::stopHook()
 void AUVOptimalOrientationController::cleanupHook()
 {
     
-    auv_control::Controller_Base::cleanupHook();
+    auv_control::Base::cleanupHook();
     
 
     

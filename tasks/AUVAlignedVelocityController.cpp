@@ -19,7 +19,7 @@ AUVAlignedVelocityController::~AUVAlignedVelocityController()
 
 bool AUVAlignedVelocityController::startHook()
 {
-    auv_control::Controller_Base::startHook();
+    auv_control::Base::startHook();
 
     //reset the Pids and set the settings from the property
     setPIDSettings(_pid_settings.get());
@@ -33,7 +33,7 @@ void AUVAlignedVelocityController::updateHook()
         setPIDSettings(new_pid_settings);
     }
 
-    auv_control::Controller_Base::updateHook();
+    auv_control::Base::updateHook();
 
 
 /*    if(last_pid_settings != new_pid_settings){

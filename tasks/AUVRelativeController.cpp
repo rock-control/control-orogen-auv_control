@@ -30,7 +30,7 @@ AUVRelativeController::~AUVRelativeController()
 bool AUVRelativeController::configureHook()
 {
     
-    if (! auv_control::Controller_Base::configureHook())
+    if (! auv_control::Base::configureHook())
         return false;
     
 
@@ -46,7 +46,7 @@ bool AUVRelativeController::configureHook()
 bool AUVRelativeController::startHook()
 {
     
-    if (! auv_control::Controller_Base::startHook())
+    if (! auv_control::Base::startHook())
         return false;
     on_start = true;    
 
@@ -58,7 +58,7 @@ bool AUVRelativeController::startHook()
 
 void AUVRelativeController::updateHook()
 {
-    auv_control::Controller_Base::updateHook();    
+    auv_control::Base::updateHook();    
     /*base::samples::RigidBodyState pose_sample;
 
     if(!this->getPoseSample()){
@@ -121,7 +121,7 @@ void AUVRelativeController::updateHook()
 void AUVRelativeController::errorHook()
 {
     
-    auv_control::Controller_Base::errorHook();
+    auv_control::Base::errorHook();
     
 
     
@@ -134,7 +134,7 @@ void AUVRelativeController::errorHook()
 void AUVRelativeController::stopHook()
 {
     
-    auv_control::Controller_Base::stopHook();
+    auv_control::Base::stopHook();
     
 
     
@@ -147,7 +147,7 @@ void AUVRelativeController::stopHook()
 void AUVRelativeController::cleanupHook()
 {
     
-    auv_control::Controller_Base::cleanupHook();
+    auv_control::Base::cleanupHook();
     
 
     
