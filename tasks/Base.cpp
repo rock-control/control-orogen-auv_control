@@ -217,7 +217,7 @@ void Base::addCommandInput(std::string const & name, double timeout){
 
 }
 
-bool Base::merge(bool expected[], base::Vector3d& current, base::Vector3d& merged){
+bool Base::merge(bool const expected[], base::Vector3d const& current, base::Vector3d& merged){
     for(int i = 0; i < 3; i++){
         if(expected[i] && base::isUnset(merged(i)) && !base::isUnset(current(i))){
             //No value of this type in the merged value and the value is set on this

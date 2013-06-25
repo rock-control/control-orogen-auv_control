@@ -114,7 +114,7 @@ namespace auv_control {
          */
         void cleanupHook();
     private:
-        bool merge(bool expected[], base::Vector3d& current, base::Vector3d& merged);
+        bool merge(bool const expected[], base::Vector3d const& current, base::Vector3d& merged);
         
  
     };
