@@ -179,8 +179,8 @@ bool Base::gatherInputCommand(){
                 max_stamp = current_port.stamp;
              }
 
-            if(!(merge(&_expected_inputs.get().linear[0], &current_port.linear, &merging_command.linear) &&
-                    merge(&_expected_inputs.get().angular[0], &current_port.angular, &merging_command.angular))){
+            if(!(merge(_expected_inputs.get().linear, current_port.linear, merging_command.linear) &&
+                    merge(_expected_inputs.get().angular, current_port.angular, merging_command.angular))){
                 return false;
             }   
         }
@@ -217,18 +217,18 @@ void Base::addCommandInput(std::string const & name, double timeout){
 
 }
 
-bool Base::merge(bool *expected, base::Vector3d *current, base::Vector3d *merged){
+bool Base::merge(bool expected[], base::Vector3d& current, base::Vector3d& merged){
     for(int i = 0; i < 3; i++){
-        if(expected[i] && base::isUnset((*merged)(i)) && !base::isUnset((*current)(i))){
+        if(expected[i] && base::isUnset(merged(i)) && !base::isUnset(current(i))){
             //No value of this type in the merged value and the value is set on this
             //port. So write the Value from this Port in the merged value.
-            (*merged)(i) = (*current)(i);
-        }else if(expected[i] && !base::isUnset((*merged)(i)) && !base::isUnset((*current)(i))){
+            merged(i) = current(i);
+        }else if(expected[i] && !base::isUnset(merged(i)) && !base::isUnset(current(i))){
             //Ther is a value in the merged value and the value is set on this port.
             //This is an exception!
             exception(INPUT_COLLIDING);
             return false; 
-        }else if(!expected[i] && !base::isUnset((*current)(i))){
+        }else if(!expected[i] && !base::isUnset(current(i))){
             exception(INPUT_UNEXPECTED);
             return false;
         }
