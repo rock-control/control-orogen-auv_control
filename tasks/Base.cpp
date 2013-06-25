@@ -158,9 +158,8 @@ bool Base::getPoseSample(){
 }
 
 bool Base::gatherInputCommand(){
-    bool linear_is_set[] = {false, false, false};    
-    bool angular_is_set[] = {false, false, false};    
-    base::LinearAngular6DCommand current_port;    
+    base::LinearAngular6DCommand current_port;
+    base::LinearAngular6DCommand merging_command;
     base::Time max_stamp;
     RTT::FlowStatus status;
     for(int i = 0; i < input_ports.size(); i++){
@@ -180,30 +179,27 @@ bool Base::gatherInputCommand(){
                 max_stamp = current_port.stamp;
              }
 
-            if(!(merge(&_expected_inputs.get().linear[0], &linear_is_set[0], &current_port.linear, &merged_command.linear) &&
-                    merge(&_expected_inputs.get().angular[0] ,&angular_is_set[0], &current_port.angular, &merged_command.angular))){
+            if(!(merge(&_expected_inputs.get().linear[0], &current_port.linear, &merging_command.linear) &&
+                    merge(&_expected_inputs.get().angular[0], &current_port.angular, &merging_command.angular))){
                 return false;
             }   
         }
     }
     for(int j = 0; j < 3; j++){
        
-        //If the Value is on evry port unset set the value in the merged_command unset too. 
-        if(!linear_is_set[j] && ! _expected_inputs.get().linear[j]){
-            merged_command.linear(j) = base::unset<double>(); 
-        } else if(linear_is_set[j] != _expected_inputs.get().linear[j]){
+        //If the Value is on evry port unset set the value in the merging_command unset too. 
+        if(base::isUnset(merging_command.linear(j)) != _expected_inputs.get().linear[j]){
             state(INPUT_MISSING);
             return false;
         }
-        if(!angular_is_set[j] && ! _expected_inputs.get().angular[j]){
-            merged_command.angular(j) = base::unset<double>(); 
-        } else if(angular_is_set[j] != _expected_inputs.get().angular[j]){
+        if(base::isUnset(merging_command.angular(j)) != _expected_inputs.get().angular[j]){
             state(INPUT_MISSING);
             return false;
         }
         
     }
-    merged_command.stamp = max_stamp;
+    merging_command.stamp = max_stamp;
+    merged_command = merging_command;
     return true;           
 }
 
@@ -221,16 +217,13 @@ void Base::addCommandInput(std::string const & name, double timeout){
 
 }
 
-bool Base::merge(bool *expected, bool *is_set, base::Vector3d *current,
-        base::Vector3d *merged){
+bool Base::merge(bool *expected, base::Vector3d *current, base::Vector3d *merged){
     for(int i = 0; i < 3; i++){
-        //merge linear
-        if(expected[i] && !is_set[i] && !base::isUnset((*current)(i))){
+        if(expected[i] && base::isUnset((*merged)(i)) && !base::isUnset((*current)(i))){
             //No value of this type in the merged value and the value is set on this
             //port. So write the Value from this Port in the merged value.
             (*merged)(i) = (*current)(i);
-            is_set[i] = true;
-        }else if(expected[i] && is_set[i] && !base::isUnset((*current)(i))){
+        }else if(expected[i] && !base::isUnset((*merged)(i)) && !base::isUnset((*current)(i))){
             //Ther is a value in the merged value and the value is set on this port.
             //This is an exception!
             exception(INPUT_COLLIDING);
