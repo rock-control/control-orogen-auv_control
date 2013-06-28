@@ -1,37 +1,50 @@
 name "auv_control"
 # Optionally declare the version number
-version "0.1"
+version "0.2"
 
-# If new data types need to be defined, they have to be put in a separate C++
-# header, and this header will be loaded here
-# import_types_from "auv_controlType.hpp"
-
-# If the component/deployments use data types that are defined in other oroGen
-# projects, these projects should be imported there as well.
 import_types_from "base"
 import_types_from "6dControl.hpp"
 using_library "motor_controller"
 
 
-# Declare a new task context (i.e., a component)
-#
-# The corresponding C++ class can be edited in tasks/Task.hpp and
-# tasks/Task.cpp, and will be put in the auv_control namespace.
+# This is the parent task for the most other tasks in this component.
+# This task definds the merge of inputports and the abstract control flow.
 task_context "Base" do
-    property("expected_inputs", "auv_control::ExpectedInputs")
-    property("timeout_cascade", "double", 1)
-    property("timeout_cmd_in", "double", 1)
-    property("keep_position_on_exception", "bool", 1)
     
+    #This property defines which inputs are expected after merging the differen input ports. 
+    property("expected_inputs", "auv_control::ExpectedInputs")
+    
+    #This property defines the timeout for the cascade input port in secounds. 0 means that
+    #the timeout would be ignored.
+    property("timeout_cascade", "double", 1)
+    
+    #This property defines the timeout for the cmd_in input port in secounds. 0 means that
+    #the timeout would be ignored.
+    property("timeout_cmd_in", "double", 1)
+    
+    #If this keep_position_on_exception property is on true, the System will keep his position
+    #on an exception or error
+    property("keep_position_on_exception", "bool", 1)
+   
+
+    #This is the input_port for the output from the controller befoure.
     input_port('cascade', 'base::LinearAngular6DCommand')
+    
+    #This is the input_port for the input from an other task. If you need more then one input_ports,
+    #use the addCommandInput operation
     input_port("cmd_in", "base::LinearAngular6DCommand")
+    
+    #This is the input_port for the current RigidBodyState
     input_port("pose_sample", "base::samples::RigidBodyState")
 
-    periodic(0.01)
-    #port_driven "cascade"
-    #port_driven "cmd_in"
-    output_port("cmd_out", "base::LinearAngular6DCommand")
 
+    periodic(0.01)
+
+
+    #This is the output_comand of this task
+    output_port("cmd_out", "base::LinearAngular6DCommand")
+    
+    #This operation adds an new command input.
     operation("addCommandInput").
         argument("name", "string").
         argument("timeout", "double")
@@ -42,47 +55,67 @@ task_context "Base" do
 
 end
 
+#This task get forces and calculate with a calibration-matrix a motor-command for evry motor.
 task_context "ForceTorqueController" do
+    
+    #Input port that get forces for evry axis in an LinearAngular6DCommand
     input_port('cascade', "base::LinearAngular6DCommand")
+    
+    #This is the input_port for the current RigidBodyState. The RigidBodyState would be used
+    #to use the current heading for the calculation of the motor-commands too. If you don't
+    #want to use this feature, don't connect to this port!
     input_port("pose_sample", "base::samples::RigidBodyState")
+    
     port_driven "cascade"    
-    #periodic(0.01)
 
+    #Output: Command for the actuators
     output_port("motor_command", "base::actuators::Command")
 
+    #Matrix with size of 6 * n. n means the count of actuators that are used. The rows 0 to 2 of the matrix  are
+    #the linear axis. The lines 3 to 5 of the matrix are the angular axis.
     property("calibration", "base::MatrixXd")
-    property("cut_off", "std::vector<double>")
 
+    #To cute off to big or small values. 
+    property("cut_off", "std::vector<double>")
 end
 
+#Task that get Velocitys and returns Forces    
 task_context "AlignedVelocityController" do
     subclasses "Base"
+
     property("pid_settings", "base::LinearAngular6DPIDSettings")
     output_port("avg_periode", "base::LinearAngular6DCommand")
 end
 
+#Task that get AlignedPosition and returns Velocitys
 task_context "AlignedPositionController" do
     subclasses "Base"
     output_port("avg_periode", "base::LinearAngular6DCommand")
     property("pid_settings", "base::LinearAngular6DPIDSettings")
 end
 
+#Task that get the wanted position in the alignedPosition frame and returns it in this frame too.
+#While the distance to the target position are bigger than the opt_orientation_distance the
+#value for the linear(1) axis is set to 0 and the system try to use the opt_orientation.
 task_context "OptimalOrientationController" do
     subclasses "Base"
     property("opt_orientation_distance", "double")
     property("opt_orientation", "base::Vector3d")
 end
 
+#Task that get the wanted Position in the world frame and returns the wanted position in the AlignedPosition Frame
 task_context "WorldController" do
     subclasses "Base"
     input_port("opt_orientation_distance", "double")
     input_port("opt_orientation", "base::Vector3d")
 end
 
+#Task that ge a relative position (with relative angulars) and returns an aligned position (with global angulars)
 task_context "RelativeController" do
     subclasses "Base"
 end
 
+#Task to drive to some different Waypoints
 task_context "WaypointNavigator" do
     input_port("trajectory", "std::vector<base::LinearAngular6DWaypoint").
         doc("Input Trajectory the auv should follow")
@@ -107,4 +140,15 @@ task_context "WaypointNavigator" do
 
     runtime_states :WAIT_FOR_WAYPOINTS, :KEEP_WAYPOINT, :FOLLOWING_WAYPOINTS, :POSE_SAMPLE_MISSING
     periodic(0.01)
+end
+
+#Task to convert MotionCommand2D to a LineaAngular6DCommand
+task_context "MotionCommand2DConverter" do
+    input_port("cmd_in", "base::MotionCommand2D")
+    input_port("pose_sample", "base::samples::RigidBodyState")
+
+    output_port("position_cmd_out", "base::LinearAngular6DCommand")
+    output_port("velocity_cmd_out", "base::LinearAngular6DCommand")
+
+    port_driven "cmd_in"
 end
