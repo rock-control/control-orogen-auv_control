@@ -34,9 +34,9 @@ void WorldController::updateHook()
 void WorldController::keepPosition(){
     output_command.stamp = pose_sample.time;
 
-    output_command.linear(0) = pose_sample.position(0); 
-    output_command.linear(1) = pose_sample.position(1); 
-    output_command.linear(2) = pose_sample.position(2);
+    output_command.linear(0) = 0; 
+    output_command.linear(1) = 0; 
+    output_command.linear(2) = 0;
 
     output_command.angular(0) = base::getRoll(pose_sample.orientation);
     output_command.angular(1) = base::getPitch(pose_sample.orientation);
