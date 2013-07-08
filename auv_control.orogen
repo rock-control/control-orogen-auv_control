@@ -152,3 +152,12 @@ task_context "MotionCommand2DConverter" do
 
     port_driven "cmd_in"
 end
+
+deployment 'test_auv_control' do
+    task("force_torque_controller", "auv_control::ForceTorqueController")
+    task("aligned_velocity_controller", "auv_control::AlignedVelocityController")
+    task("aligned_controller", "auv_control::AlignedPositionController")
+    task("world_controller", "auv_control::WorldController")
+    add_default_logger.
+        periodic(0.01)
+end
