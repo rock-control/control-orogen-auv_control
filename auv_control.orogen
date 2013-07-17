@@ -50,7 +50,7 @@ task_context "Base" do
         argument("timeout", "double")
     dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
 
-    runtime_states :POSE_SAMPLE_MISSING, :INPUT_MISSING, :WAIT_FOR_INPUT
+    runtime_states :CONTROLLING, :POSE_SAMPLE_MISSING, :INPUT_MISSING, :WAIT_FOR_INPUT
     exception_states :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT
 
 end

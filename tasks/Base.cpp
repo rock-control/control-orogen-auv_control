@@ -82,6 +82,7 @@ void Base::updateHook()
     }
 
     _cmd_out.write(output_command);
+    state(CONTROLLING);
     return;
 }
 
