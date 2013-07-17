@@ -82,7 +82,6 @@ void Base::updateHook()
     }
 
     _cmd_out.write(output_command);
-    state(CONTROLLING);
     return;
 }
 
@@ -189,11 +188,11 @@ bool Base::gatherInputCommand(){
     for(int j = 0; j < 3; j++){
        
         //If the Value is on evry port unset set the value in the merging_command unset too. 
-        if(base::isUnset(merging_command.linear(j)) != _expected_inputs.get().linear[j]){
+        if(base::isUnset(merging_command.linear(j)) && (_expected_inputs.get().linear[j])){
             state(INPUT_MISSING);
             return false;
         }
-        if(base::isUnset(merging_command.angular(j)) != _expected_inputs.get().angular[j]){
+        if(base::isUnset(merging_command.angular(j)) && (_expected_inputs.get().angular[j])){
             state(INPUT_MISSING);
             return false;
         }
