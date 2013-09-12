@@ -25,18 +25,30 @@ namespace auv_control {
     
         std::vector<InputPortInfo> input_ports;
         base::LinearAngular6DCommand merged_command;        
-        base::LinearAngular6DCommand output_command;        
-        base::samples::RigidBodyState pose_sample;
 
         bool gatherInputCommand();
         bool getPoseSample();        
         void genDefaultInput();
         void setDefaultTimeout();
 
-        virtual void addCommandInput(::std::string const & name, double timeout);
+        /** Creates a new input port called cmd_name of the type
+         * LinearAngular6DCommand. Once defined, this input port will be merged
+         * into the merged_command command before the controller calculates the
+         * corresponding output
+         */
+        virtual bool addCommandInput(::std::string const & name, double timeout);
         
+        /** Send a "do not move" command to the next level
+         *
+         * This is called if the keep_position_on_exception property is set and
+         * the component goes into an exception state
+         */
         virtual void keepPosition();
-        virtual bool calcOutput();
+
+        /** Computes the output based on the value stored in merged_command. It
+         * is called after merged_command has been updated
+         */ 
+        virtual bool calcOutput() = 0;
         
     public:
         /** TaskContext constructor for Base

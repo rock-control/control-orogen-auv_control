@@ -50,11 +50,7 @@ bool Base::startHook()
         return false;
     
     this->setDefaultTimeout();
-    
-
-    
     return true;
-    
 }
 
 
@@ -81,7 +77,6 @@ void Base::updateHook()
         return;
     }
 
-    _cmd_out.write(output_command);
     state(CONTROLLING);
     return;
 }
@@ -132,8 +127,8 @@ void Base::genDefaultInput()
 {
     InputPortInfo info;
     info.name = "cascade";
-    info.timeout = _timeout_cascade.get();
-    info.input_port = &_cascade;
+    info.timeout = _timeout_cmd_cascade.get();
+    info.input_port = &_cmd_cascade;
 
     input_ports.push_back(info);
     
@@ -146,7 +141,11 @@ void Base::genDefaultInput()
 
 void Base::setDefaultTimeout()
 {
-    input_ports.at(0).timeout = _timeout_cascade.get();
+    if (_cmd_cascade.connected())
+        input_ports.at(0).timeout = _timeout_cmd_cascade.get();
+    else
+        input_ports.at(0).timeout = 0;
+
     input_ports.at(1).timeout = _timeout_cmd_in.get();
 }
 
@@ -204,10 +203,10 @@ bool Base::gatherInputCommand(){
     return true;           
 }
 
-void Base::addCommandInput(std::string const & name, double timeout){
-    if(provides()->hasService("cmd_" + name)){
-        //Fehler werfen! Port bereits vorhanden
-    }
+bool Base::addCommandInput(std::string const & name, double timeout){
+    if (provides()->hasService("cmd_" + name))
+        return false;
+
     InputPortInfo info;
     info.name = name;
     info.timeout = timeout;
@@ -215,7 +214,7 @@ void Base::addCommandInput(std::string const & name, double timeout){
     provides()->addPort(*info.input_port);
 
     input_ports.push_back(info);
-
+    return true;
 }
 
 bool Base::merge(bool const expected[], base::Vector3d const& current, base::Vector3d& merged){
@@ -242,6 +241,3 @@ void Base::keepPosition(){
     
 }
 
-bool Base::calcOutput(){
-    return false;
-}

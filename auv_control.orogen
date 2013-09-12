@@ -1,131 +1,174 @@
 name "auv_control"
-# Optionally declare the version number
 version "0.2"
 
 import_types_from "base"
 import_types_from "6dControl.hpp"
 using_library "motor_controller"
 
-
-# This is the parent task for the most other tasks in this component.
-# This task definds the merge of inputports and the abstract control flow.
+# Definition of the base interface for all AUV control components
+#
+# It also implements the base functionality of merging and validating the
+# declared inputs, as well as managing the command input ports.
 task_context "Base" do
+    # This property defines which parts of the command input is expected to be
+    # set once we merged all the declared input ports. 
+    property "expected_inputs", "auv_control::ExpectedInputs"
     
-    #This property defines which inputs are expected after merging the differen input ports. 
-    property("expected_inputs", "auv_control::ExpectedInputs")
+    # If true, the component will send a zero command before getting into an
+    # exception state. Otherwise, it will not do anything
+    property "keep_position_on_exception", "bool", true
     
-    #This property defines the timeout for the cascade input port in secounds. 0 means that
-    #the timeout would be ignored.
-    property("timeout_cascade", "double", 1)
-    
-    #This property defines the timeout for the cmd_in input port in secounds. 0 means that
-    #the timeout would be ignored.
-    property("timeout_cmd_in", "double", 1)
-    
-    #If this keep_position_on_exception property is on true, the System will keep his position
-    #on an exception or error
-    property("keep_position_on_exception", "bool", 1)
-   
-
-    #This is the input_port for the output from the controller befoure.
-    input_port('cascade', 'base::LinearAngular6DCommand')
-    
-    #This is the input_port for the input from an other task. If you need more then one input_ports,
-    #use the addCommandInput operation
+    # The target state for this controller
+    # 
+    # This port is statically defined for simplicity reasons, additional ports
+    # can be created using the addCommandInput operation
     input_port("cmd_in", "base::LinearAngular6DCommand")
     
-    #This is the input_port for the current RigidBodyState
-    input_port("pose_sample", "base::samples::RigidBodyState")
+    # This property defines the timeout for the cmd_in input port in seconds. 0
+    # means that the timeout would be ignored.
+    property "timeout_cmd_in", "double", 1
 
-
-    periodic(0.01)
-
-
-    #This is the output_comand of this task
-    output_port("cmd_out", "base::LinearAngular6DCommand")
+    # When used in a cascade, this input port can be used to feed the output of
+    # the controllers before.
+    #
+    # Leave unconnected if you are not cascading controllers
+    #
+    # This port is statically defined for simplicity reasons, additional ports
+    # can be created using the addCommandInput operation
+    input_port('cmd_cascade', 'base::LinearAngular6DCommand')
     
-    #This operation adds an new command input.
+    # This property defines the timeout for the cascade input port in seconds. 0
+    # means that the timeout would be ignored.
+    property "timeout_cmd_cascade", "double", 1
+    
+    # Create a new input to merge 
+    #
+    # Returns true if the port got added, and false if a port with the same name
+    # already exists
     operation("addCommandInput").
         argument("name", "string").
-        argument("timeout", "double")
+        argument("timeout", "double").
+        returns('bool')
     dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
+
+    # Averaged periods of the input commands
+    output_port "avg_period", "base::LinearAngular6DCommand"
 
     runtime_states :CONTROLLING, :POSE_SAMPLE_MISSING, :INPUT_MISSING, :WAIT_FOR_INPUT
     exception_states :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT
 
+    # Deployed with a 10ms period by default
+    periodic 0.01
 end
 
-#This task get forces and calculate with a calibration-matrix a motor-command for evry motor.
-task_context "ForceTorqueController" do
-    
-    #Input port that get forces for evry axis in an LinearAngular6DCommand
-    input_port('cascade', "base::LinearAngular6DCommand")
-    
-    #This is the input_port for the current RigidBodyState. The RigidBodyState would be used
-    #to use the current heading for the calculation of the motor-commands too. If you don't
-    #want to use this feature, don't connect to this port!
-    input_port("pose_sample", "base::samples::RigidBodyState")
-    
-    port_driven "cascade"    
+# Base implementation of all the tasks that use one PID controller per axis to
+# generate commands
+task_context 'BasePIDController' do
+    # Settings for the PID controllers
+    property "pid_settings", "base::LinearAngular6DPIDSettings"
 
-    #Output: Command for the actuators
-    output_port("motor_command", "base::actuators::Command")
+    # The system state. Only the parts of the state that are controlled needs to
+    # be available (i.e. if the command involves only orientation, only the
+    # orientation part is really needed)
+    input_port 'pose_samples', 'base::samples::RigidBodyState'
 
-    #Matrix with size of 6 * n. n means the count of actuators that are used. The rows 0 to 2 of the matrix  are
-    #the linear axis. The lines 3 to 5 of the matrix are the angular axis.
-    property("calibration", "base::MatrixXd")
-
-    #To cute off to big or small values. 
-    property("cut_off", "std::vector<double>")
+    # The output command. It is a velocity command expressed in the aligned
+    # frame.
+    output_port 'cmd_out', 'base::LinearAngular6DCommand'
 end
 
-#Task that get Velocitys and returns Forces    
-task_context "AlignedVelocityController" do
+# Task that get a target position in the world frame and outputs a position
+# command in the aligned frame
+task_context "WorldPositionToAlignedPosition" do
     subclasses "Base"
 
-    property("pid_settings", "base::LinearAngular6DPIDSettings")
-    output_port("avg_periode", "base::LinearAngular6DCommand")
+    # The system state. Only the heading part is used.
+    input_port 'orientation_samples', 'base::samples::RigidBodyState'
+
+    # The output command. It is a position command in the aligned frame
+    output_port 'cmd_out', 'base::LinearAngular6DCommand'
 end
 
-#Task that get AlignedPosition and returns Velocitys
+# Controller that takes positions expressed in the aligned frame as input and
+# outputs velocities expressed in the same frame
+#
+# It can be converted to thruster commands using AlignedToBody and
+# ForceTorqueController.
 task_context "AlignedPositionController" do
-    subclasses "Base"
-    output_port("avg_periode", "base::LinearAngular6DCommand")
-    property("pid_settings", "base::LinearAngular6DPIDSettings")
+    subclasses "BasePIDController"
 end
 
-#Task that get the wanted position in the alignedPosition frame and returns it in this frame too.
-#While the distance to the target position are bigger than the opt_orientation_distance the
-#value for the linear(1) axis is set to 0 and the system try to use the opt_orientation.
-task_context "OptimalOrientationController" do
+# Controller that takes either velocities or efforts expressed in the aligned
+# frame as input and outputs the same commands, but expressed in the body frame.
+#
+# It is usually cascaded either with BodyVelocityController and
+# ForceTorqueController (if the commands express velocities) or
+# ForceTorqueController directly if the commands express efforts
+task_context "AlignedToBody" do
     subclasses "Base"
-    property("opt_orientation_distance", "double")
-    property("opt_orientation", "base::Vector3d")
+
+    # The system's state.
+    input_port 'orientation_samples', 'base::samples::RigidBodyState'
+
+    # The output command. It is expressed in the body frame, and is of the same
+    # nature than the input (efforts if the inputs are efforts, velocities if
+    # the inputs are velocities)
+    output_port 'cmd_out', 'base::LinearAngular6DCommand'
 end
 
-#Task that get the wanted Position in the world frame and returns the wanted position in the AlignedPosition Frame
-task_context "WorldController" do
-    subclasses "Base"
-    input_port("opt_orientation_distance", "double")
-    input_port("opt_orientation", "base::Vector3d")
+# Controller that takes velocities expressed in the body frame as input and
+# outputs force-torque values in the body frame.
+#
+# It uses one PID controller per axis to geneate the effort commands. It is
+# usually cascaded to ForceTorqueController
+task_context "BodyVelocityController" do
+    subclasses "BasePIDController"
 end
 
-#Task that ge a relative position (with relative angulars) and returns an aligned position (with global angulars)
-task_context "RelativeController" do
+# Generates thruster commands based on a thruster matrix and a force-torque
+# input expressed in the system's body frame.
+#
+# It assumes zero values on the axis that are not set
+#
+# It basically projects the (merged) input vector onto the thrusters using the
+# matrix
+task_context "ForceTorqueController" do
     subclasses "Base"
+
+    # Matrix with size of 6 * n. n means the count of thrusters that are used.
+    # The rows 0 to 2 of the matrix are the linear axis. The lines 3 to 5 of the
+    # matrix are the angular axis.
+    property "matrix", "base::MatrixXd"
+
+    # Limits of the thrusters
+    #
+    # Leave empty if you don't want to limit anything (is that really a good
+    # idea ?)
+    property "limits", "base::JointLimits"
+
+    # Lists which command parameter are being controlled on a per-joint basis.
+    #
+    # If left empty, uses RAW by default
+    property "control_modes", "std::vector<base::JointState::MODE>"
+    
+    # Generated motor commands
+    output_port "cmd_out", "base::commands::Joints"
 end
 
-#Task to drive to some different Waypoints
+# Follows a set of waypoints, where each waypoint is defined 
 task_context "WaypointNavigator" do
-    input_port("trajectory", "std::vector<base::LinearAngular6DWaypoint").
-        doc("Input Trajectory the auv should follow")
+    # The trajectory to follow, expressed as a set of waypoints in the world
+    # frame
+    input_port "trajectory", "std::vector<base::samples::RigidBodyState>"
     
-    input_port("pose_sample", "base::samples::RigidBodyState").
-        doc("current pose retrieved from any localization")
+    # The current system pose
+    input_port "pose_sample", "base::samples::RigidBodyState"
 
-    output_port("cmd_out", "base::LinearAngular6DCommand").
-        doc("command for AUVWorldController")
+    # The output command, as a pose in world frame that can be used by the
+    # auv_control controllers
+    output_port "cmd_out", "base::LinearAngular6DCommand"
     
+    ### MERGE ALL THESE INTO A SINGLE DATA STRUCTURE AND THEN MAKE A SINGLE PORT
     output_port("current_delta", "base::LinearAngular6DCommand").
         doc("shows error between current and desired waypoint for debugging")
 
@@ -135,29 +178,44 @@ task_context "WaypointNavigator" do
     output_port("queue_size", "int").
         doc("remaining waypoints to follow")
 
-    property("timeout", "double", 30).
-        doc("The navigator is going into fatal if no pose_samples are incoming")
+    runtime_states :WAIT_FOR_WAYPOINTS, :KEEP_WAYPOINT,
+        :FOLLOWING_WAYPOINTS, :POSE_SAMPLE_MISSING
 
-    runtime_states :WAIT_FOR_WAYPOINTS, :KEEP_WAYPOINT, :FOLLOWING_WAYPOINTS, :POSE_SAMPLE_MISSING
     periodic(0.01)
 end
 
-#Task to convert MotionCommand2D to a LineaAngular6DCommand
+# Task to convert MotionCommand2D to a LineaAngular6DCommand
+#
+# This allows to reuse control algorithms that deal with 2D motions (such as the
+# trajectory_follower) when the desired system behaviour is to have roll=pitch=0
+# and keep a constant depth (thus indeed constraining the motion in the plane).
 task_context "MotionCommand2DConverter" do
-    input_port("cmd_in", "base::MotionCommand2D")
-    input_port("pose_sample", "base::samples::RigidBodyState")
+    # Command input as a velocity motion in the plan
+    input_port "cmd_in", "base::MotionCommand2D"
 
-    output_port("position_cmd_out", "base::LinearAngular6DCommand")
-    output_port("velocity_cmd_out", "base::LinearAngular6DCommand")
+    # Command output as an aligned velocity. Only the heading and X velocities
+    # are set
+    output_port "cmd_out", "base::LinearAngular6DCommand"
 
     port_driven "cmd_in"
 end
 
-deployment 'test_auv_control' do
-    task("force_torque_controller", "auv_control::ForceTorqueController")
-    task("aligned_velocity_controller", "auv_control::AlignedVelocityController")
-    task("aligned_controller", "auv_control::AlignedPositionController")
-    task("world_controller", "auv_control::WorldController")
-    add_default_logger.
-        periodic(0.01)
+#######################
+#  DON'T KNOW WHAT THE ONES BELOW ARE FOR
+
+# Task that ge a relative position (with relative angulars) and returns an
+# aligned position (with global angulars)
+task_context "RelativeController" do
+    subclasses "Base"
 end
+
+# Task that get the wanted position in the alignedPosition frame and returns it
+# in this frame too.  While the distance to the target position are bigger than
+# the opt_orientation_distance the value for the linear(1) axis is set to 0 and
+# the system try to use the opt_orientation.
+task_context "OptimalOrientationController" do
+    subclasses "Base"
+    property("opt_orientation_distance", "double")
+    property("opt_orientation", "base::Vector3d")
+end
+
