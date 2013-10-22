@@ -1,49 +1,62 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_OPTIMALORIENTATIONCONTROLLER_TASK_HPP
-#define AUV_CONTROL_OPTIMALORIENTATIONCONTROLLER_TASK_HPP
+#ifndef AUV_CONTROL_BASEPIDCONTROLLER_TASK_HPP
+#define AUV_CONTROL_BASEPIDCONTROLLER_TASK_HPP
 
-#include "auv_control/OptimalOrientationControllerBase.hpp"
+#include "auv_control/BasePIDControllerBase.hpp"
 
 namespace auv_control {
 
-    /*! \class OptimalOrientationController 
+    /*! \class BasePIDController 
      * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
      * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
      * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
-     * 
+     * Base implementation of all the tasks that use one PID controller per axis to
+generate commands
      * \details
      * The name of a TaskContext is primarily defined via:
      \verbatim
      deployment 'deployment_name'
-         task('custom_task_name','auv_control::OptimalOrientationController')
+         task('custom_task_name','auv_control::BasePIDController')
      end
      \endverbatim
      *  It can be dynamically adapted when the deployment is called with a prefix argument. 
      */
-    class OptimalOrientationController : public OptimalOrientationControllerBase
+    class BasePIDController : public BasePIDControllerBase
     {
-	friend class OptimalOrientationControllerBase;
-    protected: 
-        void keepPosition();
-        bool calcOutput();
+	friend class BasePIDControllerBase;
+    protected:
+        motor_controller::PID mLinearPIDs[3];
+        motor_controller::PID mAngularPIDs[3];
+
+        /** The current linear part of the system's state
+         * It must be updated by subclasses before calling their base updateHook
+         * class
+         */
+        base::Vector3d currentLinear;
+        /** The current angular part of the system's state
+         * It must be updated by subclasses before calling their base updateHook
+         * class
+         */
+        base::Vector3d currentAngular;
+
     public:
-        /** TaskContext constructor for OptimalOrientationController
+        /** TaskContext constructor for BasePIDController
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        OptimalOrientationController(std::string const& name = "auv_control::OptimalOrientationController", TaskCore::TaskState initial_state = Stopped);
+        BasePIDController(std::string const& name = "auv_control::BasePIDController", TaskCore::TaskState initial_state = Stopped);
 
-        /** TaskContext constructor for OptimalOrientationController 
+        /** TaskContext constructor for BasePIDController 
          * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
          * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        OptimalOrientationController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        BasePIDController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
 
-        /** Default deconstructor of OptimalOrientationController
+        /** Default deconstructor of BasePIDController
          */
-	~OptimalOrientationController();
+	~BasePIDController();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the

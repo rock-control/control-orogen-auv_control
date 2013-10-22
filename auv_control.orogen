@@ -10,6 +10,8 @@ using_library "motor_controller"
 # It also implements the base functionality of merging and validating the
 # declared inputs, as well as managing the command input ports.
 task_context "Base" do
+    abstract
+
     # This property defines which parts of the command input is expected to be
     # set once we merged all the declared input ports. 
     property "expected_inputs", "auv_control::ExpectedInputs"
@@ -54,8 +56,8 @@ task_context "Base" do
     # Averaged periods of the input commands
     output_port "avg_period", "base::LinearAngular6DCommand"
 
-    runtime_states :CONTROLLING, :POSE_SAMPLE_MISSING, :INPUT_MISSING, :WAIT_FOR_INPUT
-    exception_states :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT
+    runtime_states :WAIT_FOR_INPUT
+    exception_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT
 
     # Deployed with a 10ms period by default
     periodic 0.01
@@ -64,6 +66,8 @@ end
 # Base implementation of all the tasks that use one PID controller per axis to
 # generate commands
 task_context 'BasePIDController' do
+    abstract
+
     # Settings for the PID controllers
     property "pid_settings", "base::LinearAngular6DPIDSettings"
 
@@ -77,52 +81,50 @@ task_context 'BasePIDController' do
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
 end
 
-# Task that get a target position in the world frame and outputs a position
-# command in the aligned frame
-task_context "WorldPositionToAlignedPosition" do
-    subclasses "Base"
+# Controller that takes either positions or velocities, expressed in either the
+# world or aligned frames, and outputs "whatever" in the same frame
+task_context "PIDController" do
+    subclasses "BasePIDController"
 
-    # The system state. Only the heading part is used.
-    input_port 'orientation_samples', 'base::samples::RigidBodyState'
-
-    # The output command. It is a position command in the aligned frame
-    output_port 'cmd_out', 'base::LinearAngular6DCommand'
+    # The command domain (true:position or false:velocity)
+    property "position_control", "bool"
+    # The command frame (true:world or false:aligned)
+    property "world_frame", "bool"
 end
 
-# Controller that takes positions expressed in the aligned frame as input and
-# outputs velocities expressed in the same frame
+# Task that get a target position in the world frame and outputs a position
+# command in the aligned frame
 #
-# It can be converted to thruster commands using AlignedToBody and
-# ForceTorqueController.
-task_context "AlignedPositionController" do
-    subclasses "BasePIDController"
+# Note that this task expects to either have both x,y inputs or none. Giving it
+# only X or only Y will result in a failure to start.
+task_context "WorldToAligned" do
+    subclasses "Base"
+
+    # The domain of what we are converting (true:position or false:velocity or
+    # efforts)
+    property "position_control", "bool"
+
+    # The system state. What is required depends on which parts of the state are
+    # given as input
+    input_port 'pose_samples', 'base::samples::RigidBodyState'
+
+    # The output command.
+    output_port 'cmd_out', 'base::LinearAngular6DCommand'
 end
 
 # Controller that takes either velocities or efforts expressed in the aligned
 # frame as input and outputs the same commands, but expressed in the body frame.
-#
-# It is usually cascaded either with BodyVelocityController and
-# ForceTorqueController (if the commands express velocities) or
-# ForceTorqueController directly if the commands express efforts
 task_context "AlignedToBody" do
     subclasses "Base"
 
-    # The system's state.
+    # The system's state. Only the orientation is being used (to be more
+    # precise, only the pitch and roll angles)
     input_port 'orientation_samples', 'base::samples::RigidBodyState'
 
     # The output command. It is expressed in the body frame, and is of the same
     # nature than the input (efforts if the inputs are efforts, velocities if
     # the inputs are velocities)
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
-end
-
-# Controller that takes velocities expressed in the body frame as input and
-# outputs force-torque values in the body frame.
-#
-# It uses one PID controller per axis to geneate the effort commands. It is
-# usually cascaded to ForceTorqueController
-task_context "BodyVelocityController" do
-    subclasses "BasePIDController"
 end
 
 # Generates thruster commands based on a thruster matrix and a force-torque
@@ -132,7 +134,7 @@ end
 #
 # It basically projects the (merged) input vector onto the thrusters using the
 # matrix
-task_context "ForceTorqueController" do
+task_context "AccelerationController" do
     subclasses "Base"
 
     # Matrix with size of 6 * n. n means the count of thrusters that are used.
@@ -184,7 +186,7 @@ task_context "WaypointNavigator" do
     periodic(0.01)
 end
 
-# Task to convert MotionCommand2D to a LineaAngular6DCommand
+# Task to convert MotionCommand2D into a velocity
 #
 # This allows to reuse control algorithms that deal with 2D motions (such as the
 # trajectory_follower) when the desired system behaviour is to have roll=pitch=0
@@ -198,24 +200,5 @@ task_context "MotionCommand2DConverter" do
     output_port "cmd_out", "base::LinearAngular6DCommand"
 
     port_driven "cmd_in"
-end
-
-#######################
-#  DON'T KNOW WHAT THE ONES BELOW ARE FOR
-
-# Task that ge a relative position (with relative angulars) and returns an
-# aligned position (with global angulars)
-task_context "RelativeController" do
-    subclasses "Base"
-end
-
-# Task that get the wanted position in the alignedPosition frame and returns it
-# in this frame too.  While the distance to the target position are bigger than
-# the opt_orientation_distance the value for the linear(1) axis is set to 0 and
-# the system try to use the opt_orientation.
-task_context "OptimalOrientationController" do
-    subclasses "Base"
-    property("opt_orientation_distance", "double")
-    property("opt_orientation", "base::Vector3d")
 end
 

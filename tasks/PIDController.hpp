@@ -1,74 +1,50 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_BASE_TASK_HPP
-#define AUV_CONTROL_BASE_TASK_HPP
+#ifndef AUV_CONTROL_PIDCONTROLLER_TASK_HPP
+#define AUV_CONTROL_PIDCONTROLLER_TASK_HPP
 
-#include "auv_control/BaseBase.hpp"
-#include <string.h>
-#include <base/float.h>
+#include "auv_control/PIDControllerBase.hpp"
 
 namespace auv_control {
 
-    class Base : public BaseBase
+    /*! \class PIDController 
+     * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
+     * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
+     * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
+     * Controller that takes either positions or velocities, expressed in either the
+world or aligned frames, and outputs "whatever" in the same frame
+     * \details
+     * The name of a TaskContext is primarily defined via:
+     \verbatim
+     deployment 'deployment_name'
+         task('custom_task_name','auv_control::PIDController')
+     end
+     \endverbatim
+     *  It can be dynamically adapted when the deployment is called with a prefix argument. 
+     */
+    class PIDController : public PIDControllerBase
     {
-	friend class BaseBase;
+	friend class PIDControllerBase;
     protected:
-        typedef RTT::InputPort<base::LinearAngular6DCommand> InputPortType;
-        struct InputPortInfo{
-            std::string name;
-            double timeout;
-            base::Time last_time;
-            InputPortType *input_port;
-            InputPortInfo()
-                :input_port(0){}
-        };    
-    
-        std::vector<InputPortInfo> input_ports;
-        base::LinearAngular6DCommand merged_command;        
 
-        void registerInput(std::string const& name, int timeout, InputPortType* input_port);
-        InputPortType* deregisterInput(std::string const& name);
 
-        bool gatherInputCommand();
-        void genDefaultInput();
-        void setDefaultTimeout();
-
-        /** Creates a new input port called cmd_name of the type
-         * LinearAngular6DCommand. Once defined, this input port will be merged
-         * into the merged_command command before the controller calculates the
-         * corresponding output
-         */
-        virtual bool addCommandInput(::std::string const & name, double timeout);
-        
-        /** Send a "do not move" command to the next level
-         *
-         * This is called if the keep_position_on_exception property is set and
-         * the component goes into an exception state
-         */
-        virtual void keepPosition();
-
-        /** Computes the output based on the value stored in merged_command. It
-         * is called after merged_command has been updated
-         */ 
-        virtual bool calcOutput() = 0;
-        
     public:
-        /** TaskContext constructor for Base
+        /** TaskContext constructor for PIDController
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        Base(std::string const& name = "auv_control::Base", TaskCore::TaskState initial_state = Stopped);
+        PIDController(std::string const& name = "auv_control::PIDController", TaskCore::TaskState initial_state = Stopped);
 
-        /** TaskContext constructor for Base 
+        /** TaskContext constructor for PIDController 
          * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
          * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        Base(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        PIDController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
 
-        /** Default deconstructor of Base
+        /** Default deconstructor of PIDController
          */
-	~Base();
+	~PIDController();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the
@@ -127,10 +103,6 @@ namespace auv_control {
          * before calling start() again.
          */
         void cleanupHook();
-    private:
-        bool merge(bool const expected[], base::Vector3d const& current, base::Vector3d& merged);
-        
- 
     };
 }
 

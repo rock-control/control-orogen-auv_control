@@ -1,31 +1,50 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_RELATIVECONTROLLER_TASK_HPP
-#define AUV_CONTROL_RELATIVECONTROLLER_TASK_HPP
+#ifndef AUV_CONTROL_ALIGNEDTOBODY_TASK_HPP
+#define AUV_CONTROL_ALIGNEDTOBODY_TASK_HPP
 
-#include "auv_control/RelativeControllerBase.hpp"
+#include "auv_control/AlignedToBodyBase.hpp"
 
 namespace auv_control {
 
-    class RelativeController : public RelativeControllerBase
+    /*! \class AlignedToBody 
+     * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
+     * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
+     * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
+     * Controller that takes either velocities or efforts expressed in the aligned
+frame as input and outputs the same commands, but expressed in the body frame.
+     * \details
+     * The name of a TaskContext is primarily defined via:
+     \verbatim
+     deployment 'deployment_name'
+         task('custom_task_name','auv_control::AlignedToBody')
+     end
+     \endverbatim
+     *  It can be dynamically adapted when the deployment is called with a prefix argument. 
+     */
+    class AlignedToBody : public AlignedToBodyBase
     {
-	friend class RelativeControllerBase;
+	friend class AlignedToBodyBase;
     protected:
-        void keepPosition();
-        bool calcOutput();
-
-
-        bool on_start;
-
+        base::samples::RigidBodyState pose_sample;
 
     public:
-        RelativeController(std::string const& name = "auv_control::RelativeController", TaskCore::TaskState initial_state = Stopped);
-
-        RelativeController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
-
-        /** Default deconstructor of RelativeController
+        /** TaskContext constructor for AlignedToBody
+         * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
+         * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-	~RelativeController();
+        AlignedToBody(std::string const& name = "auv_control::AlignedToBody", TaskCore::TaskState initial_state = Stopped);
+
+        /** TaskContext constructor for AlignedToBody 
+         * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
+         * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
+         * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
+         */
+        AlignedToBody(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+
+        /** Default deconstructor of AlignedToBody
+         */
+	~AlignedToBody();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the
