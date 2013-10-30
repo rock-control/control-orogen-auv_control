@@ -18,7 +18,7 @@ namespace base{
     /** Common command structure for all controller types, in all control frames */
     struct LinearAngular6DCommand{
         /** The command timestamp */
-        base::Time stamp;
+        base::Time time;
         /** The linear part of the command, as (x,y,z) */
         base::Vector3d linear;
         /** The angular part of the command, as (r,p,y) */
