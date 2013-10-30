@@ -30,6 +30,20 @@ namespace base{
                 angular(i) = base::unset<double>();
             }
         }
+
+        double& x() { return linear(0); }
+        double& y() { return linear(1); }
+        double& z() { return linear(2); }
+        double& roll() { return angular(0); }
+        double& pitch() { return angular(1); }
+        double& yaw() { return angular(2); }
+
+        double x() const { return linear(0); }
+        double y() const { return linear(1); }
+        double z() const { return linear(2); }
+        double roll() const { return angular(0); }
+        double pitch() const { return angular(1); }
+        double yaw() const { return angular(2); }
     };
 
     struct LinearAngular6DWaypoint{
