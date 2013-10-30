@@ -86,7 +86,7 @@ void WaypointNavigator::updateHook()
         
         wp = waypoints.front();
         
-        delta.stamp = base::Time::now();
+        delta.time = base::Time::now();
         delta.linear = wp.cmd.linear - pose.position;
         delta.angular(0) = wp.cmd.angular(0) - base::getRoll(pose.orientation);
         delta.angular(1) = wp.cmd.angular(1) - base::getPitch(pose.orientation);
@@ -105,7 +105,7 @@ void WaypointNavigator::updateHook()
         state(WAIT_FOR_WAYPOINTS);
     }
     _queue_size.write(waypoints.size());
-    wp.cmd.stamp = base::Time::now();
+    wp.cmd.time = base::Time::now();
     _cmd_out.write(wp.cmd);
     _current_waypoint.write(wp);
 

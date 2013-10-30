@@ -28,6 +28,7 @@ generate commands
     protected:
         motor_controller::PID mLinearPIDs[3];
         motor_controller::PID mAngularPIDs[3];
+        bool calcOutput();
 
         /** The current linear part of the system's state
          * It must be updated by subclasses before calling their base updateHook

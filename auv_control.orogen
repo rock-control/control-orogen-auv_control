@@ -28,7 +28,7 @@ task_context "Base" do
     
     # This property defines the timeout for the cmd_in input port in seconds. 0
     # means that the timeout would be ignored.
-    property "timeout_cmd_in", "double", 1
+    property "timeout_in", "double", 1
 
     # When used in a cascade, this input port can be used to feed the output of
     # the controllers before.
@@ -41,7 +41,7 @@ task_context "Base" do
     
     # This property defines the timeout for the cascade input port in seconds. 0
     # means that the timeout would be ignored.
-    property "timeout_cmd_cascade", "double", 1
+    property "timeout_cascade", "double", 1
     
     # Create a new input to merge 
     #
@@ -67,6 +67,7 @@ end
 # generate commands
 task_context 'BasePIDController' do
     abstract
+    subclasses "Base"
 
     # Settings for the PID controllers
     property "pid_settings", "base::LinearAngular6DPIDSettings"
@@ -161,7 +162,7 @@ end
 task_context "WaypointNavigator" do
     # The trajectory to follow, expressed as a set of waypoints in the world
     # frame
-    input_port "trajectory", "std::vector<base::samples::RigidBodyState>"
+    input_port "trajectory", "std::vector<base::LinearAngular6DWaypoint>"
     
     # The current system pose
     input_port "pose_sample", "base::samples::RigidBodyState"
@@ -189,12 +190,10 @@ end
 # Task to convert MotionCommand2D into a velocity
 #
 # This allows to reuse control algorithms that deal with 2D motions (such as the
-# trajectory_follower) when the desired system behaviour is to have roll=pitch=0
-# and keep a constant depth (thus indeed constraining the motion in the plane).
+# trajectory_follower)
 task_context "MotionCommand2DConverter" do
     # Command input as a velocity motion in the plan
     input_port "cmd_in", "base::MotionCommand2D"
-
     # Command output as an aligned velocity. Only the heading and X velocities
     # are set
     output_port "cmd_out", "base::LinearAngular6DCommand"

@@ -23,9 +23,10 @@ bool AccelerationController::startHook()
     if (! AccelerationControllerBase::startHook())
         return false;
 
-    thrusterMatrix = _thruster_matrix.get();
+    thrusterMatrix = _matrix.get();
     inputVector = Eigen::VectorXd::Zero(6);
     cmdVector = Eigen::VectorXd::Zero(thrusterMatrix.rows());
+    controlModes = _control_modes.get();
 
     jointCommand = base::commands::Joints();
     jointCommand.elements.resize(thrusterMatrix.rows());
@@ -33,15 +34,15 @@ bool AccelerationController::startHook()
 }
 bool AccelerationController::calcOutput()
 {
-    inputVector = merged_input.linear, merged_input.angular;
+    inputVector << merged_command.linear, merged_command.angular;
     for (int i = 0; i < 6; ++i)
     {
-        if (base::isUnset(input(i)))
-            input(i) = 0;
+        if (base::isUnset(inputVector(i)))
+            inputVector(i) = 0;
     }
-    cmdVector = thrusterMatrix * input;
+    cmdVector = thrusterMatrix * inputVector;
     for (unsigned int i = 0; i < jointCommand.size(); ++i)
-        jointCommand[i].setField(controlModes[i], cmd(i));
+        jointCommand[i].setField(controlModes[i], cmdVector(i));
     _cmd_out.write(jointCommand);
     return true;
 }

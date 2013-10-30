@@ -41,7 +41,7 @@ bool AlignedToBody::startHook()
 }
 bool AlignedToBody::calcOutput()
 {
-    LinearAngular6DCommand output_command = merged_command;
+    base::LinearAngular6DCommand output_command = merged_command;
 
     double yaw = base::getYaw(pose_sample.orientation);
     Eigen::Quaterniond orientation_pr =
@@ -50,6 +50,7 @@ bool AlignedToBody::calcOutput()
     output_command.linear = orientation_pr * output_command.linear;
 
     _cmd_out.write(output_command);
+    return true;
 }
 
 void AlignedToBody::updateHook()
@@ -74,12 +75,12 @@ static bool validateInputExpectations(bool* array, std::string const& type)
     bool any = false, all = true;
     for (int i = 0; i < 3; ++i)
     {
-        any ||= array[i];
-        all &&= array[i];
+        any = any || array[i];
+        all = all && array[i];
     }
     if (any && !all)
     {
-        RTT::log(Error) << "the " << type << " part of the command must have either all or none of the axis set" << RTT::endlog();
+        RTT::log(RTT::Error) << "the " << type << " part of the command must have either all or none of the axis set" << RTT::endlog();
         return false;
     }
     return true;

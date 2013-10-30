@@ -28,10 +28,10 @@ namespace auv_control {
 
         void registerInput(std::string const& name, int timeout, InputPortType* input_port);
         InputPortType* deregisterInput(std::string const& name);
+        base::Time newestCommandTime;
+        bool verifyTimeout();
 
         bool gatherInputCommand();
-        void genDefaultInput();
-        void setDefaultTimeout();
 
         /** Creates a new input port called cmd_name of the type
          * LinearAngular6DCommand. Once defined, this input port will be merged

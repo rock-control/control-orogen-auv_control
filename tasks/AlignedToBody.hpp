@@ -27,6 +27,7 @@ frame as input and outputs the same commands, but expressed in the body frame.
 	friend class AlignedToBodyBase;
     protected:
         base::samples::RigidBodyState pose_sample;
+        bool calcOutput();
 
     public:
         /** TaskContext constructor for AlignedToBody

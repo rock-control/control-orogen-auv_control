@@ -31,6 +31,9 @@ bool Base::configureHook()
 {
     if (! RTT::TaskContext::configureHook())
         return false;
+
+    registerInput("in", _timeout_in.get(), &_cmd_in);
+    registerInput("cascade", _timeout_cascade.get(), &_cmd_cascade);
     return true;
 }
 
@@ -41,7 +44,7 @@ bool Base::startHook()
     if (! RTT::TaskContext::startHook())
         return false;
     
-    this->setDefaultTimeout();
+    newestCommandTime = base::Time();
     return true;
 }
 
@@ -78,8 +81,20 @@ void Base::errorHook()
 void Base::stopHook()
 {
     RTT::TaskContext::stopHook();
+}
+
+void Base::cleanupHook()
+{
+    RTT::TaskContext::cleanupHook();
     deregisterInput("cascade");
     deregisterInput("in");
+    while (!input_ports.empty())
+    {
+        InputPortType* port = input_ports.back().input_port;
+        provides()->removePort(port->getName());
+        delete port;
+        input_ports.pop_back();
+    }
 }
 
 void Base::registerInput(std::string const& name, int timeout, InputPortType* input_port)
@@ -91,14 +106,14 @@ void Base::registerInput(std::string const& name, int timeout, InputPortType* in
     input_ports.push_back(info);
 }
 
-InputPortType* Base::deregisterInput(std::string const& name)
+Base::InputPortType* Base::deregisterInput(std::string const& name)
 {
-    for (vector<InputPortInfo>::iterator it = input_ports.begin();
+    for (std::vector<InputPortInfo>::iterator it = input_ports.begin();
             it != input_ports.end(); ++it)
     {
         if (it->name == name)
         {
-            RTT::InputPortBase* port = it->input_port;
+            InputPortType* port = it->input_port;
             input_ports.erase(it);
             return port;
         }
@@ -106,41 +121,26 @@ InputPortType* Base::deregisterInput(std::string const& name)
     return 0;
 }
 
-void Base::cleanupHook()
-{
-    RTT::TaskContext::cleanupHook();
-}
-
-void Base::setupDefaultInputs()
-{
-    if (_cmd_in.connected())
-        registerInput("in", _timeout_in.get(), &_cmd_in);
-    if (_cmd_cascade.connected())
-        registerInput("cascade", _timeout_cascade.get(), &_cmd_cascade);
-}
-
 bool Base::gatherInputCommand(){
     // The command that is being merged. It is written to this->merged_command
     // only if everything has been validated
     base::LinearAngular6DCommand merging_command;
-    // The latest input received. This is used to timestamp the merged command
-    base::Time max_stamp;
-    for(int i = 0; i < input_ports.size(); i++){
+    for(unsigned int i = 0; i < input_ports.size(); i++){
         base::LinearAngular6DCommand current_port;
-        RTT::FlowStatus status = input_ports.at(i).input_port->read(current_port);
+        InputPortInfo& port_info = input_ports.at(i);
+        InputPortType* port = port_info.input_port;
+        if (!port->connected())
+            continue;
+
+        RTT::FlowStatus status = port->read(current_port);
 
         if(status == RTT::NoData){
             state(WAIT_FOR_INPUT);
             return false;
         } else if(status == RTT::NewData){
-            input_ports.at(i).last_time = pose_sample.time;
-        } else if(input_ports.at(i).timeout > 0 && (pose_sample.time - input_ports.at(i).last_time).toSeconds() > input_ports.at(i).timeout){
-            exception(TIMEOUT);
-            return false;
-        }
-
-        if(current_port.stamp > max_stamp){
-            max_stamp = current_port.stamp;
+            port_info.last_time = current_port.time;
+            if (newestCommandTime < current_port.time)
+                newestCommandTime = current_port.time;
         }
 
         if(!(merge(_expected_inputs.get().linear, current_port.linear, merging_command.linear) &&
@@ -148,6 +148,14 @@ bool Base::gatherInputCommand(){
             return false;
         }   
     }
+
+    // Verify that no port is timing out
+    if (!newestCommandTime.isNull())
+    {
+        if (!verifyTimeout())
+            return false;
+    }
+
     for(int j = 0; j < 3; j++)
     {
         if(base::isUnset(merging_command.linear(j)) && (_expected_inputs.get().linear[j])){
@@ -160,9 +168,24 @@ bool Base::gatherInputCommand(){
         }
         
     }
-    merging_command.stamp = max_stamp;
+    merging_command.time = newestCommandTime;
     merged_command = merging_command;
     return true;         
+}
+
+bool Base::verifyTimeout()
+{
+    for (unsigned int i = 0; i < input_ports.size(); ++i)
+    {
+        double timeout = input_ports[i].timeout;
+        base::Time port_time = input_ports[i].last_time;
+        if (timeout != 0 && (newestCommandTime - port_time).toSeconds() > timeout)
+        {
+            exception(TIMEOUT);
+            return false;
+        }
+    }
+    return true;
 }
 
 bool Base::addCommandInput(std::string const & name, double timeout){
@@ -170,7 +193,7 @@ bool Base::addCommandInput(std::string const & name, double timeout){
         return false;
 
     InputPortType* input_port = new InputPortType("cmd_" + name);
-    provides()->addPort(*info.input_port);
+    provides()->addPort(*input_port);
     registerInput(name, timeout, input_port);
     return true;
 }
