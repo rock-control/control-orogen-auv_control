@@ -4,13 +4,13 @@
 
 using namespace auv_control;
 
-AlignedToBody::AlignedToBody(std::string const& name, TaskCore::TaskState initial_state)
-    : AlignedToBodyBase(name, initial_state)
+AlignedToBody::AlignedToBody(std::string const& name)
+    : AlignedToBodyBase(name)
 {
 }
 
-AlignedToBody::AlignedToBody(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : AlignedToBodyBase(name, engine, initial_state)
+AlignedToBody::AlignedToBody(std::string const& name, RTT::ExecutionEngine* engine)
+    : AlignedToBodyBase(name, engine)
 {
 }
 

@@ -4,16 +4,14 @@
 
 using namespace auv_control;
 
-Base::Base(std::string const& name, TaskCore::TaskState initial_state)
-    : BaseBase(name, initial_state)
+Base::Base(std::string const& name)
+    : BaseBase(name)
 {
-    this->genDefaultInput();
 }
 
-Base::Base(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : BaseBase(name, engine, initial_state)
+Base::Base(std::string const& name, RTT::ExecutionEngine* engine)
+    : BaseBase(name, engine)
 {
-    this->genDefaultInput();
 }
 
 Base::~Base()

@@ -10,6 +10,7 @@ using_library "motor_controller"
 # It also implements the base functionality of merging and validating the
 # declared inputs, as well as managing the command input ports.
 task_context "Base" do
+    needs_configuration
     abstract
 
     # This property defines which parts of the command input is expected to be
@@ -160,6 +161,8 @@ end
 
 # Follows a set of waypoints, where each waypoint is defined 
 task_context "WaypointNavigator" do
+    needs_configuration
+
     # The trajectory to follow, expressed as a set of waypoints in the world
     # frame
     input_port "trajectory", "std::vector<base::LinearAngular6DWaypoint>"
@@ -192,6 +195,8 @@ end
 # This allows to reuse control algorithms that deal with 2D motions (such as the
 # trajectory_follower)
 task_context "MotionCommand2DConverter" do
+    needs_configuration
+
     # Command input as a velocity motion in the plan
     input_port "cmd_in", "base::MotionCommand2D"
     # Command output as an aligned velocity. Only the heading and X velocities
