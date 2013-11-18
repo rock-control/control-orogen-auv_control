@@ -31,7 +31,6 @@ namespace auv_control {
     public:
         /** TaskContext constructor for MotionCommand2DConverter
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
-         * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
         MotionCommand2DConverter(std::string const& name = "auv_control::MotionCommand2DConverter");
 

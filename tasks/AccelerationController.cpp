@@ -4,13 +4,13 @@
 
 using namespace auv_control;
 
-AccelerationController::AccelerationController(std::string const& name, TaskCore::TaskState initial_state)
-    : AccelerationControllerBase(name, initial_state)
+AccelerationController::AccelerationController(std::string const& name)
+    : AccelerationControllerBase(name)
 {
 }
 
-AccelerationController::AccelerationController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : AccelerationControllerBase(name, engine, initial_state)
+AccelerationController::AccelerationController(std::string const& name, RTT::ExecutionEngine* engine)
+    : AccelerationControllerBase(name, engine)
 {
 }
 

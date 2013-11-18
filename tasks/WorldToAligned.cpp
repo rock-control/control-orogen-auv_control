@@ -4,13 +4,13 @@
 
 using namespace auv_control;
 
-WorldToAligned::WorldToAligned(std::string const& name, TaskCore::TaskState initial_state)
-    : WorldToAlignedBase(name, initial_state)
+WorldToAligned::WorldToAligned(std::string const& name)
+    : WorldToAlignedBase(name)
 {
 }
 
-WorldToAligned::WorldToAligned(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : WorldToAlignedBase(name, engine, initial_state)
+WorldToAligned::WorldToAligned(std::string const& name, RTT::ExecutionEngine* engine)
+    : WorldToAlignedBase(name, engine)
 {
 }
 

@@ -4,13 +4,13 @@
 
 using namespace auv_control;
 
-WaypointNavigator::WaypointNavigator(std::string const& name, TaskCore::TaskState initial_state)
-    : WaypointNavigatorBase(name, initial_state)
+WaypointNavigator::WaypointNavigator(std::string const& name)
+    : WaypointNavigatorBase(name)
 {
 }
 
-WaypointNavigator::WaypointNavigator(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : WaypointNavigatorBase(name, engine, initial_state)
+WaypointNavigator::WaypointNavigator(std::string const& name, RTT::ExecutionEngine* engine)
+    : WaypointNavigatorBase(name, engine)
 {
 }
 

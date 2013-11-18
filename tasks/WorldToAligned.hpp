@@ -19,9 +19,9 @@ namespace auv_control {
         bool calcOutput();
 
     public:
-        WorldToAligned(std::string const& name = "auv_control::WorldToAligned", TaskCore::TaskState initial_state = Stopped);
+        WorldToAligned(std::string const& name = "auv_control::WorldToAligned");
 
-        WorldToAligned(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        WorldToAligned(std::string const& name, RTT::ExecutionEngine* engine);
 
 	    ~WorldToAligned();
 

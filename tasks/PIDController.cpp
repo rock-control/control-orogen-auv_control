@@ -4,13 +4,13 @@
 
 using namespace auv_control;
 
-PIDController::PIDController(std::string const& name, TaskCore::TaskState initial_state)
-    : PIDControllerBase(name, initial_state)
+PIDController::PIDController(std::string const& name)
+    : PIDControllerBase(name)
 {
 }
 
-PIDController::PIDController(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : PIDControllerBase(name, engine, initial_state)
+PIDController::PIDController(std::string const& name, RTT::ExecutionEngine* engine)
+    : PIDControllerBase(name, engine)
 {
 }
 

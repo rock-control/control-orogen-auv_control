@@ -4,13 +4,13 @@
 
 using namespace auv_control;
 
-MotionCommand2DConverter::MotionCommand2DConverter(std::string const& name, TaskCore::TaskState initial_state)
-    : MotionCommand2DConverterBase(name, initial_state)
+MotionCommand2DConverter::MotionCommand2DConverter(std::string const& name)
+    : MotionCommand2DConverterBase(name)
 {
 }
 
-MotionCommand2DConverter::MotionCommand2DConverter(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state)
-    : MotionCommand2DConverterBase(name, engine, initial_state)
+MotionCommand2DConverter::MotionCommand2DConverter(std::string const& name, RTT::ExecutionEngine* engine)
+    : MotionCommand2DConverterBase(name, engine)
 {
 }
 
