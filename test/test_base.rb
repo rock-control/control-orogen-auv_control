@@ -65,8 +65,48 @@ describe 'auv_control::Base' do
             assert Base.unset?(merged.angular[2])
         end
         it "should use the cmd_in port if it is connected" do
+            task.addCommandInput '0', 0
+            cmd0 = task.cmd_0.writer
+            cmd1 = task.cmd_in.writer
+            
+            task.configure
+            task.start
+            sample = invalidated_command
+            sample.linear[0] = 1
+            cmd0.write sample
+            sample = invalidated_command
+            sample.linear[1] = 2
+            cmd1.write sample
+
+            merged = assert_has_one_new_sample cmd_out, 10
+            assert_in_delta 1, merged.linear[0], 1e-6
+            assert_in_delta 2, merged.linear[1], 1e-6
+            assert Base.unset?(merged.linear[2])
+            assert Base.unset?(merged.angular[0])
+            assert Base.unset?(merged.angular[1])
+            assert Base.unset?(merged.angular[2])
         end
         it "should use the cmd_cascade port if it is connected" do
+            task.addCommandInput '0', 0
+            cmd0 = task.cmd_0.writer
+            cmd1 = task.cmd_cascade.writer
+            
+            task.configure
+            task.start
+            sample = invalidated_command
+            sample.linear[0] = 1
+            cmd0.write sample
+            sample = invalidated_command
+            sample.linear[1] = 2
+            cmd1.write sample
+
+            merged = assert_has_one_new_sample cmd_out, 10
+            assert_in_delta 1, merged.linear[0], 1e-6
+            assert_in_delta 2, merged.linear[1], 1e-6
+            assert Base.unset?(merged.linear[2])
+            assert Base.unset?(merged.angular[0])
+            assert Base.unset?(merged.angular[1])
+            assert Base.unset?(merged.angular[2])
         end
         it "should go in INPUT_MISSING state if an expected input is not there" do
             task.addCommandInput '0', 0
@@ -106,8 +146,36 @@ describe 'auv_control::Base' do
             assert_state_change(task) { |s| s == :INPUT_UNEXPECTED }
         end
         it "should go in TIMEOUT state if one port is not updated for its specified timeout" do
+            task.addCommandInput '0', 1
+            cmd0 = task.cmd_0.writer
+            task.configure
+            task.start
+            sample = invalidated_command
+            sample.linear[0] = 1
+            sample.linear[1] = 1
+            cmd0.write sample
+            sample = invalidated_command
+            sample.time = Time.now + 2
+            sample.linear[0] = 1
+            sample.linear[1] = 1
+            cmd0.write sample
+            assert_state_change(task) { |s| s == :TIMEOUT }
         end
         it "should not check for timeouts on ports that have a timeout value of zero" do
+            task.addCommandInput '0', 0
+            cmd0 = task.cmd_0.writer
+            task.configure
+            task.start
+            sample = invalidated_command
+            sample.linear[0] = 1
+            sample.linear[1] = 1
+            cmd0.write sample
+            sample = invalidated_command
+            sample.time = Time.now + 1000
+            sample.linear[0] = 1
+            sample.linear[1] = 1
+            cmd0.write sample
+            assert_state_change(task) { |s| s == :TIMEOUT }
         end
         it "should wait in WAIT_FOR_INPUT state if there is no data on one of the input ports" do
             task.addCommandInput '0', 0
