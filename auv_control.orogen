@@ -95,7 +95,10 @@ task_context "PIDController" do
 end
 
 # Task that get a target position in the world frame and outputs a position
-# command in the aligned frame
+# command in the aligned frame.
+#
+# It will work in any of the three control domains (position, velocity and
+# effor), you just have to set position_control to true for the position domain.
 #
 # Note that this task expects to either have both x,y inputs or none. Giving it
 # only X or only Y will result in a failure to start.
@@ -119,8 +122,10 @@ end
 task_context "AlignedToBody" do
     subclasses "Base"
 
-    # The system's state. Only the orientation is being used (to be more
-    # precise, only the pitch and roll angles)
+    # The system pose in the world frame
+    #
+    # Only the orientation is being used (to be more precise, only the pitch and
+    # roll angles)
     input_port 'orientation_samples', 'base::samples::RigidBodyState'
 
     # The output command. It is expressed in the body frame, and is of the same
