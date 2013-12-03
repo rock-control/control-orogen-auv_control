@@ -159,6 +159,15 @@ task_context "AccelerationController" do
     output_port "cmd_out", "base::commands::Joints"
 end
 
+# Generates a single constant command in the configured domain
+task_context "ConstantCommand" do
+    # The desired command
+    property 'cmd', 'base/LinearAngular6DCommand'
+
+    # The output command.
+    output_port 'cmd_out', 'base::LinearAngular6DCommand'
+end
+
 # Follows a set of waypoints, where each waypoint is defined 
 task_context "WaypointNavigator" do
     needs_configuration
