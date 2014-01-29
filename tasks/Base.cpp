@@ -49,7 +49,6 @@ bool Base::startHook()
 void Base::updateHook()
 {
     RTT::TaskContext::updateHook();
-    
     if(!this->gatherInputCommand()){
         if (_keep_position_on_exception.get()){    
             this->keepPosition();
@@ -63,6 +62,7 @@ void Base::updateHook()
         }
         return;
     }
+    state(CONTROLLING);
 }
 
 
@@ -127,8 +127,10 @@ bool Base::gatherInputCommand(){
         base::LinearAngular6DCommand current_port;
         InputPortInfo& port_info = input_ports.at(i);
         InputPortType* port = port_info.input_port;
-        if (!port->connected())
-            continue;
+        //if (!port->connected()){
+        //    std::cout << "Port nicht Connected: " << i << std::endl;
+        //    continue;
+        //}
 
         RTT::FlowStatus status = port->read(current_port);
 
