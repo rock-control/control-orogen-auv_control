@@ -41,12 +41,19 @@ bool AlignedToBody::startHook()
 }
 bool AlignedToBody::calcOutput()
 {
+    RTT::FlowStatus status = _orientation_samples.read(orientation_sample);
+
+    if(status == RTT::NoData){
+        state(WAIT_FOR_ORIENTATION_SAMPLE);
+        return false;
+    }
+ 
     base::LinearAngular6DCommand output_command = merged_command;
 
-    double yaw = base::getYaw(pose_sample.orientation);
+    double yaw = base::getYaw(orientation_sample.orientation);
     Eigen::Quaterniond orientation_pr =
         Eigen::AngleAxisd(-yaw, Eigen::Vector3d::UnitZ()) *
-        pose_sample.orientation;
+        orientation_sample.orientation;
     output_command.linear = orientation_pr * output_command.linear;
 
     _cmd_out.write(output_command);

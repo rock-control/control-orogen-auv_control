@@ -127,11 +127,17 @@ task_context "AlignedToBody" do
     # Only the orientation is being used (to be more precise, only the pitch and
     # roll angles)
     input_port 'orientation_samples', 'base::samples::RigidBodyState'
+    
+    # This property defines the timeout for the cmd_in input port in seconds. 0
+    # means that the timeout would be ignored.
+    property "timeout_orientation", "double", 1
 
     # The output command. It is expressed in the body frame, and is of the same
     # nature than the input (efforts if the inputs are efforts, velocities if
     # the inputs are velocities)
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
+    
+    runtime_states :WAIT_FOR_ORIENTATION_SAMPLE
 end
 
 # Generates thruster commands based on a thruster matrix and a force-torque

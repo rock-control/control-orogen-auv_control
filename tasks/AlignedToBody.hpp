@@ -26,7 +26,7 @@ frame as input and outputs the same commands, but expressed in the body frame.
     {
 	friend class AlignedToBodyBase;
     protected:
-        base::samples::RigidBodyState pose_sample;
+        base::samples::RigidBodyState orientation_sample;
         bool calcOutput();
 
     public:
