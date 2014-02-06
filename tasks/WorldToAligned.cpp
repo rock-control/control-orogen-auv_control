@@ -34,8 +34,10 @@ bool WorldToAligned::startHook()
 }
 void WorldToAligned::updateHook()
 {
-    if (_pose_samples.read(currentPose) == RTT::NoData)
+    if (_pose_samples.read(currentPose) == RTT::NoData){
+        state(WAIT_FOR_POSE_SAMPLE);
         return;
+    }
 
     WorldToAlignedBase::updateHook();
 }

@@ -40,7 +40,10 @@ void PIDController::updateHook()
 {
     base::samples::RigidBodyState pose_sample;
     if (_pose_samples.read(pose_sample) == RTT::NoData)
+    {
+        state(WAIT_FOR_POSE_SAMPLE);
         return;
+    }
 
     if (_position_control)
     {

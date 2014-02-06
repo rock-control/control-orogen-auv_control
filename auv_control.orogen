@@ -81,6 +81,8 @@ task_context 'BasePIDController' do
     # The output command. It is a velocity command expressed in the aligned
     # frame.
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
+    
+    runtime_states :WAIT_FOR_POSE_SAMPLE
 end
 
 # Controller that takes either positions or velocities, expressed in either the
@@ -115,6 +117,8 @@ task_context "WorldToAligned" do
 
     # The output command.
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
+    
+    runtime_states :WAIT_FOR_POSE_SAMPLE
 end
 
 # Controller that takes either velocities or efforts expressed in the aligned
