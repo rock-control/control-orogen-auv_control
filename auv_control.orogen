@@ -198,15 +198,10 @@ task_context "WaypointNavigator" do
     # auv_control controllers
     output_port "cmd_out", "base::LinearAngular6DCommand"
     
-    ### MERGE ALL THESE INTO A SINGLE DATA STRUCTURE AND THEN MAKE A SINGLE PORT
-    output_port("current_delta", "base::LinearAngular6DCommand").
-        doc("shows error between current and desired waypoint for debugging")
-
-    output_port("current_waypoint", "base::LinearAngular6DWaypoint").
-        doc("current waypoint that is navigated by this controller")
-
-    output_port("queue_size", "int").
-        doc("remaining waypoints to follow")
+    output_port("waypoint_info", "base::LinearAngular6DWaypointInfo").
+        doc("shows error between current and desired waypoint for debugging,
+        current waypoint that is navigated by this controller
+        and remaining waypoints to follow")
 
     runtime_states :WAIT_FOR_WAYPOINTS, :KEEP_WAYPOINT,
         :FOLLOWING_WAYPOINTS, :POSE_SAMPLE_MISSING

@@ -60,6 +60,13 @@ namespace base{
         }
     };
 
+    struct LinearAngular6DWaypointInfo{
+        LinearAngular6DCommand current_delta;
+        LinearAngular6DWaypoint current_waypoint;
+        int queue_size;
+    };
+    
+        
     struct LinearAngular6DPIDSettings{
         motor_controller::PIDSettings linear[3];
         motor_controller::PIDSettings angular[3];

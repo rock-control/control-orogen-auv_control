@@ -81,6 +81,7 @@ void WaypointNavigator::updateHook()
         state(FOLLOWING_WAYPOINTS);
     }
     
+    base::LinearAngular6DWaypointInfo wpi;
     if(!waypoints.empty()){
         base::LinearAngular6DCommand delta;
         
@@ -91,7 +92,7 @@ void WaypointNavigator::updateHook()
         delta.angular(0) = wp.cmd.angular(0) - base::getRoll(pose.orientation);
         delta.angular(1) = wp.cmd.angular(1) - base::getPitch(pose.orientation);
         delta.angular(2) = wp.cmd.angular(2) - base::getYaw(pose.orientation);
-        _current_delta.write(delta);
+        wpi.current_delta = delta;
         if (delta.linear.norm() <= wp.linear_tolerance && delta.angular.norm() <= wp.angular_tolerance){
             waypoints.pop_front();
             if (waypoints.size() == 0){
@@ -104,19 +105,20 @@ void WaypointNavigator::updateHook()
     } else if(!keep_position) {
         state(WAIT_FOR_WAYPOINTS);
     }
-    _queue_size.write(waypoints.size());
+    
+    
     wp.cmd.time = base::Time::now();
+    //write the command
     _cmd_out.write(wp.cmd);
-    _current_waypoint.write(wp);
+
+    
+    wpi.queue_size = waypoints.size();
+    wpi.current_waypoint = wp;
+    //write infos about the Waypoints
+    _waypoint_info.write(wpi);
 
     return;
-
-    
-
-    
 }
-
-
 
 void WaypointNavigator::errorHook()
 {
