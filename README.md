@@ -1,11 +1,11 @@
-= auv\_control: Generic implementation of an AUV control scheme for hovering AUVs
+# auv\_control: Generic implementation of an AUV control scheme for hovering AUVs
 
 Assumptions:
  - hovering AUV
  - thrusters placed so that axis can be decoupled (i.e. aligned with one of the
    X, Y or Z axis)
 
-== General presentation
+## General presentation
 
 (This is a short description, there is a more detailed description
 [at the bottom of this document](#detailed-description))
@@ -31,7 +31,7 @@ component will verify that two of its inputs do NOT try to control the same part
 of the overall command vector, and will go into INPUT\_COLLIDING exception if it
 is the case.
 
-== Example
+## Example
 
 Let's take the example of a pipeline tracking behaviour, in which a pipeline
 detector gives the distance of the pipeline along the Y axis as well as its
@@ -43,7 +43,7 @@ depth.
 
 ![pipeline following network](doc/pipeline_following.png)
 
-== Tuning
+## Tuning
 
 This section deals with tuning the controller(s) for a particular system.
 
@@ -53,7 +53,7 @@ figures, this component would be called OrientationWithZ.  Additional velocity
 tuning requires X/Y velocity (DVL) as well as a derivative of the depth sensor.
 Position tuning will then require some X/Y position estimator.
 
-=== Initial values
+### Initial values
 
 The thruster matrix represents the relative contribution of each thruster for
 each axis of control. It can be pre-filled by looking at the geometry and
@@ -68,7 +68,7 @@ Y/Z plane that passes through the center of gravity. These thrusters would have
 initial values of .6 and .4 for pitch, .5 each for Z and 0 for yaw, roll, x and
 y. It is good practice to normalize each line to 1
 
-=== Initial Z Control
+### Initial Z Control
 
 The most important bit that needs to be calibrated first is depth control. The
 other parts of the control really can't be tuned without that.
@@ -91,7 +91,7 @@ TODO: figure
 At this point, the system can keep more or less stable at a given depth. We can
 therefore go on with the rest
 
-=== Pitch / Roll Control Position
+### Pitch / Roll Control Position
 
 This part should obviously be skipped if your system has not pitch and roll
 control capability. It most probably has one since it can hover (some thrusters
@@ -100,7 +100,7 @@ generate a constant depth command and tune the pitch and roll axis PID
 controllers. If the AUV is properly balanced, the controllers will not need any
 I part.
 
-=== Further Tuning
+### Further Tuning
 
 Once the system can be controlled in Pitch, Roll and Z, tuning other controllers
 gets pretty straightforward. Caveats / Tips:
@@ -112,9 +112,9 @@ gets pretty straightforward. Caveats / Tips:
    velocity PIDController in the loop for some axis while keeping the existing
    PIDController for the already tuned axis.
 
-== General Concept (#detailed-description)
+## General Concept (#detailed-description)
 
-=== Frame Definitions
+### Frame Definitions
 
 C is the AUV center of gravity
 
@@ -145,7 +145,7 @@ close to 90 degrees because of ambiguities in the interpretation of the euler
 angles. It can be made continuous in practice by adding temporal continuity
 logic to the convertion procedure.
 
-=== Control Domains
+### Control Domains
 
 The general control loop is a cascaded control loop. The following input domains
 are defined:
@@ -162,7 +162,7 @@ are defined:
    to apply on C. These forces and torques are expressed in the vehicle’s body
    frame.
 
-=== Datatype
+### Datatype
 
 To allow the reuse of different controls across different domains, it has been
 decided to use the same datatype for the input and output of each stage of the
