@@ -197,11 +197,10 @@ task_context "WaypointNavigator" do
     # The output command, as a pose in world frame that can be used by the
     # auv_control controllers
     output_port "cmd_out", "base::LinearAngular6DCommand"
-    
-    output_port("waypoint_info", "base::LinearAngular6DWaypointInfo").
-        doc("shows error between current and desired waypoint for debugging,
-        current waypoint that is navigated by this controller
-        and remaining waypoints to follow")
+   
+    # Shows error between current and desired waypoint for debuging,
+    # current waypoint is navigated by this controller and remaining waypoints zo follow 
+    output_port("waypoint_info", "base::LinearAngular6DWaypointInfo")
 
     runtime_states :WAIT_FOR_WAYPOINTS, :KEEP_WAYPOINT,
         :FOLLOWING_WAYPOINTS, :POSE_SAMPLE_MISSING
