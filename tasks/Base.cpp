@@ -62,7 +62,10 @@ void Base::updateHook()
         }
         return;
     }
-    state(CONTROLLING);
+
+    if (state() != CONTROLLING){
+        state(CONTROLLING);
+    }
 }
 
 
@@ -135,12 +138,15 @@ bool Base::gatherInputCommand(){
         RTT::FlowStatus status = port->read(current_port);
 
         if(status == RTT::NoData){
-            state(WAIT_FOR_INPUT);
+            if(state() != WAIT_FOR_INPUT){
+                state(WAIT_FOR_INPUT);
+            }
             return false;
         } else if(status == RTT::NewData){
             port_info.last_time = current_port.time;
-            if (newestCommandTime < current_port.time)
+            if (newestCommandTime < current_port.time){
                 newestCommandTime = current_port.time;
+            }
         }
 
         if(!(merge(_expected_inputs.get().linear, current_port.linear, merging_command.linear) &&
@@ -208,6 +214,8 @@ bool Base::merge(bool const expected[], base::Vector3d const& current, base::Vec
         }else if(!base::isUnset(merged(i))){
             //Ther is a value in the merged value and the value is set on this port.
             //This is an exception!
+            std::cout << "MERGED: " << merged.transpose() << std::endl;
+            std::cout << "current: " << current.transpose() << std::endl;
             exception(INPUT_COLLIDING);
             return false; 
         }else{

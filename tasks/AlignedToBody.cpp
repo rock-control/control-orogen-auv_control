@@ -44,7 +44,9 @@ bool AlignedToBody::calcOutput()
     RTT::FlowStatus status = _orientation_samples.read(orientation_sample);
 
     if(status == RTT::NoData){
-        state(WAIT_FOR_ORIENTATION_SAMPLE);
+        if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
+            state(WAIT_FOR_ORIENTATION_SAMPLE);
+        }
         return false;
     }
  

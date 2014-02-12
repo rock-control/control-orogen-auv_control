@@ -68,7 +68,9 @@ void WaypointNavigator::updateHook()
     std::vector<base::LinearAngular6DWaypoint> trajectory;
 
     if(_pose_sample.read(pose) == RTT::NoData) {
-        state(POSE_SAMPLE_MISSING);
+        if(state() != POSE_SAMPLE_MISSING){
+            state(POSE_SAMPLE_MISSING);
+        }
         return;
     }
     last_pose = pose;
@@ -78,7 +80,9 @@ void WaypointNavigator::updateHook()
         waypoints.resize(trajectory.size());
         std::copy(trajectory.begin(), trajectory.end(), waypoints.begin());
         keep_position = false;
-        state(FOLLOWING_WAYPOINTS);
+        if(state() != FOLLOWING_WAYPOINTS){
+            state(FOLLOWING_WAYPOINTS);
+        }
     }
     
     base::LinearAngular6DWaypointInfo wpi;
@@ -97,12 +101,14 @@ void WaypointNavigator::updateHook()
             waypoints.pop_front();
             if (waypoints.size() == 0){
                 keep_position = true;
-                state(KEEP_WAYPOINT);
+                if(state() != KEEP_WAYPOINT){
+                    state(KEEP_WAYPOINT);
+                }
             }
         }
 
 
-    } else if(!keep_position) {
+    } else if(!keep_position && (state() != WAIT_FOR_WAYPOINTS)) {
         state(WAIT_FOR_WAYPOINTS);
     }
     

@@ -35,7 +35,9 @@ bool WorldToAligned::startHook()
 void WorldToAligned::updateHook()
 {
     if (_pose_samples.read(currentPose) == RTT::NoData){
-        state(WAIT_FOR_POSE_SAMPLE);
+        if(state() != WAIT_FOR_POSE_SAMPLE){
+            state(WAIT_FOR_POSE_SAMPLE);
+        }
         return;
     }
 
@@ -86,6 +88,11 @@ bool WorldToAligned::calcOutput(){
     {
         // And shift the yaw target by the current yaw (leaving pitch and roll)
         output_command.angular(2) = output_command.angular(2) - yaw;
+        while(output_command.angular(2) > M_PI)
+            output_command.angular(2)-=(2*M_PI);
+        while(output_command.angular(2) < -M_PI)
+            output_command.angular(2)+=(2*M_PI);
+
     }
         
     // Finally, set the timestamp of the output
