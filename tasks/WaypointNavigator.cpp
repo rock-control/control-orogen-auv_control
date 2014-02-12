@@ -24,41 +24,6 @@ WaypointNavigator::~WaypointNavigator()
 // hooks defined by Orocos::RTT. See WaypointNavigator.hpp for more detailed
 // documentation about them.
 
-
-
-
-/*bool WaypointNavigator::configureHook()
-{
-    
-    if (! RTT::TaskContext::configureHook())
-        return false;
-    
-
-    
-
-    
-    return true;
-    
-}
-
-
-
-bool WaypointNavigator::startHook()
-{
-    
-    if (! RTT::TaskContext::startHook())
-        return false;
-    
-
-    
-
-    
-    return true;
-    
-}*/
-
-
-
 void WaypointNavigator::updateHook()
 {
     
