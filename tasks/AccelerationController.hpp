@@ -38,6 +38,7 @@ namespace auv_control {
 	~AccelerationController();
 
         bool startHook();
+        bool configureHook();
     };
 }
 
