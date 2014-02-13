@@ -126,14 +126,15 @@ bool Base::gatherInputCommand(){
     // The command that is being merged. It is written to this->merged_command
     // only if everything has been validated
     base::LinearAngular6DCommand merging_command;
+    bool has_connected_port = false;
     for(unsigned int i = 0; i < input_ports.size(); i++){
         base::LinearAngular6DCommand current_port;
         InputPortInfo& port_info = input_ports.at(i);
         InputPortType* port = port_info.input_port;
-        //if (!port->connected()){
-        //    std::cout << "Port nicht Connected: " << i << std::endl;
-        //    continue;
-        //}
+        if (!port->connected()){
+            continue;
+        }
+        has_connected_port = true;
 
         RTT::FlowStatus status = port->read(current_port);
 
@@ -153,6 +154,13 @@ bool Base::gatherInputCommand(){
                     merge(_expected_inputs.get().angular, current_port.angular, merging_command.angular))){
             return false;
         }   
+    }
+    
+    if(!has_connected_port){
+        if(state() != WAIT_FOR_CONNECTED_INPUT_PORT){
+            state(WAIT_FOR_CONNECTED_INPUT_PORT);
+        }
+        return false;
     }
 
     // Verify that no port is timing out
@@ -214,8 +222,6 @@ bool Base::merge(bool const expected[], base::Vector3d const& current, base::Vec
         }else if(!base::isUnset(merged(i))){
             //Ther is a value in the merged value and the value is set on this port.
             //This is an exception!
-            std::cout << "MERGED: " << merged.transpose() << std::endl;
-            std::cout << "current: " << current.transpose() << std::endl;
             exception(INPUT_COLLIDING);
             return false; 
         }else{
