@@ -191,12 +191,14 @@ bool Base::verifyTimeout()
 {
     for (unsigned int i = 0; i < input_ports.size(); ++i)
     {
-        double timeout = input_ports[i].timeout;
-        base::Time port_time = input_ports[i].last_time;
-        if (timeout != 0 && (newestCommandTime - port_time).toSeconds() > timeout)
-        {
-            exception(TIMEOUT);
-            return false;
+        if(input_ports[i].input_port->connected()){
+            double timeout = input_ports[i].timeout;
+            base::Time port_time = input_ports[i].last_time;
+            if (timeout != 0 && (newestCommandTime - port_time).toSeconds() > timeout)
+            {
+                exception(TIMEOUT);
+                return false;
+            }
         }
     }
     return true;
