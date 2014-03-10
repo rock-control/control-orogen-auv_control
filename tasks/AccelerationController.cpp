@@ -27,13 +27,21 @@ bool AccelerationController::configureHook()
     thrusterMatrix = _matrix.get().transpose();
     inputVector = Eigen::VectorXd::Zero(6);
     cmdVector = Eigen::VectorXd::Zero(thrusterMatrix.rows());
+    names = _names.get();
+    if(names.size() != thrusterMatrix.rows() && names.size() != 0){
+        exception(WRONG_SIZE_OF_NAMES);
+    }
+    
+    if(_limits.get().size() != thrusterMatrix.rows() && !_limits.get().empty()){
+        exception(WRONG_SIZE_OF_LIMITS);
+    }
+
     controlModes = _control_modes.get();
     if(controlModes.size() == 0){
         //resize the controlModes to number of Thrustes
-        unsigned int tmp_size = controlModes.size();
         controlModes.resize(thrusterMatrix.rows());
         //set undefined controlModes to RAW
-        for(unsigned int i = tmp_size; i < thrusterMatrix.rows(); i++){
+        for(unsigned int i = 0; i < thrusterMatrix.rows(); i++){
             controlModes[i] = base::JointState::RAW;
         }
     } else if(controlModes.size() != thrusterMatrix.rows()){
@@ -41,6 +49,7 @@ bool AccelerationController::configureHook()
     }
 
     jointCommand = base::commands::Joints();
+    jointCommand.names = names;
     jointCommand.elements.resize(thrusterMatrix.rows());
     
     return true;
@@ -63,7 +72,18 @@ bool AccelerationController::calcOutput()
     }
     cmdVector = thrusterMatrix * inputVector;
     for (unsigned int i = 0; i < jointCommand.size(); ++i){
-        jointCommand[i].setField(controlModes[i], cmdVector(i));
+        
+        //Cutoff cmdValue at the JointLimits
+	if(!_limits.get().empty()){
+            if(cmdVector(i) > _limits.get()[i].max.getField(controlModes[i])){
+	        cmdVector(i) = _limits.get()[i].max.getField(controlModes[i]);
+	    }
+            if(cmdVector(i) < _limits.get()[i].min.getField(controlModes[i])){
+	        cmdVector(i) = _limits.get()[i].min.getField(controlModes[i]);
+	    }
+        }
+	
+	jointCommand[i].setField(controlModes[i], cmdVector(i));
     }
     _cmd_out.write(jointCommand);
     return true;

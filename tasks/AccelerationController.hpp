@@ -16,6 +16,7 @@ namespace auv_control {
         base::VectorXd cmdVector;
         base::commands::Joints jointCommand;
         std::vector<base::JointState::MODE> controlModes;
+	std::vector<std::string> names;
 
         bool calcOutput();
 

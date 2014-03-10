@@ -159,6 +159,11 @@ task_context "AccelerationController" do
     # matrix are the angular axis.
     property "matrix", "base::MatrixXd"
 
+    # Names of the thrusters
+    #
+    # Leave empty to use no names
+    property "names", "std::vector<std::string>"  
+
     # Limits of the thrusters
     #
     # Leave empty if you don't want to limit anything (is that really a good
@@ -173,7 +178,7 @@ task_context "AccelerationController" do
     # Generated motor commands
     output_port "cmd_out", "base::commands::Joints"
     
-    exception_states :WRONG_SIZE_OF_CONTROLMODES
+    exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SIZE_OF_LIMITS, :WRONG_SIZE_OF_NAMES 
 end
 
 # Generates a single constant command in the configured domain
