@@ -75,14 +75,23 @@ bool AccelerationController::calcOutput()
         
         //Cutoff cmdValue at the JointLimits
 	if(!_limits.get().empty()){
-            if(cmdVector(i) > _limits.get()[i].max.getField(controlModes[i])){
-	        cmdVector(i) = _limits.get()[i].max.getField(controlModes[i]);
-	    }
-            if(cmdVector(i) < _limits.get()[i].min.getField(controlModes[i])){
-	        cmdVector(i) = _limits.get()[i].min.getField(controlModes[i]);
-	    }
+            if(names.size() && _limits.get().hasNames()){
+                if(cmdVector(i) > _limits.get()[names[i]].max.getField(controlModes[i])){
+	            cmdVector(i) = _limits.get()[names[i]].max.getField(controlModes[i]);
+	        }
+                if(cmdVector(i) < _limits.get()[names[i]].min.getField(controlModes[i])){
+	            cmdVector(i) = _limits.get()[names[i]].min.getField(controlModes[i]);
+	        }
+            } else {
+                if(cmdVector(i) > _limits.get()[i].max.getField(controlModes[i])){
+	            cmdVector(i) = _limits.get()[i].max.getField(controlModes[i]);
+	        }
+                if(cmdVector(i) < _limits.get()[i].min.getField(controlModes[i])){
+	            cmdVector(i) = _limits.get()[i].min.getField(controlModes[i]);
+	        }
+            }
         }
-	
+
 	jointCommand[i].setField(controlModes[i], cmdVector(i));
     }
     _cmd_out.write(jointCommand);
