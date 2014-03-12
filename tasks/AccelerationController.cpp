@@ -2,6 +2,7 @@
 
 #include "AccelerationController.hpp"
 #include <base/JointState.hpp>
+#include <base/NamedVector.hpp>
 
 using namespace auv_control;
 
@@ -30,10 +31,26 @@ bool AccelerationController::configureHook()
     names = _names.get();
     if(names.size() != thrusterMatrix.rows() && names.size() != 0){
         exception(WRONG_SIZE_OF_NAMES);
+        return false;
     }
     
     if(_limits.get().size() != thrusterMatrix.rows() && !_limits.get().empty()){
         exception(WRONG_SIZE_OF_LIMITS);
+        return false;
+    } else {
+        limits = _limits.get();
+    }
+
+    if(names.size() && limits.names.size()){
+        for(unsigned i = 0; i < names.size(); i++){
+            try{
+                limits.mapNameToIndex(names[i]);
+            } catch (std::exception& e){
+                std::cout << "error:" << e.what() << std::endl;
+                exception(INVALID_NAME_IN_LIMITS);
+                return false;
+            }
+        }
     }
 
     controlModes = _control_modes.get();
@@ -72,27 +89,27 @@ bool AccelerationController::calcOutput()
     }
     cmdVector = thrusterMatrix * inputVector;
     for (unsigned int i = 0; i < jointCommand.size(); ++i){
-        
+
         //Cutoff cmdValue at the JointLimits
-	if(!_limits.get().empty()){
+        if(!_limits.get().empty()){
             if(names.size() && _limits.get().hasNames()){
                 if(cmdVector(i) > _limits.get()[names[i]].max.getField(controlModes[i])){
-	            cmdVector(i) = _limits.get()[names[i]].max.getField(controlModes[i]);
-	        }
+                    cmdVector(i) = _limits.get()[names[i]].max.getField(controlModes[i]);
+                }
                 if(cmdVector(i) < _limits.get()[names[i]].min.getField(controlModes[i])){
-	            cmdVector(i) = _limits.get()[names[i]].min.getField(controlModes[i]);
-	        }
+                    cmdVector(i) = _limits.get()[names[i]].min.getField(controlModes[i]);
+                }
             } else {
                 if(cmdVector(i) > _limits.get()[i].max.getField(controlModes[i])){
-	            cmdVector(i) = _limits.get()[i].max.getField(controlModes[i]);
-	        }
+                    cmdVector(i) = _limits.get()[i].max.getField(controlModes[i]);
+                }
                 if(cmdVector(i) < _limits.get()[i].min.getField(controlModes[i])){
-	            cmdVector(i) = _limits.get()[i].min.getField(controlModes[i]);
-	        }
+                    cmdVector(i) = _limits.get()[i].min.getField(controlModes[i]);
+                }
             }
         }
 
-	jointCommand[i].setField(controlModes[i], cmdVector(i));
+        jointCommand[i].setField(controlModes[i], cmdVector(i));
     }
     _cmd_out.write(jointCommand);
     return true;

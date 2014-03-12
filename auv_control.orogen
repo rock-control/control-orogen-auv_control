@@ -178,7 +178,7 @@ task_context "AccelerationController" do
     # Generated motor commands
     output_port "cmd_out", "base::commands::Joints"
     
-    exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SIZE_OF_LIMITS, :WRONG_SIZE_OF_NAMES 
+    exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SIZE_OF_LIMITS, :WRONG_SIZE_OF_NAMES, :INVALID_NAME_IN_LIMITS 
 end
 
 # Generates a single constant command in the configured domain
