@@ -54,9 +54,6 @@ task_context "Base" do
         returns('bool')
     dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
 
-    # Averaged periods of the input commands
-    output_port "avg_period", "base::LinearAngular6DCommand"
-
     runtime_states :WAIT_FOR_CONNECTED_INPUT_PORT, :WAIT_FOR_INPUT, :CONTROLLING
     exception_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT
 
