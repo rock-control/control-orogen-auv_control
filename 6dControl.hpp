@@ -48,7 +48,7 @@ namespace base{
 
     struct LinearAngular6DWaypoint{
         LinearAngular6DCommand cmd;
-        base::Vector3d opt_orientation;
+        double opt_orientation;
         double opt_orientation_distance;
         double linear_tolerance;
         double angular_tolerance;
