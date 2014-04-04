@@ -17,6 +17,7 @@ namespace auv_control {
         base::commands::Joints jointCommand;
         std::vector<base::JointState::MODE> controlModes;
 	std::vector<std::string> names;
+        base::JointLimits limits;
 
         bool calcOutput();
 
