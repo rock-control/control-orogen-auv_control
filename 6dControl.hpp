@@ -52,11 +52,13 @@ namespace base{
         double opt_orientation_distance;
         double linear_tolerance;
         double angular_tolerance;
+        double hold_time;
 
         LinearAngular6DWaypoint(){
             opt_orientation_distance = base::infinity<double>();
             linear_tolerance = 0.2;
             angular_tolerance = 0.2;
+            hold_time = 0;
         }
     };
 
