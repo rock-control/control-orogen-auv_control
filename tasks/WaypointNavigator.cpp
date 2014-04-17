@@ -32,7 +32,7 @@ void WaypointNavigator::updateHook()
     base::samples::RigidBodyState pose;
     std::vector<base::LinearAngular6DWaypoint> trajectory;
 
-    if(_pose_sample.read(pose) == RTT::NoData) {
+    if(_pose_sample.readNewest(pose) == RTT::NoData) {
         if(state() != POSE_SAMPLE_MISSING){
             state(POSE_SAMPLE_MISSING);
         }
@@ -63,16 +63,22 @@ void WaypointNavigator::updateHook()
         delta.angular(2) = wp.cmd.angular(2) - base::getYaw(pose.orientation);
         wpi.current_delta = delta;
         if (delta.linear.norm() <= wp.linear_tolerance && delta.angular.norm() <= wp.angular_tolerance){
-            waypoints.pop_front();
-            if (waypoints.size() == 0){
-                keep_position = true;
-                if(state() != KEEP_WAYPOINT){
-                    state(KEEP_WAYPOINT);
+            if (state() != KEEP_WAYPOINT){
+                state(KEEP_WAYPOINT);
+                start_keeping = base::Time::now();
+            } 
+            if (last_pose.time.toSeconds()-start_keeping.toSeconds() >= wp.hold_time || wp.hold_time == 0){
+                waypoints.pop_front();
+                if (waypoints.size() == 0){
+                    keep_position = true;
+                    if(state() != KEEP_WAYPOINT){
+                        state(KEEP_WAYPOINT);
+                    }
+                } else {
+                    state(FOLLOWING_WAYPOINTS);
                 }
             }
         }
-
-
     } else if(!keep_position && (state() != WAIT_FOR_WAYPOINTS)) {
         state(WAIT_FOR_WAYPOINTS);
     }

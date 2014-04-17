@@ -30,6 +30,7 @@ namespace auv_control {
 
         base::LinearAngular6DWaypoint wp;
         bool keep_position;
+        base::Time start_keeping;
 
     public:
         /** TaskContext constructor for WaypointNavigator
