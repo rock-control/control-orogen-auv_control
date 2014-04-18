@@ -60,7 +60,9 @@ bool OptimalHeadingController::calcOutput(){
     opt_distance = _optimal_heading_distance.get();
 
     output_command = merged_command;
-
+    
+    //Set z to 0, to use only x and y fpr the distance
+    merged_command.linear(2) = 0;
     if(merged_command.linear.norm() > opt_distance){
         output_command.angular(2) = base::Angle::normalizeRad(atan2(merged_command.linear(1), merged_command.linear(0))
                 //+base::getYaw(orientation_sample.orientation) 
