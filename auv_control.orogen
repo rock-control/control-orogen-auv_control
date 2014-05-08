@@ -67,8 +67,14 @@ task_context 'BasePIDController' do
     abstract
     subclasses "Base"
 
-    # Settings for the PID controllers
+    # Ideal Settings for the PID controllers
     property "pid_settings", "base::LinearAngular6DPIDSettings"
+    
+    # Parallel Settings for the PID controllers
+    property "parallel_pid_settings", "base::LinearAngular6DParallelPIDSettings"
+
+    # Use the Ideal (false) or Parallel PID-Settings 
+    property "use_parallel_pid_settings", "bool", false
 
     # The system state. Only the parts of the state that are controlled needs to
     # be available (i.e. if the command involves only orientation, only the
@@ -78,6 +84,9 @@ task_context 'BasePIDController' do
     # The output command. It is a velocity command expressed in the aligned
     # frame.
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
+
+    # The states of the pid-controllers
+    output_port 'pid_state', 'base::LinearAngular6DPIDState'
     
     runtime_states :WAIT_FOR_POSE_SAMPLE
 end

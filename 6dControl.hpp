@@ -85,5 +85,27 @@ namespace base{
             return !(*this == rhs);
         }
     };
+    
+    struct LinearAngular6DParallelPIDSettings{
+        motor_controller::ParallelPIDSettings linear[3];
+        motor_controller::ParallelPIDSettings angular[3];
+
+        bool operator==(const LinearAngular6DParallelPIDSettings& rhs) const{
+            for(int i = 0; i < 3; i++){
+                if(this->linear[i] != rhs.linear[i] || this->angular[i] != rhs.angular[i])
+                    return false;
+            }
+            return true;
+        }
+        
+        bool operator!=(const LinearAngular6DParallelPIDSettings& rhs) const{
+            return !(*this == rhs);
+        }
+    };
+
+    struct LinearAngular6DPIDState{
+        motor_controller::PIDState linear[3];
+        motor_controller::PIDState angular[3];
+    };
 }
 #endif

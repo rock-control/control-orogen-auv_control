@@ -31,8 +31,13 @@ bool BasePIDController::configureHook()
 
     for (int i = 0; i < 3; ++i)
     {
-        mLinearPIDs[i].setPIDSettings(_pid_settings.get().linear[i]);
-        mAngularPIDs[i].setPIDSettings(_pid_settings.get().angular[i]);
+        if(_use_parallel_pid_settings){
+            mLinearPIDs[i].setParallelPIDSettings(_parallel_pid_settings.get().linear[i]);
+            mAngularPIDs[i].setParallelPIDSettings(_parallel_pid_settings.get().angular[i]);
+        } else {
+            mLinearPIDs[i].setPIDSettings(_pid_settings.get().linear[i]);
+            mAngularPIDs[i].setPIDSettings(_pid_settings.get().angular[i]);
+        }
     }
 
     return true;
@@ -64,6 +69,7 @@ bool BasePIDController::calcOutput()
     // We start by copying merged_command so that we can simply ignore the unset
     // values
     base::LinearAngular6DCommand output_command = merged_command;
+    base::LinearAngular6DPIDState pid_state;
     for (int i = 0; i < 3; ++i)
     {
         if (!base::isUnset(merged_command.linear(i)))
@@ -72,6 +78,7 @@ bool BasePIDController::calcOutput()
                 mLinearPIDs[i].update(currentLinear(i),
                                    merged_command.linear(i),
                                    merged_command.time.toSeconds());
+            pid_state.linear[i] = mLinearPIDs[i].getState();
         }
         if (!base::isUnset(merged_command.angular(i)))
         {
@@ -79,6 +86,7 @@ bool BasePIDController::calcOutput()
                 mAngularPIDs[i].update(currentAngular(i),
                                    merged_command.angular(i),
                                    merged_command.time.toSeconds());
+            pid_state.angular[i] = mAngularPIDs[i].getState();
         }
     }
     _cmd_out.write(output_command);
