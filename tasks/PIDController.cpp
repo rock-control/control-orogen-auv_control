@@ -71,8 +71,9 @@ void PIDController::updateHook()
         currentAngular = pose_sample.angular_velocity;
 
         // velocity control
-        if (_world_frame)
+        if (_world_frame){
             currentLinear = pose_sample.velocity;
+        } 
         else
         {
             double yaw = base::getYaw(pose_sample.orientation);

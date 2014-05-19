@@ -28,6 +28,10 @@ generate commands
     protected:
         motor_controller::PID mLinearPIDs[3];
         motor_controller::PID mAngularPIDs[3];
+        bool use_parallel_pid_settings;
+        base::LinearAngular6DPIDSettings pid_settings;
+        base::LinearAngular6DParallelPIDSettings parallel_pid_settings;
+
         bool calcOutput();
 
         /** The current linear part of the system's state
