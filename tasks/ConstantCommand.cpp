@@ -38,7 +38,9 @@ bool ConstantCommand::startHook()
 }
 void ConstantCommand::updateHook()
 {
-    _cmd_out.write(_cmd.get());
+    base::LinearAngular6DCommand cmd = _cmd.get();
+    cmd.time = base::Time::now();
+    _cmd_out.write(cmd);
     ConstantCommandBase::updateHook();
 }
 void ConstantCommand::errorHook()
