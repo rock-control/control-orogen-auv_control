@@ -194,6 +194,8 @@ task_context "ConstantCommand" do
 
     # The output command.
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
+
+    periodic(0.01)
 end
 
 # Follows a set of waypoints, where each waypoint is defined 
