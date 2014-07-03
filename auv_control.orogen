@@ -43,7 +43,13 @@ task_context "Base" do
     # This property defines the timeout for the cascade input port in seconds. 0
     # means that the timeout would be ignored.
     property "timeout_cascade", "double", 1
-    
+   
+    #This property defines the safty behavior ath the merging of the input-ports.
+    #If the property is on true (default) the merged command need to be like in
+    #the expected_inputs property defined. Else the expected_inputs are ignored 
+    #while the merged comand are unic.
+    property "safe_mode", "bool", true
+
     # Create a new input to merge 
     #
     # Returns true if the port got added, and false if a port with the same name
@@ -54,8 +60,8 @@ task_context "Base" do
         returns('bool')
     dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
 
-    runtime_states :WAIT_FOR_CONNECTED_INPUT_PORT, :WAIT_FOR_INPUT, :CONTROLLING
-    exception_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT
+    runtime_states :CONTROLLING, :CONTROLLING_UNSAFE
+    error_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT, :WAIT_FOR_CONNECTED_INPUT_PORT, :WAIT_FOR_INPUT 
 
     # Deployed with a 10ms period by default
     periodic 0.01
@@ -88,7 +94,7 @@ task_context 'BasePIDController' do
     # The states of the pid-controllers
     output_port 'pid_state', 'base::LinearAngular6DPIDState'
     
-    runtime_states :WAIT_FOR_POSE_SAMPLE
+    error_states :WAIT_FOR_POSE_SAMPLE
 end
 
 # Controller that takes either positions or velocities, expressed in either the
@@ -124,7 +130,7 @@ task_context "WorldToAligned" do
     # The output command.
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
     
-    runtime_states :WAIT_FOR_POSE_SAMPLE
+    error_states :WAIT_FOR_POSE_SAMPLE
 end
 
 # Controller that takes either velocities or efforts expressed in the aligned
@@ -147,7 +153,7 @@ task_context "AlignedToBody" do
     # the inputs are velocities)
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
     
-    runtime_states :WAIT_FOR_ORIENTATION_SAMPLE
+    error_states :WAIT_FOR_ORIENTATION_SAMPLE
 end
 
 # Generates thruster commands based on a thruster matrix and a force-torque
@@ -261,8 +267,7 @@ task_context "OptimalHeadingController" do
     # The output command.
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
 
-    runtime_states :WAIT_FOR_ORIENTATION_SAMPLE
-
+    error_states :WAIT_FOR_ORIENTATION_SAMPLE
 end
 
 

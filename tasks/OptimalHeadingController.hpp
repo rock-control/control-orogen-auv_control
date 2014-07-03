@@ -90,6 +90,7 @@ Frame.
          * it again. Finally, FatalError cannot be recovered.
          */
         void updateHook();
+        void errorHook();
 
     };
 }

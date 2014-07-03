@@ -48,6 +48,7 @@ bool Base::startHook()
 
 void Base::updateHook()
 {
+    
     RTT::TaskContext::updateHook();
     if(!this->gatherInputCommand()){
         if (_keep_position_on_exception.get()){    
@@ -63,8 +64,10 @@ void Base::updateHook()
         return;
     }
 
-    if (state() != CONTROLLING){
+    if (_safe_mode.get() && state() != CONTROLLING){
         state(CONTROLLING);
+    } else if (!_safe_mode.get() && state() != CONTROLLING_UNSAFE){
+        state(CONTROLLING_UNSAFE);
     }
 }
 
@@ -72,8 +75,21 @@ void Base::updateHook()
 
 void Base::errorHook()
 {
+    
     RTT::TaskContext::errorHook();
-   
+    
+    if (state() == INPUT_MISSING ||
+        state() == INPUT_COLLIDING ||
+        state() == INPUT_UNEXPECTED ||
+        state() == TIMEOUT ||
+        state() == WAIT_FOR_CONNECTED_INPUT_PORT ||
+        state() == WAIT_FOR_INPUT){
+        
+        if (this->gatherInputCommand()){
+            recover();
+        }
+    }
+
     if (_keep_position_on_exception.get()){    
         this->keepPosition();
     }
@@ -125,6 +141,7 @@ Base::InputPortType* Base::deregisterInput(std::string const& name)
 bool Base::gatherInputCommand(){
     // The command that is being merged. It is written to this->merged_command
     // only if everything has been validated
+
     base::LinearAngular6DCommand merging_command;
     bool has_connected_port = false;
     for(unsigned int i = 0; i < input_ports.size(); i++){
@@ -140,7 +157,7 @@ bool Base::gatherInputCommand(){
 
         if(status == RTT::NoData){
             if(state() != WAIT_FOR_INPUT){
-                state(WAIT_FOR_INPUT);
+                error(WAIT_FOR_INPUT);
             }
             return false;
         } else if(status == RTT::NewData){
@@ -158,7 +175,7 @@ bool Base::gatherInputCommand(){
     
     if(!has_connected_port){
         if(state() != WAIT_FOR_CONNECTED_INPUT_PORT){
-            state(WAIT_FOR_CONNECTED_INPUT_PORT);
+            error(WAIT_FOR_CONNECTED_INPUT_PORT);
         }
         return false;
     }
@@ -170,17 +187,23 @@ bool Base::gatherInputCommand(){
             return false;
     }
 
-    for(int j = 0; j < 3; j++)
-    {
-        if(base::isUnset(merging_command.linear(j)) && (_expected_inputs.get().linear[j])){
-            exception(INPUT_MISSING);
-            return false;
+    if(_safe_mode.get()){
+        for(int j = 0; j < 3; j++)
+        {
+            if(base::isUnset(merging_command.linear(j)) && (_expected_inputs.get().linear[j])){
+                if(state() != INPUT_MISSING){
+                    error(INPUT_MISSING);
+                }
+                return false;
+            }
+            if(base::isUnset(merging_command.angular(j)) && (_expected_inputs.get().angular[j])){
+                if(state() != INPUT_MISSING){
+                    error(INPUT_MISSING);
+                }
+                return false;
+            }
+            
         }
-        if(base::isUnset(merging_command.angular(j)) && (_expected_inputs.get().angular[j])){
-            exception(INPUT_MISSING);
-            return false;
-        }
-        
     }
     merging_command.time = newestCommandTime;
     merged_command = merging_command;
@@ -196,7 +219,9 @@ bool Base::verifyTimeout()
             base::Time port_time = input_ports[i].last_time;
             if (timeout != 0 && (newestCommandTime - port_time).toSeconds() > timeout)
             {
-                exception(TIMEOUT);
+                if(state() != TIMEOUT){
+                    error(TIMEOUT);
+                }
                 return false;
             }
         }
@@ -218,13 +243,17 @@ bool Base::merge(bool const expected[], base::Vector3d const& current, base::Vec
     for(int i = 0; i < 3; i++){
         if(base::isUnset(current(i))){
             continue;
-        }else if(!expected[i]){
-            exception(INPUT_UNEXPECTED);
+        }else if(_safe_mode.get() && !expected[i]){
+            if(state() != INPUT_UNEXPECTED){
+                error(INPUT_UNEXPECTED);
+            }
             return false;
         }else if(!base::isUnset(merged(i))){
             //Ther is a value in the merged value and the value is set on this port.
-            //This is an exception!
-            exception(INPUT_COLLIDING);
+            //This is an error!
+            if(state() != INPUT_COLLIDING){
+                error(INPUT_COLLIDING);
+            }
             return false; 
         }else{
             //No value of this type in the merged value and the value is set on this

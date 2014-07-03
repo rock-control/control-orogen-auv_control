@@ -45,7 +45,7 @@ bool AlignedToBody::calcOutput()
 
     if(status == RTT::NoData){
         if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
-            state(WAIT_FOR_ORIENTATION_SAMPLE);
+            error(WAIT_FOR_ORIENTATION_SAMPLE);
         }
         return false;
     }
@@ -68,6 +68,12 @@ void AlignedToBody::updateHook()
 }
 void AlignedToBody::errorHook()
 {
+    if(state() == WAIT_FOR_ORIENTATION_SAMPLE){
+        if(_orientation_samples.read(orientation_sample) != RTT::NoData){
+            recover();
+        }
+    }
+
     AlignedToBodyBase::errorHook();
 }
 void AlignedToBody::stopHook()

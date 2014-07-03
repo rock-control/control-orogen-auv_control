@@ -36,12 +36,24 @@ void WorldToAligned::updateHook()
 {
     if (_pose_samples.read(currentPose) == RTT::NoData){
         if(state() != WAIT_FOR_POSE_SAMPLE){
-            state(WAIT_FOR_POSE_SAMPLE);
+            error(WAIT_FOR_POSE_SAMPLE);
         }
         return;
     }
 
     WorldToAlignedBase::updateHook();
+}
+
+void WorldToAligned::errorHook()
+{
+    if( state() == WAIT_FOR_POSE_SAMPLE){
+        base::samples::RigidBodyState pose_sample;
+        if (_pose_samples.read(pose_sample) != RTT::NoData){
+            recover();
+        }
+    }
+
+    WorldToAligned::errorHook();
 }
 
 void WorldToAligned::keep(){

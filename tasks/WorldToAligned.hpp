@@ -29,6 +29,8 @@ namespace auv_control {
 
         void updateHook();
 
+        void errorHook();
+
     };
 }
 
