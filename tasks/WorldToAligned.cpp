@@ -53,7 +53,7 @@ void WorldToAligned::errorHook()
         }
     }
 
-    WorldToAligned::errorHook();
+    WorldToAlignedBase::errorHook();
 }
 
 void WorldToAligned::keep(){

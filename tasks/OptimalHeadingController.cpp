@@ -57,7 +57,7 @@ void OptimalHeadingController::errorHook()
         }
     }
 
-    OptimalHeadingController::errorHook();
+    OptimalHeadingControllerBase::errorHook();
 }
 
 void OptimalHeadingController::keep(){
