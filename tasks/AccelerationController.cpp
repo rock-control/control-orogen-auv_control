@@ -110,6 +110,7 @@ bool AccelerationController::calcOutput()
         }
 
         jointCommand[i].setField(controlModes[i], cmdVector(i));
+        jointCommand.time = merged_command.time;
     }
     _cmd_out.write(jointCommand);
     return true;
