@@ -14,9 +14,11 @@ namespace auv_control {
 	friend class WorldToAlignedBase;
     protected:
         base::samples::RigidBodyState currentPose;
+        bool on_init;
 
         void keep();
         bool calcOutput();
+        bool isPoseSampleValid(base::samples::RigidBodyState pose);
 
     public:
         WorldToAligned(std::string const& name = "auv_control::WorldToAligned");

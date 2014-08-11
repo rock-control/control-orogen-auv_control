@@ -26,6 +26,8 @@ world or aligned frames, and outputs "whatever" in the same frame
     {
 	friend class PIDControllerBase;
     protected:
+        bool on_init;
+        bool isPoseSampleValid();
 
 
     public:

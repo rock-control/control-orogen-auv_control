@@ -20,6 +20,7 @@ WorldToAligned::~WorldToAligned()
 
 bool WorldToAligned::startHook()
 {
+    on_init = true;
     if (!Base::startHook())
         return false;
 
@@ -39,9 +40,16 @@ void WorldToAligned::updateHook()
             error(WAIT_FOR_POSE_SAMPLE);
         }
         return;
-    }
+    } else if(!this->isPoseSampleValid(currentPose)){
+            if(!on_init){
+                exception(POSE_SAMPLE_INVALID);
+            }
+            return;
+        }
+
 
     WorldToAlignedBase::updateHook();
+    on_init = false;
 }
 
 void WorldToAligned::errorHook()
@@ -113,3 +121,29 @@ bool WorldToAligned::calcOutput(){
     return true;
 }
 
+bool WorldToAligned::isPoseSampleValid(base::samples::RigidBodyState pose){
+    if((!_safe_mode.get()) && 
+            (!base::samples::RigidBodyState::isValidValue(pose.position) || 
+             (!base::samples::RigidBodyState::isValidValue(pose.orientation)))){
+        return false;
+    } else {
+        auv_control::ExpectedInputs expected_inputs = _expected_inputs.get();
+        if((expected_inputs.linear[0] || expected_inputs.linear[1]) && 
+                (base::isUnset<double>(currentPose.position[0]) ||
+                 base::isUnset<double>(currentPose.position[1]) ||
+                 !base::samples::RigidBodyState::isValidValue(currentPose.orientation))){
+            return false;
+        }
+        
+        if(expected_inputs.linear[2] && base::isUnset<double>(currentPose.position[2])){
+            return false;
+        }
+
+        if((expected_inputs.angular[0] || expected_inputs.angular[1] || expected_inputs.angular[2]) &&
+                !base::samples::RigidBodyState::isValidValue(pose.orientation)){
+            return false;
+        }
+
+    }
+    return true;
+}
