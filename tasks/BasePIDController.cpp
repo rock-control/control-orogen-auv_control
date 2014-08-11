@@ -119,3 +119,18 @@ bool BasePIDController::calcOutput()
     return true;
 }
 
+void BasePIDController::keepPosition(){
+    base::LinearAngular6DCommand output_command;
+    output_command.time = pose_sample.time;
+
+    for(unsigned int i = 0; i < 3; i++){
+        if(_expected_inputs.get().linear[i]){
+            output_command.linear(i) = 0;
+        }
+        if(_expected_inputs.get().angular[i]){
+            output_command.angular(i) = 0;
+        }
+    }
+    _cmd_out.write(output_command);
+}
+

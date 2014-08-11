@@ -16,7 +16,7 @@ namespace auv_control {
         base::samples::RigidBodyState currentPose;
         bool on_init;
 
-        void keep();
+        void keepPosition();
         bool calcOutput();
         bool isPoseSampleValid(base::samples::RigidBodyState pose);
 

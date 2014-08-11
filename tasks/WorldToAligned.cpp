@@ -64,7 +64,7 @@ void WorldToAligned::errorHook()
     WorldToAlignedBase::errorHook();
 }
 
-void WorldToAligned::keep(){
+void WorldToAligned::keepPosition(){
     base::LinearAngular6DCommand output_command;
     output_command.time = currentPose.time;
 
