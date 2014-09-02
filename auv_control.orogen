@@ -82,6 +82,9 @@ task_context 'BasePIDController' do
     # Use the Ideal (false) or Parallel PID-Settings 
     property "use_parallel_pid_settings", "bool", false
 
+    # Under this Value the axis are not controled. Output is 0.
+    property "variance_threshold", "double"
+
     # The system state. Only the parts of the state that are controlled needs to
     # be available (i.e. if the command involves only orientation, only the
     # orientation part is really needed)
@@ -95,6 +98,8 @@ task_context 'BasePIDController' do
     output_port 'pid_state', 'base::LinearAngular6DPIDState'
     
     error_states :WAIT_FOR_POSE_SAMPLE
+    
+    runtime_states :UNSURE_POSE_SAMPLE
 end
 
 # Controller that takes either positions or velocities, expressed in either the

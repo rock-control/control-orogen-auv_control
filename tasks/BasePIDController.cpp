@@ -70,6 +70,7 @@ void BasePIDController::cleanupHook()
 }
 bool BasePIDController::calcOutput()
 {
+    // Check for new PID-Settings
     if((use_parallel_pid_settings && (!(_use_parallel_pid_settings.get()))) ||
             (pid_settings != _pid_settings.get())){
         use_parallel_pid_settings = false;
@@ -114,8 +115,36 @@ bool BasePIDController::calcOutput()
             pid_state.angular[i] = mAngularPIDs[i].getState();
         }
     }
+
+    // Stop controling for axis with bad variance
+    bool unsure_pose = false; 
+    for(unsigned i = 0; i < 3; i++){
+        if(currentLinearCov(i,i) > _variance_threshold.get()){
+            output_command.linear(i) = 0;
+            unsure_pose = true;
+            if(state() != UNSURE_POSE_SAMPLE){
+                state(UNSURE_POSE_SAMPLE);
+            }
+        }
+        if(currentAngularCov(i,i) > _variance_threshold.get()){
+            output_command.angular(i) = 0;
+            unsure_pose = true;
+            if(state() != UNSURE_POSE_SAMPLE){
+                state(UNSURE_POSE_SAMPLE);
+            }
+        }
+    }
+
+
+
+
     _pid_state.write(pid_state);
     _cmd_out.write(output_command);
+    
+    if(unsure_pose){
+        return false;
+    }
+    
     return true;
 }
 

@@ -16,6 +16,7 @@ PIDController::PIDController(std::string const& name, RTT::ExecutionEngine* engi
 
 PIDController::~PIDController()
 {
+    _variance_threshold.set(base::infinity<double>());
 }
 
 
@@ -48,6 +49,19 @@ void PIDController::updateHook()
 
     if (_position_control)
     {
+        currentLinearCov = pose_sample.cov_position;
+
+        if(currentLinearCov(0,0) > currentLinearCov(1,1)){
+            currentLinearCov(1,1) = currentLinearCov(0,0);
+        }
+        if(currentLinearCov(1,1) > currentLinearCov(0,0)){
+            currentLinearCov(0,0) = currentLinearCov(1,1);
+        }
+
+
+
+        currentAngularCov = pose_sample.cov_orientation;
+        
         // position control
         if (_world_frame)
         {
@@ -68,6 +82,8 @@ void PIDController::updateHook()
     }
     else
     {
+        currentLinearCov = pose_sample.cov_velocity;
+        currentAngularCov = pose_sample.cov_angular_velocity;
         currentAngular = pose_sample.angular_velocity;
 
         // velocity control

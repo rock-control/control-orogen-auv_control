@@ -34,6 +34,12 @@ generate commands
 
         bool calcOutput();
 
+        base::Matrix3d currentLinearCov;
+        base::Matrix3d currentAngularCov;
+
+
+
+
         /** The current linear part of the system's state
          * It must be updated by subclasses before calling their base updateHook
          * class
