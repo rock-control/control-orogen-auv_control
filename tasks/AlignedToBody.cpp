@@ -32,6 +32,7 @@ bool AlignedToBody::configureHook()
 }
 bool AlignedToBody::startHook()
 {
+    on_init = true;
     if (! AlignedToBodyBase::startHook())
         return false;
     
@@ -41,14 +42,6 @@ bool AlignedToBody::startHook()
 }
 bool AlignedToBody::calcOutput()
 {
-    RTT::FlowStatus status = _orientation_samples.read(orientation_sample);
-
-    if(status == RTT::NoData){
-        if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
-            error(WAIT_FOR_ORIENTATION_SAMPLE);
-        }
-        return false;
-    }
  
     base::LinearAngular6DCommand output_command = merged_command;
 
@@ -64,7 +57,25 @@ bool AlignedToBody::calcOutput()
 
 void AlignedToBody::updateHook()
 {
+    RTT::FlowStatus status = _orientation_samples.read(orientation_sample);
+
+    if(status == RTT::NoData){
+        if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
+            error(WAIT_FOR_ORIENTATION_SAMPLE);
+        }
+        return;
+    }
+
+    if(!base::samples::RigidBodyState::isValidValue(orientation_sample.orientation)){
+        if(!on_init){
+            exception(ORIENTATION_SAMPLE_INVALID);
+        }
+        return;
+    }
+    
     AlignedToBodyBase::updateHook();
+
+    on_init = false;
 }
 void AlignedToBody::errorHook()
 {

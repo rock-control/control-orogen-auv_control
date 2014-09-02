@@ -31,8 +31,10 @@ generate commands
         bool use_parallel_pid_settings;
         base::LinearAngular6DPIDSettings pid_settings;
         base::LinearAngular6DParallelPIDSettings parallel_pid_settings;
+        base::samples::RigidBodyState pose_sample;
 
         bool calcOutput();
+        void keepPosition();
 
         base::Matrix3d currentLinearCov;
         base::Matrix3d currentAngularCov;

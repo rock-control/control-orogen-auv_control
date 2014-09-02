@@ -39,7 +39,7 @@ bool PIDController::startHook()
 }
 void PIDController::updateHook()
 {
-    base::samples::RigidBodyState pose_sample;
+    on_init = true;
     if (_pose_samples.read(pose_sample) == RTT::NoData){
         if(state() != WAIT_FOR_POSE_SAMPLE){
             error(WAIT_FOR_POSE_SAMPLE);
@@ -98,7 +98,17 @@ void PIDController::updateHook()
         }
     }
 
+    if(!this->isPoseSampleValid()){
+        if(!on_init){   
+            exception(POSE_SAMPLE_INVALID);
+        } else {
+            //this->keep();
+        }
+        return;
+    }
+
     PIDControllerBase::updateHook();
+    on_init = false;
 }
 void PIDController::errorHook()
 {
@@ -119,3 +129,22 @@ void PIDController::cleanupHook()
 {
     PIDControllerBase::cleanupHook();
 }
+
+bool PIDController::isPoseSampleValid(){
+    for(int i = 0; i < 3; i++){
+        if (_expected_inputs.get().linear[i] &&
+                base::isUnset<double>(currentLinear[i])){
+            return false;
+        }
+        
+        if (_expected_inputs.get().angular[i] &&
+                base::isUnset<double>(currentAngular[i])){
+            return false;
+        }
+    }
+    return true;
+}
+
+
+
+
