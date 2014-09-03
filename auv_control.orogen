@@ -204,13 +204,26 @@ end
 # Generates a single constant command in the configured domain
 task_context "ConstantCommand" do
     # The desired command
-    property 'cmd', 'base/LinearAngular6DCommand'
+    property 'cmd', '/base/LinearAngular6DCommand'
 
     # The output command.
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
 
     periodic(0.01)
 end
+
+# In this class the desired command, where depth is given in distance TO the floor in positive way!
+task_context "ConstantCommandGroundFollower" do 
+    subclasses "ConstantCommand"
+
+    input_port "altimeter", "base::samples::RigidBodyState"
+    input_port "depth", "base::samples::RigidBodyState"
+    output_port "floor_position", "double"
+    
+    runtime_states(:NO_DEPTH_READING, :NO_ALTIMETER_READING)
+    exception_states(:INVALID_DEPTH_READING,:INVALID_NEGATIVE_ALTIMETER_READING, :INVALID_TARGET_DEPTH_CONFIG) 
+end
+    
 
 # Follows a set of waypoints, where each waypoint is defined 
 task_context "WaypointNavigator" do
