@@ -7,16 +7,17 @@ using namespace auv_control;
 PIDController::PIDController(std::string const& name)
     : PIDControllerBase(name)
 {
+    _variance_threshold.set(base::infinity<double>());
 }
 
 PIDController::PIDController(std::string const& name, RTT::ExecutionEngine* engine)
     : PIDControllerBase(name, engine)
 {
+    _variance_threshold.set(base::infinity<double>());
 }
 
 PIDController::~PIDController()
 {
-    _variance_threshold.set(base::infinity<double>());
 }
 
 
