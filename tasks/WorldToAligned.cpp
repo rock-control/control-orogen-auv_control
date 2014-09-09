@@ -67,14 +67,16 @@ void WorldToAligned::errorHook()
 void WorldToAligned::keepPosition(){
     base::LinearAngular6DCommand output_command;
     output_command.time = currentPose.time;
+    
+    if(!_nan_on_keep_position.get()){
+        output_command.linear(0) = 0; 
+        output_command.linear(1) = 0; 
+        output_command.linear(2) = 0;
 
-    output_command.linear(0) = 0; 
-    output_command.linear(1) = 0; 
-    output_command.linear(2) = 0;
-
-    output_command.roll() = base::getRoll(currentPose.orientation);
-    output_command.pitch() = base::getPitch(currentPose.orientation);
-    output_command.yaw() = base::getYaw(currentPose.orientation);
+        output_command.roll() = base::getRoll(currentPose.orientation);
+        output_command.pitch() = base::getPitch(currentPose.orientation);
+        output_command.yaw() = 0;
+    }
 
     for(int i = 0; i < 3; i++){
         if(!_expected_inputs.get().linear[i]){
