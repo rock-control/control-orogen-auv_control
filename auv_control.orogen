@@ -20,7 +20,10 @@ task_context "Base" do
     # If true, the component will send a zero command before getting into an
     # exception state. Otherwise, it will not do anything
     property "keep_position_on_exception", "bool", true
-    
+  
+    # If true write NaN on all axis, in keep position case
+    property "nan_on_keep_position", "bool", false
+
     # The target state for this controller
     # 
     # This port is statically defined for simplicity reasons, additional ports
