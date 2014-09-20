@@ -153,7 +153,7 @@ bool Base::gatherInputCommand(){
         }
         has_connected_port = true;
 
-        RTT::FlowStatus status = port->read(current_port);
+        RTT::FlowStatus status = port->readNewest(current_port);
 
         if(status == RTT::NoData){
             if(state() != WAIT_FOR_INPUT){

@@ -35,7 +35,7 @@ bool WorldToAligned::startHook()
 }
 void WorldToAligned::updateHook()
 {
-    if (_pose_samples.read(currentPose) == RTT::NoData){
+    if (_pose_samples.readNewest(currentPose) == RTT::NoData){
         if(state() != WAIT_FOR_POSE_SAMPLE){
             error(WAIT_FOR_POSE_SAMPLE);
         }
@@ -56,7 +56,7 @@ void WorldToAligned::errorHook()
 {
     if( state() == WAIT_FOR_POSE_SAMPLE){
         base::samples::RigidBodyState pose_sample;
-        if (_pose_samples.read(pose_sample) != RTT::NoData){
+        if (_pose_samples.readNewest(pose_sample) != RTT::NoData){
             recover();
         }
     }

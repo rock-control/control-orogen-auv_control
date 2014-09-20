@@ -57,7 +57,7 @@ bool AlignedToBody::calcOutput()
 
 void AlignedToBody::updateHook()
 {
-    RTT::FlowStatus status = _orientation_samples.read(orientation_sample);
+    RTT::FlowStatus status = _orientation_samples.readNewest(orientation_sample);
 
     if(status == RTT::NoData){
         if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
@@ -80,7 +80,7 @@ void AlignedToBody::updateHook()
 void AlignedToBody::errorHook()
 {
     if(state() == WAIT_FOR_ORIENTATION_SAMPLE){
-        if(_orientation_samples.read(orientation_sample) != RTT::NoData){
+        if(_orientation_samples.readNewest(orientation_sample) != RTT::NoData){
             recover();
         }
     }
