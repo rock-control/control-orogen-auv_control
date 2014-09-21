@@ -218,8 +218,6 @@ end
 # In this class the desired command, where depth is given in distance TO the floor in positive way!
 # Can be used as ConstandCommand Task, or as object in the Chain by feeding the command to cmd_in
 task_context "ConstantCommandGroundFollower" do 
-    subclasses "ConstantCommand"
-
     input_port "altimeter", "base::samples::RigidBodyState"
     input_port "depth", "base::samples::RigidBodyState"
     output_port "floor_position", "double"
@@ -231,6 +229,13 @@ task_context "ConstantCommandGroundFollower" do
     
     runtime_states(:NO_DEPTH_READING, :NO_ALTIMETER_READING)
     exception_states(:INVALID_DEPTH_READING,:INVALID_NEGATIVE_ALTIMETER_READING, :INVALID_TARGET_DEPTH_CONFIG) 
+    
+    property 'cmd', '/base/LinearAngular6DCommand'
+
+    # The output command.
+    output_port 'cmd_out', 'base::LinearAngular6DCommand'
+
+    periodic(0.01)
 end
 
 # In this class the desired command, where depth is given in distance TO the floor in positive way!
