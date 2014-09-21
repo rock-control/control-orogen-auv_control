@@ -42,17 +42,26 @@ void ConstantCommandGroundFollower::updateHook()
 {
     ConstantCommandGroundFollowerBase::updateHook();
     if(_altimeter.readNewest(altimeter) == RTT::NoData){
-        return state(NO_ALTIMETER_READING);
+        if (state() != NO_ALTIMETER_READING){
+            state(NO_ALTIMETER_READING);
+        }
+        return;
     }
     if(_depth.readNewest(depth) == RTT::NoData){
-        return state(NO_DEPTH_READING);
+        if (state() != NO_DEPTH_READING){
+            state(NO_DEPTH_READING);
+        }
         return;
     }
     if(!depth.hasValidPosition(2)){
-        return exception(INVALID_DEPTH_READING);
+        if (state() != INVALID_DEPTH_READING){
+            exception(INVALID_DEPTH_READING);
+        }
+        return;
     }
     if(altimeter.position[2] <= 0){
-        return exception(INVALID_NEGATIVE_ALTIMETER_READING);
+        exception(INVALID_NEGATIVE_ALTIMETER_READING);
+        return;
     }
 
     base::LinearAngular6DCommand cmd;
