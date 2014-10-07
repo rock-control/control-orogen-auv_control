@@ -1,6 +1,7 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "OptimalHeadingController.hpp"
+#include <base/Angle.hpp>
 
 using namespace auv_control;
 

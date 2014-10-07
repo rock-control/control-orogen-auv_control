@@ -28,7 +28,7 @@ void MotionCommand2DConverter::updateHook()
 {
     MotionCommand2DConverterBase::updateHook();
 
-    base::MotionCommand2D input_cmd;
+    base::commands::Motion2D input_cmd;
 
     if(_cmd_in.read(input_cmd) == RTT::NewData)
     {

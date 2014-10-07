@@ -4,6 +4,7 @@
 #define AUV_CONTROL_ACCELERATIONCONTROLLER_TASK_HPP
 
 #include "auv_control/AccelerationControllerBase.hpp"
+#include <base/commands/Joints.hpp>
 
 namespace auv_control {
 
