@@ -1,11 +1,15 @@
 <package>
-  <description brief="control for auv">
-  
+  <description brief="Generic implementation of a control layer for AUVs">
+      This is a componentized implementation of a flexible control layer for
+      AUVs. It allows to combine different controllers on different axis (as for
+      instance a bottom follower controlling Z and pitch positions and a
+      pipeline follower taking care of heading) in a way that is safe (checking
+      that no two controllers control the same axis for instance) and reusable.
   </description>
+  <maintainer>Sylvain Joyeux/bir.sylvain@gmail.com</maintainer>
   <author>Tim Lehr/lehr@informatik.uni-bremen.de</author>
-  <license></license>
-  <url>http://</url>
-  <logo>http://</logo>
+  <license>LGPLv2 or later</license>
   <depend package="base/types"/>
+  <depend package="base/orogen/types"/>
   <depend package="control/motor_controller"/>
 </package>
