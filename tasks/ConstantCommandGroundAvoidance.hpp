@@ -1,13 +1,13 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_CONSTANTCOMMANDGROUNDFOLLOWER_TASK_HPP
-#define AUV_CONTROL_CONSTANTCOMMANDGROUNDFOLLOWER_TASK_HPP
+#ifndef AUV_CONTROL_CONSTANTCOMMANDGROUNDAVOIDANCE_TASK_HPP
+#define AUV_CONTROL_CONSTANTCOMMANDGROUNDAVOIDANCE_TASK_HPP
 
-#include "auv_control/ConstantCommandGroundFollowerBase.hpp"
+#include "auv_control/ConstantCommandGroundAvoidanceBase.hpp"
 
 namespace auv_control {
 
-    /*! \class ConstantCommandGroundFollower 
+    /*! \class ConstantCommandGroundAvoidance 
      * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
      * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
      * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
@@ -16,39 +16,37 @@ namespace auv_control {
      * The name of a TaskContext is primarily defined via:
      \verbatim
      deployment 'deployment_name'
-         task('custom_task_name','auv_control::ConstantCommandGroundFollower')
+         task('custom_task_name','auv_control::ConstantCommandGroundAvoidance')
      end
      \endverbatim
      *  It can be dynamically adapted when the deployment is called with a prefix argument. 
      */
-    class ConstantCommandGroundFollower : public ConstantCommandGroundFollowerBase
+    class ConstantCommandGroundAvoidance : public ConstantCommandGroundAvoidanceBase
     {
-	friend class ConstantCommandGroundFollowerBase;
+	friend class ConstantCommandGroundAvoidanceBase;
     protected:
-        base::samples::RigidBodyState depth;
-        base::samples::RigidBodyState altimeter;
-        double last_valid_ground_position;
-
         virtual double calculateDepth(double cmd_depth);
         virtual bool isValidCmd(double depth);
 
+
+
     public:
-        /** TaskContext constructor for ConstantCommandGroundFollower
+        /** TaskContext constructor for ConstantCommandGroundAvoidance
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        ConstantCommandGroundFollower(std::string const& name = "auv_control::ConstantCommandGroundFollower", TaskCore::TaskState initial_state = Stopped);
+        ConstantCommandGroundAvoidance(std::string const& name = "auv_control::ConstantCommandGroundAvoidance", TaskCore::TaskState initial_state = Stopped);
 
-        /** TaskContext constructor for ConstantCommandGroundFollower 
+        /** TaskContext constructor for ConstantCommandGroundAvoidance 
          * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
          * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        ConstantCommandGroundFollower(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        ConstantCommandGroundAvoidance(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
 
-        /** Default deconstructor of ConstantCommandGroundFollower
+        /** Default deconstructor of ConstantCommandGroundAvoidance
          */
-	~ConstantCommandGroundFollower();
+	~ConstantCommandGroundAvoidance();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the

@@ -42,22 +42,39 @@ void ConstantCommandGroundFollower::updateHook()
 {
     ConstantCommandGroundFollowerBase::updateHook();
     if(_altimeter.readNewest(altimeter) == RTT::NoData){
-        return state(NO_ALTIMETER_READING);
+        if (state() != NO_ALTIMETER_READING){
+            state(NO_ALTIMETER_READING);
+        }
+        return;
     }
     if(_depth.readNewest(depth) == RTT::NoData){
-        return state(NO_DEPTH_READING);
+        if (state() != NO_DEPTH_READING){
+            state(NO_DEPTH_READING);
+        }
         return;
     }
     if(!depth.hasValidPosition(2)){
-        return exception(INVALID_DEPTH_READING);
+        if (state() != INVALID_DEPTH_READING){
+            exception(INVALID_DEPTH_READING);
+        }
+        return;
     }
     if(altimeter.position[2] <= 0){
-        return exception(INVALID_NEGATIVE_ALTIMETER_READING);
+        exception(INVALID_NEGATIVE_ALTIMETER_READING);
+        return;
     }
 
-    base::LinearAngular6DCommand cmd = _cmd.get();
-    cmd.time = base::Time::now();
-    if(cmd.linear[2] <= 0){
+    base::LinearAngular6DCommand cmd;
+    if(!_use_as_constant_task.get()){
+        if(_cmd_in.readNewest(cmd) == RTT::NoData){
+            return;
+        }
+    }else{
+        cmd = _cmd.get();
+        cmd.time = base::Time::now();
+    }
+    
+    if(!isValidCmd(cmd.linear[2])){
         return exception(INVALID_TARGET_DEPTH_CONFIG);
     }
     
@@ -65,12 +82,21 @@ void ConstantCommandGroundFollower::updateHook()
         last_valid_ground_position = depth.position[2] - altimeter.position[2];
     }
 
-    cmd.linear[2] = last_valid_ground_position + cmd.linear[2];
+    cmd.linear[2] = calculateDepth(cmd.linear[2]);
+
     if(state() != RUNNING){
         state(RUNNING);
     }
     _floor_position.write(last_valid_ground_position);
     _cmd_out.write(cmd);
+}
+
+double ConstantCommandGroundFollower::calculateDepth(double cmd_depth){
+    return last_valid_ground_position + cmd_depth;
+}
+
+bool ConstantCommandGroundFollower::isValidCmd(double depth){
+    return depth > 0;
 }
 
 void ConstantCommandGroundFollower::errorHook()
