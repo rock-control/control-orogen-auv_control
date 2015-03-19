@@ -41,7 +41,7 @@ bool PIDController::startHook()
 void PIDController::updateHook()
 {
     on_init = true;
-    if (_pose_samples.read(pose_sample) == RTT::NoData){
+    if (_pose_samples.readNewest(pose_sample) == RTT::NoData){
         if(state() != WAIT_FOR_POSE_SAMPLE){
             error(WAIT_FOR_POSE_SAMPLE);
         }
@@ -119,7 +119,7 @@ void PIDController::errorHook()
 {
     if( state() == WAIT_FOR_POSE_SAMPLE){
         base::samples::RigidBodyState pose_sample;
-        if (_pose_samples.read(pose_sample) != RTT::NoData){
+        if (_pose_samples.readNewest(pose_sample) != RTT::NoData){
             recover();
         }
     }

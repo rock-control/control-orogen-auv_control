@@ -30,7 +30,7 @@ void MotionCommand2DConverter::updateHook()
 
     base::commands::Motion2D input_cmd;
 
-    if(_cmd_in.read(input_cmd) == RTT::NewData)
+    if(_cmd_in.readNewest(input_cmd) == RTT::NewData)
     {
         base::LinearAngular6DCommand cmd;
         cmd.time = base::Time::now();

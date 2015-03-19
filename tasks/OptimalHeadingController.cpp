@@ -39,7 +39,7 @@ bool OptimalHeadingController::startHook()
 }
 void OptimalHeadingController::updateHook()
 {
-    if (_orientation_samples.read(orientation_sample) == RTT::NoData){
+    if (_orientation_samples.readNewest(orientation_sample) == RTT::NoData){
         if(state() != WAIT_FOR_ORIENTATION_SAMPLE){
             error(WAIT_FOR_ORIENTATION_SAMPLE);
         }
@@ -53,7 +53,7 @@ void OptimalHeadingController::errorHook()
 {
     if( state() == WAIT_FOR_ORIENTATION_SAMPLE){
         base::samples::RigidBodyState orientation_sample;
-        if (_orientation_samples.read(orientation_sample) != RTT::NoData){
+        if (_orientation_samples.readNewest(orientation_sample) != RTT::NoData){
             recover();
         }
     }

@@ -35,7 +35,7 @@ bool WorldToAligned::startHook()
 }
 void WorldToAligned::updateHook()
 {
-    if (_pose_samples.read(currentPose) == RTT::NoData){
+    if (_pose_samples.readNewest(currentPose) == RTT::NoData){
         if(state() != WAIT_FOR_POSE_SAMPLE){
             error(WAIT_FOR_POSE_SAMPLE);
         }
@@ -56,7 +56,7 @@ void WorldToAligned::errorHook()
 {
     if( state() == WAIT_FOR_POSE_SAMPLE){
         base::samples::RigidBodyState pose_sample;
-        if (_pose_samples.read(pose_sample) != RTT::NoData){
+        if (_pose_samples.readNewest(pose_sample) != RTT::NoData){
             recover();
         }
     }
@@ -131,13 +131,13 @@ bool WorldToAligned::isPoseSampleValid(base::samples::RigidBodyState pose){
     } else {
         auv_control::ExpectedInputs expected_inputs = _expected_inputs.get();
         if((expected_inputs.linear[0] || expected_inputs.linear[1]) && 
-                (base::isUnset<double>(currentPose.position[0]) ||
-                 base::isUnset<double>(currentPose.position[1]) ||
-                 !base::samples::RigidBodyState::isValidValue(currentPose.orientation))){
+                (base::isUnset<double>(pose.position[0]) ||
+                 base::isUnset<double>(pose.position[1]) ||
+                 !base::samples::RigidBodyState::isValidValue(pose.orientation))){
             return false;
         }
         
-        if(expected_inputs.linear[2] && base::isUnset<double>(currentPose.position[2])){
+        if(expected_inputs.linear[2] && base::isUnset<double>(pose.position[2])){
             return false;
         }
 
