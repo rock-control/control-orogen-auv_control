@@ -6,6 +6,7 @@
       pipeline follower taking care of heading) in a way that is safe (checking
       that no two controllers control the same axis for instance) and reusable.
   </description>
+  <maintainer>Sascha Arnold/sascha.arnold@dfki.de</maintainer>
   <maintainer>Sylvain Joyeux/bir.sylvain@gmail.com</maintainer>
   <author>Tim Lehr/lehr@informatik.uni-bremen.de</author>
   <license>LGPLv2 or later</license>
