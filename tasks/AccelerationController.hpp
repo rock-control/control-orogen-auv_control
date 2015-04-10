@@ -15,9 +15,10 @@ namespace auv_control {
         base::MatrixXd thrusterMatrix;
         base::VectorXd inputVector;
         base::VectorXd cmdVector;
+        boost::shared_ptr<Eigen::JacobiSVD<Eigen::MatrixXd> > svd;
         base::commands::Joints jointCommand;
         std::vector<base::JointState::MODE> controlModes;
-	std::vector<std::string> names;
+        std::vector<std::string> names;
         base::JointLimits limits;
 
         bool calcOutput();

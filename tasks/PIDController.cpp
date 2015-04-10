@@ -85,7 +85,11 @@ void PIDController::updateHook()
     {
         currentLinearCov = pose_sample.cov_velocity;
         currentAngularCov = pose_sample.cov_angular_velocity;
-        Eigen::Vector3d euler_zyx = base::getEuler(base::Orientation(Eigen::AngleAxisd(pose_sample.angular_velocity.norm(), pose_sample.angular_velocity.normalized())));
+
+        Eigen::Vector3d euler_zyx = Eigen::Vector3d::Zero();
+
+        if(!pose_sample.angular_velocity.isZero())
+        	euler_zyx = base::getEuler(base::Orientation(Eigen::AngleAxisd(pose_sample.angular_velocity.norm(), pose_sample.angular_velocity.normalized())));
         
         currentAngular(0) = euler_zyx(2);
         currentAngular(1) = euler_zyx(1);
