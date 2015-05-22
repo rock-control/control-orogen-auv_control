@@ -198,6 +198,12 @@ task_context "AccelerationController" do
     # If left empty, uses RAW by default
     property "control_modes", "std::vector<base::JointState::MODE>"
     
+    # TRUE: allows the SVD solution for calculating the thrusters commands 
+    #       similarly to pseudo-inverse solution.
+    # FALSE: the thruster commands will be calcultated by transposing the 
+    #        thruster matrix and multiplying it by the input.
+    property "svd_calculation", "bool", true
+    
     # Generated motor commands
     output_port "cmd_out", "base::commands::Joints"
     
