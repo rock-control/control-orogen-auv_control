@@ -155,6 +155,12 @@ bool AccelerationController::calcOutput()
     }
 
     for (unsigned int i = 0; i < jointCommand.size(); ++i){
+        // scale values if a scaling is available
+        if(i < _scalings.value().size())
+        {
+            cmdVector(i) = _scalings.value()[i] * cmdVector(i);
+        }
+
         //Cutoff cmdValue at the JointLimits
         if(!_limits.get().empty()){
             if(names.size() && _limits.get().hasNames()){

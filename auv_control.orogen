@@ -209,7 +209,12 @@ task_context "AccelerationController" do
     #
     # If left empty, uses RAW by default
     property "control_modes", "std::vector<base::JointState::MODE>"
-    
+
+    # Lists of scalings which are applied on a per-joint basis.
+    #
+    # If left empty, no scaling is applied
+    property "scalings", "std::vector<double>"
+
     # TRUE: allows the SVD solution for calculating the thrusters commands 
     #       similarly to pseudo-inverse solution.
     # FALSE: the thruster commands will be calcultated by transposing the 
