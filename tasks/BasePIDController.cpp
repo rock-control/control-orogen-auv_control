@@ -20,6 +20,34 @@ BasePIDController::~BasePIDController()
 
 
 
+bool BasePIDController::setParallel_pid_settings(::base::LinearAngular6DParallelPIDSettings const & value)
+{
+    if(use_parallel_pid_settings)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            mLinearPIDs[i].setParallelPIDSettings(value.linear[i]);
+            mAngularPIDs[i].setParallelPIDSettings(value.angular[i]);
+        }
+    }
+    else return false;
+    return(BasePIDControllerBase::setParallel_pid_settings(value));
+}
+
+bool BasePIDController::setPid_settings(::base::LinearAngular6DPIDSettings const & value)
+{
+    if(!use_parallel_pid_settings)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            mLinearPIDs[i].setPIDSettings(value.linear[i]);
+            mAngularPIDs[i].setPIDSettings(value.angular[i]);
+        }
+    }
+    else return false;
+    return(BasePIDControllerBase::setPid_settings(value));
+}
+
 /// The following lines are template definitions for the various state machine
 // hooks defined by Orocos::RTT. See BasePIDController.hpp for more detailed
 // documentation about them.
@@ -30,22 +58,9 @@ bool BasePIDController::configureHook()
         return false;
 
     use_parallel_pid_settings = _use_parallel_pid_settings;
-    parallel_pid_settings = _parallel_pid_settings.get();
-    pid_settings = _pid_settings.get();
-
-    for (int i = 0; i < 3; ++i)
-    {
-        if(_use_parallel_pid_settings){
-            mLinearPIDs[i].setParallelPIDSettings(parallel_pid_settings.linear[i]);
-            mAngularPIDs[i].setParallelPIDSettings(parallel_pid_settings.angular[i]);
-        } else {
-            mLinearPIDs[i].setPIDSettings(pid_settings.linear[i]);
-            mAngularPIDs[i].setPIDSettings(pid_settings.angular[i]);
-        }
-    }
-
     return true;
 }
+
 bool BasePIDController::startHook()
 {
     if (! BasePIDControllerBase::startHook())
@@ -70,28 +85,6 @@ void BasePIDController::cleanupHook()
 }
 bool BasePIDController::calcOutput()
 {
-    // Check for new PID-Settings
-    if((use_parallel_pid_settings && (!(_use_parallel_pid_settings.get()))) ||
-            (pid_settings != _pid_settings.get())){
-        use_parallel_pid_settings = false;
-        pid_settings = _pid_settings.get();
-        for (int i = 0; i < 3; ++i)
-        {
-            mLinearPIDs[i].setPIDSettings(pid_settings.linear[i]);
-            mAngularPIDs[i].setPIDSettings(pid_settings.angular[i]);
-        }
-    } else if((!use_parallel_pid_settings && ((_use_parallel_pid_settings.get()))) ||
-            (parallel_pid_settings != _parallel_pid_settings.get())){
-        use_parallel_pid_settings = true;
-        parallel_pid_settings = _parallel_pid_settings.get();
-        for (int i = 0; i < 3; ++i)
-        {
-            mLinearPIDs[i].setParallelPIDSettings(parallel_pid_settings.linear[i]);
-            mAngularPIDs[i].setParallelPIDSettings(parallel_pid_settings.angular[i]);
-        }
-    } 
-
-    
     // We start by copying merged_command so that we can simply ignore the unset
     // values
     base::LinearAngular6DCommand output_command = merged_command;
@@ -134,9 +127,6 @@ bool BasePIDController::calcOutput()
             }
         }
     }
-
-
-
 
     _pid_state.write(pid_state);
     _cmd_out.write(output_command);

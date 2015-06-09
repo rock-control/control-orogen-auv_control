@@ -29,8 +29,6 @@ generate commands
         motor_controller::PID mLinearPIDs[3];
         motor_controller::PID mAngularPIDs[3];
         bool use_parallel_pid_settings;
-        base::LinearAngular6DPIDSettings pid_settings;
-        base::LinearAngular6DParallelPIDSettings parallel_pid_settings;
         base::samples::RigidBodyState pose_sample;
 
         bool calcOutput();
@@ -39,8 +37,8 @@ generate commands
         base::Matrix3d currentLinearCov;
         base::Matrix3d currentAngularCov;
 
-
-
+        virtual bool setParallel_pid_settings(::base::LinearAngular6DParallelPIDSettings const & value);
+        virtual bool setPid_settings(::base::LinearAngular6DPIDSettings const & value);
 
         /** The current linear part of the system's state
          * It must be updated by subclasses before calling their base updateHook
