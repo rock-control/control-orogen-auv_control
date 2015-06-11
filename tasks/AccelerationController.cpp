@@ -26,7 +26,7 @@ bool AccelerationController::configureHook()
         return false;
     }
     thrusterMatrix = _matrix.get();
-    int numberOfThrusters = thrusterMatrix.cols();
+    unsigned int numberOfThrusters = thrusterMatrix.cols();
     inputVector = Eigen::VectorXd::Zero(6);
     cmdVector = Eigen::VectorXd::Zero(numberOfThrusters);
     names = _names.get();
