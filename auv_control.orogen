@@ -100,7 +100,7 @@ task_context 'BasePIDController' do
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
 
     # The states of the pid-controllers
-    output_port 'pid_state', 'base::LinearAngular6DPIDState'
+    output_port 'pid_state', '/auv_control/LinearAngular6DPIDState'
     
     error_states :WAIT_FOR_POSE_SAMPLE
     
