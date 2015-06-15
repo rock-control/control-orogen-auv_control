@@ -40,7 +40,6 @@ bool PIDController::startHook()
 }
 void PIDController::updateHook()
 {
-    on_init = true;
     if (_pose_samples.readNewest(pose_sample) == RTT::NoData){
         if(state() != WAIT_FOR_POSE_SAMPLE){
             error(WAIT_FOR_POSE_SAMPLE);
@@ -108,16 +107,11 @@ void PIDController::updateHook()
     }
 
     if(!this->isPoseSampleValid()){
-        if(!on_init){   
-            exception(POSE_SAMPLE_INVALID);
-        } else {
-            //this->keep();
-        }
+        exception(POSE_SAMPLE_INVALID);
         return;
     }
 
     PIDControllerBase::updateHook();
-    on_init = false;
 }
 void PIDController::errorHook()
 {
