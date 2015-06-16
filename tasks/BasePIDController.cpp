@@ -58,6 +58,8 @@ bool BasePIDController::configureHook()
         return false;
 
     use_parallel_pid_settings = _use_parallel_pid_settings;
+    setPid_settings(_pid_settings.get());
+    setParallel_pid_settings(_parallel_pid_settings.get());
     return true;
 }
 
