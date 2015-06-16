@@ -208,6 +208,9 @@ task_context "AccelerationController" do
     
     # Generated motor commands
     output_port "cmd_out", "base::commands::Joints"
+
+    # The expected generated effort (as opposed to the input effort)
+    output_port "expected_effort", "/base/LinearAngular6DCommand"
     
     exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SIZE_OF_LIMITS, :WRONG_SIZE_OF_NAMES, :INVALID_NAME_IN_LIMITS 
 end

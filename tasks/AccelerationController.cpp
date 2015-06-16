@@ -29,10 +29,14 @@ bool AccelerationController::configureHook()
     unsigned int numberOfThrusters = thrusterMatrix.cols();
     inputVector = Eigen::VectorXd::Zero(6);
     cmdVector = Eigen::VectorXd::Zero(numberOfThrusters);
+    expectedEffortVector = Eigen::VectorXd::Zero(6);
     names = _names.get();
 
     // Calculates the SVD decomposition of the TCM
-    svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix,  Eigen::ComputeThinU | Eigen::ComputeThinV));
+    if(_svd_calculation.get())
+        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix,  Eigen::ComputeThinU | Eigen::ComputeThinV));
+    else
+        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix.transpose(),  Eigen::ComputeThinU | Eigen::ComputeThinV));
 
     if(names.size() != numberOfThrusters && names.size() != 0){
         exception(WRONG_SIZE_OF_NAMES);
@@ -128,5 +132,19 @@ bool AccelerationController::calcOutput()
         jointCommand.time = merged_command.time;
     }
     _cmd_out.write(jointCommand);
+
+    base::LinearAngular6DCommand expectedEffort;
+    if (_svd_calculation.get())
+        expectedEffortVector = thrusterMatrix * cmdVector;
+    else
+        expectedEffortVector = svd->solve(cmdVector);
+    expectedEffort.linear.x() = expectedEffortVector(0);
+    expectedEffort.linear.y() = expectedEffortVector(1);
+    expectedEffort.linear.z() = expectedEffortVector(2);
+    expectedEffort.angular.x() = expectedEffortVector(3);
+    expectedEffort.angular.y() = expectedEffortVector(4);
+    expectedEffort.angular.z() = expectedEffortVector(5);
+    _expected_effort.write(expectedEffort);
+
     return true;
 }
