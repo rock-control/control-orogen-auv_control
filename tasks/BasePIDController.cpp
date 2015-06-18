@@ -1,6 +1,7 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "BasePIDController.hpp"
+#include <auv_control/6dControl.hpp>
 
 using namespace auv_control;
 
@@ -90,7 +91,7 @@ bool BasePIDController::calcOutput()
     // We start by copying merged_command so that we can simply ignore the unset
     // values
     base::LinearAngular6DCommand output_command = merged_command;
-    base::LinearAngular6DPIDState pid_state;
+    LinearAngular6DPIDState pid_state;
     for (int i = 0; i < 3; ++i)
     {
         if (!base::isUnset(merged_command.linear(i)))
@@ -99,7 +100,11 @@ bool BasePIDController::calcOutput()
                 mLinearPIDs[i].update(currentLinear(i),
                                    merged_command.linear(i),
                                    merged_command.time.toSeconds());
-            pid_state.linear[i] = mLinearPIDs[i].getState();
+            pid_state.linear[i] = auv_control::PIDState(mLinearPIDs[i].getState(), true);
+        }
+        else
+        {
+            pid_state.linear[i].active = false;
         }
         if (!base::isUnset(merged_command.angular(i)))
         {
@@ -107,7 +112,11 @@ bool BasePIDController::calcOutput()
                 mAngularPIDs[i].update(currentAngular(i),
                                    merged_command.angular(i),
                                    merged_command.time.toSeconds());
-            pid_state.angular[i] = mAngularPIDs[i].getState();
+            pid_state.angular[i] = auv_control::PIDState(mAngularPIDs[i].getState(), true);
+        }
+        else
+        {
+            pid_state.angular[i].active = false;
         }
     }
 

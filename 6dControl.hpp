@@ -12,6 +12,21 @@ namespace auv_control{
         bool linear[3];
         bool angular[3];
     };
+
+    struct PIDState : public motor_controller::PIDState
+    {
+        bool active;
+
+        PIDState()
+            : motor_controller::PIDState(), active(false) {}
+        PIDState(motor_controller::PIDState const& state, bool active)
+            : motor_controller::PIDState(state), active(active) {}
+    };
+
+    struct LinearAngular6DPIDState{
+        PIDState linear[3];
+        PIDState angular[3];
+    };
 }    
 
 namespace base{
@@ -101,11 +116,6 @@ namespace base{
         bool operator!=(const LinearAngular6DParallelPIDSettings& rhs) const{
             return !(*this == rhs);
         }
-    };
-
-    struct LinearAngular6DPIDState{
-        motor_controller::PIDState linear[3];
-        motor_controller::PIDState angular[3];
     };
 }
 #endif
