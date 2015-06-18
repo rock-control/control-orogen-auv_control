@@ -17,7 +17,8 @@ namespace auv_control {
         struct InputPortInfo{
             std::string name;
             double timeout;
-            base::Time last_time;
+            base::Time last_sample_time;
+            base::Time last_system_time;
             InputPortType *input_port;
             InputPortInfo()
                 :input_port(0){}

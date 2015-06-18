@@ -161,7 +161,8 @@ bool Base::gatherInputCommand(){
             }
             return false;
         } else if(status == RTT::NewData){
-            port_info.last_time = current_port.time;
+            port_info.last_sample_time = current_port.time;
+            port_info.last_system_time = base::Time::now();
             if (newestCommandTime < current_port.time){
                 newestCommandTime = current_port.time;
             }
@@ -216,8 +217,9 @@ bool Base::verifyTimeout()
     {
         if(input_ports[i].input_port->connected()){
             double timeout = input_ports[i].timeout;
-            base::Time port_time = input_ports[i].last_time;
-            if (timeout != 0 && (newestCommandTime - port_time).toSeconds() > timeout)
+            base::Time port_time = input_ports[i].last_sample_time;
+            if (timeout != 0 && ((newestCommandTime - port_time).toSeconds() > timeout || 
+                                (base::Time::now() - input_ports[i].last_system_time).toSeconds() > timeout))
             {
                 if(state() != TIMEOUT){
                     error(TIMEOUT);
