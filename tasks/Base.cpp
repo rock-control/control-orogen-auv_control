@@ -27,7 +27,7 @@ Base::~Base()
 
 bool Base::configureHook()
 {
-    if (! RTT::TaskContext::configureHook())
+    if (! BaseBase::configureHook())
         return false;
 
     registerInput("in", _timeout_in.get(), &_cmd_in);
@@ -39,7 +39,7 @@ bool Base::configureHook()
 
 bool Base::startHook()
 {
-    if (! RTT::TaskContext::startHook())
+    if (! BaseBase::startHook())
         return false;
     
     newestCommandTime = base::Time();
@@ -49,7 +49,7 @@ bool Base::startHook()
 void Base::updateHook()
 {
     
-    RTT::TaskContext::updateHook();
+    BaseBase::updateHook();
     if(!this->gatherInputCommand()){
         if (_keep_position_on_exception.get()){    
             this->keepPosition();
@@ -76,7 +76,7 @@ void Base::updateHook()
 void Base::errorHook()
 {
     
-    RTT::TaskContext::errorHook();
+    BaseBase::errorHook();
     
     if (state() == INPUT_MISSING ||
         state() == INPUT_COLLIDING ||
@@ -97,12 +97,12 @@ void Base::errorHook()
 
 void Base::stopHook()
 {
-    RTT::TaskContext::stopHook();
+    BaseBase::stopHook();
 }
 
 void Base::cleanupHook()
 {
-    RTT::TaskContext::cleanupHook();
+    BaseBase::cleanupHook();
     deregisterInput("cascade");
     deregisterInput("in");
     while (!input_ports.empty())

@@ -17,7 +17,8 @@ task_context "Base" do
 
     # This property defines which parts of the command input is expected to be
     # set once we merged all the declared input ports. 
-    property "expected_inputs", "auv_control::ExpectedInputs"
+    property("expected_inputs", "auv_control::ExpectedInputs").
+        dynamic
     
     # If true, the component will send a zero command before getting into an
     # exception state. Otherwise, it will not do anything
@@ -79,10 +80,12 @@ task_context 'BasePIDController' do
     subclasses "Base"
 
     # Ideal Settings for the PID controllers
-    property "pid_settings", "base::LinearAngular6DPIDSettings"
+    property("pid_settings", "base::LinearAngular6DPIDSettings").
+        dynamic
     
     # Parallel Settings for the PID controllers
-    property "parallel_pid_settings", "base::LinearAngular6DParallelPIDSettings"
+    property("parallel_pid_settings", "base::LinearAngular6DParallelPIDSettings").
+        dynamic
 
     # Use the Ideal (false) or Parallel PID-Settings 
     property "use_parallel_pid_settings", "bool", false
