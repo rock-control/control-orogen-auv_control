@@ -15,6 +15,7 @@ namespace auv_control {
         base::MatrixXd thrusterMatrix;
         base::VectorXd inputVector;
         base::VectorXd cmdVector;
+        base::VectorXd expectedEffortVector;
         boost::shared_ptr<Eigen::JacobiSVD<Eigen::MatrixXd> > svd;
         base::commands::Joints jointCommand;
         std::vector<base::JointState::MODE> controlModes;
