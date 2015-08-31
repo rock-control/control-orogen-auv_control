@@ -186,6 +186,13 @@ task_context "AccelerationController" do
     # The rows 0 to 2 of the matrix are the linear axis. The lines 3 to 5 of the
     # matrix are the angular axis.
     property "matrix", "base::MatrixXd"
+    
+    # Weights that indicate which thrusters should be prioritized in
+    # cases where multiple solutions are possible. The thrusters with lower
+    # weights will be prioritized. The property size should be equal to the number of
+    # thrusters and it must have only positive numbers. If there's no preference
+    # between the thrusters, just assign the same weight to all of them.
+    property "thrusters_weights", "base::VectorXd"
 
     # Names of the thrusters
     #
@@ -215,7 +222,7 @@ task_context "AccelerationController" do
     # The expected generated effort (as opposed to the input effort)
     output_port "expected_effort", "/base/LinearAngular6DCommand"
     
-    exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SIZE_OF_LIMITS, :WRONG_SIZE_OF_NAMES, :INVALID_NAME_IN_LIMITS 
+    exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SIZE_OF_LIMITS, :WRONG_SIZE_OF_NAMES, :WRONG_SIZE_THRUSTERS_WEIGHTS, :WRONG_VALUES_THRUSTERS_WEIGHTS, :INVALID_NAME_IN_LIMITS 
 end
 
 # Generates a single constant command in the configured domain

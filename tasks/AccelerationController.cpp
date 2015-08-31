@@ -31,10 +31,42 @@ bool AccelerationController::configureHook()
     cmdVector = Eigen::VectorXd::Zero(numberOfThrusters);
     expectedEffortVector = Eigen::VectorXd::Zero(6);
     names = _names.get();
+    base::MatrixXd weighingMatrix;
+    base::VectorXd thrustersWeights = _thrusters_weights.get();
 
-    // Calculates the SVD decomposition of the TCM
+
+	if(thrustersWeights.size() != numberOfThrusters)
+    {
+    	exception(WRONG_SIZE_THRUSTERS_WEIGHTS);
+    	return false;
+    }
+    else
+    {
+    	for(int i = 0; i < thrustersWeights.size(); i++)
+    	{
+    		if(thrustersWeights[i] <= 0)
+    		{
+    			exception(WRONG_VALUES_THRUSTERS_WEIGHTS);
+    			return false;
+    		}
+    	}
+    	weighingMatrix = thrustersWeights.asDiagonal();
+    }
+
     if(_svd_calculation.get())
-        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix,  Eigen::ComputeThinU | Eigen::ComputeThinV));
+    {
+    	base::MatrixXd auxPseudoInverse;
+        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix*weighingMatrix.inverse()*thrusterMatrix.transpose(),  Eigen::ComputeThinU | Eigen::ComputeThinV));
+
+        // Pseudo-inverse of the svd matrix
+        auxPseudoInverse = svd->solve(Eigen::MatrixXd::Identity(thrusterMatrix.rows(), thrusterMatrix.rows()));
+
+        // Weighted pseudo-inverse used for optimal distribution of propulsion and control forces according to Fossen (1994, p. 98)
+    	weightedPseudoInverse = weighingMatrix.inverse()*thrusterMatrix.transpose()*auxPseudoInverse;
+
+    	// SVD of the weighted pseudo-inverse to calculate the expectedEffortVector
+        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(weightedPseudoInverse,  Eigen::ComputeThinU | Eigen::ComputeThinV));
+    }
     else
         svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix.transpose(),  Eigen::ComputeThinU | Eigen::ComputeThinV));
 
@@ -100,9 +132,7 @@ bool AccelerationController::calcOutput()
 
     if(_svd_calculation.get())
     {
-    	/* The output vector is calculated through the SVD solution, which is
-    	   similar to the pseudo-inverse solution */
-    	cmdVector = svd->solve(inputVector);
+    	cmdVector = weightedPseudoInverse * inputVector;
     }
     else
     {
@@ -134,10 +164,7 @@ bool AccelerationController::calcOutput()
     _cmd_out.write(jointCommand);
 
     base::LinearAngular6DCommand expectedEffort;
-    if (_svd_calculation.get())
-        expectedEffortVector = thrusterMatrix * cmdVector;
-    else
-        expectedEffortVector = svd->solve(cmdVector);
+    expectedEffortVector = svd->solve(cmdVector);;
     expectedEffort.linear.x() = expectedEffortVector(0);
     expectedEffort.linear.y() = expectedEffortVector(1);
     expectedEffort.linear.z() = expectedEffortVector(2);
