@@ -222,7 +222,7 @@ task_context "AccelerationController" do
     # The expected generated effort (as opposed to the input effort)
     output_port "expected_effort", "/base/LinearAngular6DCommand"
     
-    exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SIZE_OF_LIMITS, :WRONG_SIZE_OF_NAMES, :WRONG_SIZE_THRUSTERS_WEIGHTS, :WRONG_VALUES_THRUSTERS_WEIGHTS, :INVALID_NAME_IN_LIMITS 
+    exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SIZE_OF_LIMITS, :WRONG_SIZE_OF_NAMES, :INVALID_NAME_IN_LIMITS 
 end
 
 # Generates a single constant command in the configured domain

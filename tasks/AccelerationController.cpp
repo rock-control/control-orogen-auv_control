@@ -35,19 +35,13 @@ bool AccelerationController::configureHook()
     base::VectorXd thrustersWeights = _thrusters_weights.get();
 
     if(thrustersWeights.size() != numberOfThrusters)
-    {
-        exception(WRONG_SIZE_THRUSTERS_WEIGHTS);
         return false;
-    }
     else
     {
         for(int i = 0; i < thrustersWeights.size(); i++)
         {
             if(thrustersWeights[i] <= 0)
-            {
-                exception(WRONG_VALUES_THRUSTERS_WEIGHTS);
                 return false;
-            }
         }
         weighingMatrix = thrustersWeights.asDiagonal();
     }
