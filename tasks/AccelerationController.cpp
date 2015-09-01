@@ -34,37 +34,36 @@ bool AccelerationController::configureHook()
     base::MatrixXd weighingMatrix;
     base::VectorXd thrustersWeights = _thrusters_weights.get();
 
-
-	if(thrustersWeights.size() != numberOfThrusters)
+    if(thrustersWeights.size() != numberOfThrusters)
     {
-    	exception(WRONG_SIZE_THRUSTERS_WEIGHTS);
-    	return false;
+        exception(WRONG_SIZE_THRUSTERS_WEIGHTS);
+        return false;
     }
     else
     {
-    	for(int i = 0; i < thrustersWeights.size(); i++)
-    	{
-    		if(thrustersWeights[i] <= 0)
-    		{
-    			exception(WRONG_VALUES_THRUSTERS_WEIGHTS);
-    			return false;
-    		}
-    	}
-    	weighingMatrix = thrustersWeights.asDiagonal();
+        for(int i = 0; i < thrustersWeights.size(); i++)
+        {
+            if(thrustersWeights[i] <= 0)
+            {
+                exception(WRONG_VALUES_THRUSTERS_WEIGHTS);
+                return false;
+            }
+        }
+        weighingMatrix = thrustersWeights.asDiagonal();
     }
 
     if(_svd_calculation.get())
     {
-    	base::MatrixXd auxPseudoInverse;
+        base::MatrixXd auxPseudoInverse;
         svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix*weighingMatrix.inverse()*thrusterMatrix.transpose(),  Eigen::ComputeThinU | Eigen::ComputeThinV));
 
         // Pseudo-inverse of the svd matrix
         auxPseudoInverse = svd->solve(Eigen::MatrixXd::Identity(thrusterMatrix.rows(), thrusterMatrix.rows()));
 
         // Weighted pseudo-inverse used for optimal distribution of propulsion and control forces according to Fossen (1994, p. 98)
-    	weightedPseudoInverse = weighingMatrix.inverse()*thrusterMatrix.transpose()*auxPseudoInverse;
+        weightedPseudoInverse = weighingMatrix.inverse()*thrusterMatrix.transpose()*auxPseudoInverse;
 
-    	// SVD of the weighted pseudo-inverse to calculate the expectedEffortVector
+        // SVD of the weighted pseudo-inverse to calculate the expectedEffortVector
         svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(weightedPseudoInverse,  Eigen::ComputeThinU | Eigen::ComputeThinV));
     }
     else
@@ -74,7 +73,7 @@ bool AccelerationController::configureHook()
         exception(WRONG_SIZE_OF_NAMES);
         return false;
     }
-    
+
     if(_limits.get().size() != numberOfThrusters && !_limits.get().empty()){
         exception(WRONG_SIZE_OF_LIMITS);
         return false;
@@ -109,7 +108,7 @@ bool AccelerationController::configureHook()
     jointCommand = base::commands::Joints();
     jointCommand.names = names;
     jointCommand.elements.resize(numberOfThrusters);
-    
+
     return true;
 }
 
@@ -132,11 +131,11 @@ bool AccelerationController::calcOutput()
 
     if(_svd_calculation.get())
     {
-    	cmdVector = weightedPseudoInverse * inputVector;
+        cmdVector = weightedPseudoInverse * inputVector;
     }
     else
     {
-    	cmdVector = thrusterMatrix.transpose()*inputVector;
+        cmdVector = thrusterMatrix.transpose()*inputVector;
     }
 
     for (unsigned int i = 0; i < jointCommand.size(); ++i){
