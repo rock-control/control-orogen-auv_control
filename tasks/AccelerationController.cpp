@@ -34,16 +34,40 @@ bool AccelerationController::configureHook()
     base::MatrixXd weighingMatrix;
     base::VectorXd thrustersWeights = _thrusters_weights.get();
 
-    if(thrustersWeights.size() != numberOfThrusters)
-        return false;
-    else
+    try
     {
-        for(int i = 0; i < thrustersWeights.size(); i++)
+        if (thrustersWeights.size() != 0 && _svd_calculation == false)
         {
-            if(thrustersWeights[i] <= 0)
-                return false;
+            std::stringstream errMsg;
+            errMsg << "The weights vector should be empty if svd_calculation is false";
+            throw std::runtime_error(errMsg.str());
         }
-        weighingMatrix = thrustersWeights.asDiagonal();
+        else if(thrustersWeights.size() == 0 && _svd_calculation == true)
+            thrustersWeights = Eigen::VectorXd::Ones(numberOfThrusters);
+        else if(thrustersWeights.size() != numberOfThrusters)
+        {
+            std::stringstream errMsg;
+            errMsg << "The weights vector's size should be equal to the number of thrusters (" << numberOfThrusters << ")";
+            throw std::runtime_error(errMsg.str());
+        }
+        else
+        {
+            for(int i = 0; i < thrustersWeights.size(); i++)
+            {
+                if(thrustersWeights[i] <= 0)
+                {
+                    std::stringstream errMsg;
+                    errMsg << "All the weights should be positive values";
+                    throw std::runtime_error(errMsg.str());
+                }
+            }
+            weighingMatrix = thrustersWeights.asDiagonal();
+        }
+    }
+    catch(std::exception &e)
+    {
+        std::cout << "\n\x1b[31m[AccelerationController] Caught an exception: " << e.what() <<"\x1b[31m.\n\n";
+        return false;
     }
 
     if(_svd_calculation.get())
