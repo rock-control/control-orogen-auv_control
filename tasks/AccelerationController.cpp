@@ -3,6 +3,7 @@
 #include "AccelerationController.hpp"
 #include <base/JointState.hpp>
 #include <base/NamedVector.hpp>
+#include <base/Logging.hpp>
 
 using namespace auv_control;
 
@@ -34,41 +35,38 @@ bool AccelerationController::configureHook()
     base::MatrixXd weighingMatrix;
     base::VectorXd thrustersWeights = _thrusters_weights.get();
 
-    try
+    if (thrustersWeights.size() != 0 && _svd_calculation == false)
     {
-        if (thrustersWeights.size() != 0 && _svd_calculation == false)
-        {
-            std::stringstream errMsg;
-            errMsg << "The weights vector should be empty if svd_calculation is false";
-            throw std::runtime_error(errMsg.str());
-        }
-        else if(thrustersWeights.size() == 0 && _svd_calculation == true)
-            thrustersWeights = Eigen::VectorXd::Ones(numberOfThrusters);
-        else if(thrustersWeights.size() != numberOfThrusters)
-        {
-            std::stringstream errMsg;
-            errMsg << "The weights vector's size should be equal to the number of thrusters (" << numberOfThrusters << ")";
-            throw std::runtime_error(errMsg.str());
-        }
-        else
-        {
-            for(int i = 0; i < thrustersWeights.size(); i++)
-            {
-                if(thrustersWeights[i] <= 0)
-                {
-                    std::stringstream errMsg;
-                    errMsg << "All the weights should be positive values";
-                    throw std::runtime_error(errMsg.str());
-                }
-            }
-            weighingMatrix = thrustersWeights.asDiagonal();
-        }
-    }
-    catch(std::exception &e)
-    {
-        std::cout << "\n\x1b[31m[AccelerationController] Caught an exception: " << e.what() <<"\x1b[31m.\n\n";
+        LOG_ERROR("The thrusters weights vector should be empty if svd_calculation is FALSE.");
         return false;
     }
+    else if(thrustersWeights.size() == 0 && _svd_calculation == true)
+    {
+        LOG_WARN("The svd_calculation is TRUE, but the thrusters weights were not set. "
+                 "Setting the thrusters weights to a vector of ones...");
+        thrustersWeights = Eigen::VectorXd::Ones(numberOfThrusters);
+        _thrusters_weights.set(thrustersWeights);
+    }
+    else if(thrustersWeights.size() != 0 && thrustersWeights.size() != numberOfThrusters)
+    {
+        LOG_ERROR("The thrusters weights vector's size should be equal to the number of thrusters (%i), "
+                  "but it currently has a size equal to %i.", numberOfThrusters, thrustersWeights.size());
+        return false;
+    }
+    else
+    {
+        for(int i = 0; i < thrustersWeights.size(); i++)
+        {
+            if(thrustersWeights[i] <= 0)
+            {
+                LOG_ERROR("All the thrusters weights should have positive values. "
+                          "Please check the index %i element.", i);
+                return false;
+            }
+        }
+    }
+
+    weighingMatrix = thrustersWeights.asDiagonal();
 
     if(_svd_calculation.get())
     {
