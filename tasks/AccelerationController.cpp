@@ -3,6 +3,7 @@
 #include "AccelerationController.hpp"
 #include <base/JointState.hpp>
 #include <base/NamedVector.hpp>
+#include <base/Logging.hpp>
 
 using namespace auv_control;
 
@@ -31,10 +32,56 @@ bool AccelerationController::configureHook()
     cmdVector = Eigen::VectorXd::Zero(numberOfThrusters);
     expectedEffortVector = Eigen::VectorXd::Zero(6);
     names = _names.get();
+    base::MatrixXd weighingMatrix;
+    base::VectorXd thrustersWeights = _thrusters_weights.get();
 
-    // Calculates the SVD decomposition of the TCM
+    if (thrustersWeights.size() != 0 && _svd_calculation == false)
+    {
+        LOG_ERROR("The thrusters weights vector should be empty if svd_calculation is FALSE.");
+        return false;
+    }
+    else if(thrustersWeights.size() == 0 && _svd_calculation == true)
+    {
+        LOG_WARN("The svd_calculation is TRUE, but the thrusters weights were not set. "
+                 "Setting the thrusters weights to a vector of ones...");
+        thrustersWeights = Eigen::VectorXd::Ones(numberOfThrusters);
+        _thrusters_weights.set(thrustersWeights);
+    }
+    else if(thrustersWeights.size() != 0 && thrustersWeights.size() != numberOfThrusters)
+    {
+        LOG_ERROR("The thrusters weights vector's size should be equal to the number of thrusters (%i), "
+                  "but it currently has a size equal to %i.", numberOfThrusters, thrustersWeights.size());
+        return false;
+    }
+    else
+    {
+        for(int i = 0; i < thrustersWeights.size(); i++)
+        {
+            if(thrustersWeights[i] <= 0)
+            {
+                LOG_ERROR("All the thrusters weights should have positive values. "
+                          "Please check the index %i element.", i);
+                return false;
+            }
+        }
+    }
+
+    weighingMatrix = thrustersWeights.asDiagonal();
+
     if(_svd_calculation.get())
-        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix,  Eigen::ComputeThinU | Eigen::ComputeThinV));
+    {
+        base::MatrixXd auxPseudoInverse;
+        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix*weighingMatrix.inverse()*thrusterMatrix.transpose(),  Eigen::ComputeThinU | Eigen::ComputeThinV));
+
+        // Pseudo-inverse of the svd matrix
+        auxPseudoInverse = svd->solve(Eigen::MatrixXd::Identity(thrusterMatrix.rows(), thrusterMatrix.rows()));
+
+        // Weighted pseudo-inverse used for optimal distribution of propulsion and control forces according to Fossen (1994, p. 98)
+        weightedPseudoInverse = weighingMatrix.inverse()*thrusterMatrix.transpose()*auxPseudoInverse;
+
+        // SVD of the weighted pseudo-inverse to calculate the expectedEffortVector
+        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(weightedPseudoInverse,  Eigen::ComputeThinU | Eigen::ComputeThinV));
+    }
     else
         svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix.transpose(),  Eigen::ComputeThinU | Eigen::ComputeThinV));
 
@@ -42,7 +89,7 @@ bool AccelerationController::configureHook()
         exception(WRONG_SIZE_OF_NAMES);
         return false;
     }
-    
+
     if(_limits.get().size() != numberOfThrusters && !_limits.get().empty()){
         exception(WRONG_SIZE_OF_LIMITS);
         return false;
@@ -77,7 +124,7 @@ bool AccelerationController::configureHook()
     jointCommand = base::commands::Joints();
     jointCommand.names = names;
     jointCommand.elements.resize(numberOfThrusters);
-    
+
     return true;
 }
 
@@ -100,13 +147,11 @@ bool AccelerationController::calcOutput()
 
     if(_svd_calculation.get())
     {
-    	/* The output vector is calculated through the SVD solution, which is
-    	   similar to the pseudo-inverse solution */
-    	cmdVector = svd->solve(inputVector);
+        cmdVector = weightedPseudoInverse * inputVector;
     }
     else
     {
-    	cmdVector = thrusterMatrix.transpose()*inputVector;
+        cmdVector = thrusterMatrix.transpose()*inputVector;
     }
 
     for (unsigned int i = 0; i < jointCommand.size(); ++i){
@@ -134,10 +179,7 @@ bool AccelerationController::calcOutput()
     _cmd_out.write(jointCommand);
 
     base::LinearAngular6DCommand expectedEffort;
-    if (_svd_calculation.get())
-        expectedEffortVector = thrusterMatrix * cmdVector;
-    else
-        expectedEffortVector = svd->solve(cmdVector);
+    expectedEffortVector = svd->solve(cmdVector);;
     expectedEffort.linear.x() = expectedEffortVector(0);
     expectedEffort.linear.y() = expectedEffortVector(1);
     expectedEffort.linear.z() = expectedEffortVector(2);

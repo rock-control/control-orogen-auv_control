@@ -186,6 +186,13 @@ task_context "AccelerationController" do
     # The rows 0 to 2 of the matrix are the linear axis. The lines 3 to 5 of the
     # matrix are the angular axis.
     property "matrix", "base::MatrixXd"
+    
+    # Weights that indicate which thrusters should be prioritized in
+    # cases where multiple solutions are possible. The thrusters with lower
+    # weights will be prioritized. The property size should be equal to the number of
+    # thrusters and it must have only positive numbers. If there's no preference
+    # between the thrusters, just assign the same weight to all of them.
+    property "thrusters_weights", "base::VectorXd"
 
     # Names of the thrusters
     #

@@ -13,6 +13,7 @@ namespace auv_control {
 	friend class AccelerationControllerBase;
     protected:
         base::MatrixXd thrusterMatrix;
+        base::MatrixXd weightedPseudoInverse;
         base::VectorXd inputVector;
         base::VectorXd cmdVector;
         base::VectorXd expectedEffortVector;
