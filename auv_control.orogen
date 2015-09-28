@@ -347,7 +347,7 @@ task_context "ThrustersInput" do
     output_port "cmd_out", "base::commands::Joints"
     
 
-    exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SET_OF_CONTROLMODES :WRONG_SIZE_OF_THRUSTER_COEFFICIENTS,
+    exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SET_OF_CONTROLMODES, :WRONG_SIZE_OF_THRUSTER_COEFFICIENTS,
                      :UNSET_THRUSTER_INPUT, :UNEXPECTED_THRUSTER_INPUT 
                     
     port_driven 'cmd_in'                   
