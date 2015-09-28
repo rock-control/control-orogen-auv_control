@@ -171,6 +171,7 @@ void ThrustersInput::calcOutput(base::samples::Joints &cmd_out)
 {
 	for (int i=0; i<numberOfThrusters; i++)
 	{
+	    // Force = Cv * Speed * |Speed|
 		if(controlModes[i] == base::JointState::SPEED)
 		{
 			if(cmd_out.elements[i].effort >= 0)
@@ -178,12 +179,14 @@ void ThrustersInput::calcOutput(base::samples::Joints &cmd_out)
 			else
 				cmd_out.elements[i].speed = sqrt(fabs(cmd_out.elements[i].effort) / coeffNeg[i]) * -1.0;
 		}
+		// Force = Cv * V * |V|
+		// V = pwm * thrusterVoltage
 		else if(controlModes[i] == base::JointState::RAW)
 		{
 			if(cmd_out.elements[i].effort >= 0)
-				cmd_out.elements[i].raw = sqrt(fabs(cmd_out.elements[i].effort / coeffPos[i]));
+				cmd_out.elements[i].raw = sqrt(fabs(cmd_out.elements[i].effort / coeffPos[i])) / thrusterVoltage;
 			else
-				cmd_out.elements[i].raw = sqrt(fabs(cmd_out.elements[i].effort / coeffNeg[i])) * -1.0;
+				cmd_out.elements[i].raw = sqrt(fabs(cmd_out.elements[i].effort / coeffNeg[i])) * -1.0 / thrusterVoltage;
 		}
 	}
 }
