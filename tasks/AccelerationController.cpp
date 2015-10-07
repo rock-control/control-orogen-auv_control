@@ -158,7 +158,10 @@ bool AccelerationController::calcOutput()
         // scale values if a scaling is available
         if(i < _scalings.value().size())
         {
-            cmdVector(i) = _scalings.value()[i] * cmdVector(i);
+            if(cmdVector(i) > 0)
+                cmdVector(i) = + sqrt(abs(_scalings.value()[i] * cmdVector(i)));
+            else
+                cmdVector(i) = - sqrt(abs(_scalings.value()[i] * cmdVector(i)));
         }
 
         //Cutoff cmdValue at the JointLimits
