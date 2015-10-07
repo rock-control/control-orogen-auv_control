@@ -1,0 +1,31 @@
+--- name:default
+# If left empty, uses RAW by default
+control_modes: [RAW, RAW]
+# Convert thruster signal into forces, in negative direction or CCW.
+# Should have a size equal to the number of actuators
+# Thruster[N] = Coeff * rotation * |rotation|
+thruster_coeff_neg:
+  data: [8, 8]
+# Convert thruster signal into forces, in positive direction or CW.
+# Should have a size equal to the number of actuators
+# Thruster[N] = Coeff * rotation * |rotation|
+thruster_coeff_pos:
+  data: [10, 10]
+# In case the control_modes is RAW (pwm), used to convert the signal into DC Voltage
+# Thruster[N] = Coeff * voltage * |voltage|
+thruster_voltage: 19
+
+--- name:control_mode_3_raw
+control_modes: [RAW, RAW, RAW]
+
+--- name:thruster_coeff_pos_size_3
+thruster_coeff_pos:
+  data: [10, 10, 10]
+  
+--- name:control_modes_effort
+# If left empty, uses RAW by default
+control_modes: [EFFORT, EFFORT]
+
+--- name:control_modes_speed
+# If left empty, uses RAW by default
+control_modes: [SPEED, SPEED]

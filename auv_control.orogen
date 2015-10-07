@@ -316,18 +316,18 @@ task_context "OptimalHeadingController" do
 end
 
 # Task that convert forces[N] to thruster's control signal.  
-# Receive as input AccelerationController.cmd_out and gives as output the control signal for thruster's driver 
+# Receive as input AccelerationController.cmd_out and gives as output the control signal to the thruster's driver 
 # Configure the kind of control signal and thruster's properties
 task_context "ThrustersInput" do
     needs_configuration
 
     # Convert thruster signal into forces, in positive direction or CW.
-    # Should have the size of amount_of_actuators
+    # Should have a size equal to the number of thrusters
     # Thruster[N] = Coeff * rotation * |rotation|
     property "thruster_coeff_pos", "base::VectorXd"
     
     # Convert thruster signal into forces, in negative direction or CCW.
-    # Should have the size of amount_of_actuators
+    # Should have a size equal to the number of thrusters
     # Thruster[N] = Coeff * rotation * |rotation|
     property "thruster_coeff_neg", "base::VectorXd"    
     
@@ -337,18 +337,14 @@ task_context "ThrustersInput" do
     # In case the control_modes is RAW (pwm), used to convert the signal into DC Voltage
     # Thruster[N] = Coeff * voltage * |voltage|  
     property "thruster_voltage", "double", 0  
-    
-    
 
     # Forces that each thruster should apply. Should contain data in cmd_in.effort
     input_port "cmd_in", "base::commands::Joints"
 
     # Generated motor commands
     output_port "cmd_out", "base::commands::Joints"
-    
 
-    exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SET_OF_CONTROLMODES, :WRONG_SIZE_OF_THRUSTER_COEFFICIENTS,
-                     :UNSET_THRUSTER_INPUT, :UNEXPECTED_THRUSTER_INPUT 
+    exception_states :UNSET_THRUSTER_INPUT, :UNEXPECTED_THRUSTER_INPUT 
                     
     port_driven 'cmd_in'                   
 end

@@ -4,7 +4,6 @@
 #define AUV_CONTROL_THRUSTERSINPUT_TASK_HPP
 
 #include "auv_control/ThrustersInputBase.hpp"
-#include "base/commands/Joints.hpp"
 
 namespace auv_control {
 

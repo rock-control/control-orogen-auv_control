@@ -1,6 +1,8 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "ThrustersInput.hpp"
+#include "base/commands/Joints.hpp"
+#include "base/Logging.hpp"
 
 using namespace auv_control;
 
@@ -34,57 +36,64 @@ bool ThrustersInput::configureHook()
     coeffNeg 			= _thruster_coeff_neg.get();
     controlModes		= _control_modes.get();
 
-    // Let's assume control_modes was set with the right number of thrusters
     numberOfThrusters = controlModes.size();
 
-    // Those coefficients need to be set
-    if(coeffPos.size() == 0 || coeffNeg.size() == 0)
+    // In case the control_modes vector was set
+    if(numberOfThrusters != 0)
     {
-        RTT::log(RTT::Error) << "Thruster coefficients were not set" << RTT::endlog();
-        exception(WRONG_SIZE_OF_THRUSTER_COEFFICIENTS);
-    }
-
-
-    // Check size of parameters. They should met among them.
-    if(coeffPos.size() != numberOfThrusters || coeffNeg.size() != numberOfThrusters )
-    {
-        if(coeffPos.size() != coeffNeg.size())
-        {	// If coefficients sizes are different among them and controm_modes size, one of the coeff were not set right
-            RTT::log(RTT::Error) << "Coefficients were not set with "<< numberOfThrusters <<" as predicted" << RTT::endlog();
-            exception(WRONG_SIZE_OF_THRUSTER_COEFFICIENTS);
-        }
-        else if(!controlModes.empty())
+        // Checks if the three arrays have the same length
+        if(coeffPos.size() != numberOfThrusters || coeffNeg.size() != numberOfThrusters)
         {
-            // Well, if the thruster_coeff vectors have the same size, looks like the control_modes is the one with wrong size
-            exception(WRONG_SIZE_OF_CONTROLMODES);
-        }
-        else if(controlModes.empty())
-        {
-            // In this case, control_modes is empty and coeffPos has the right number of thrusters
-            // Let's set control_modes with default values RAW
-            numberOfThrusters = coeffPos.size();
-            //resize the controlModes to number of Thrusters
-            controlModes.resize(numberOfThrusters);
-            //set undefined controlModes to RAW
-            for(uint i = 0; i < numberOfThrusters; i++)
-            {
-                controlModes[i] = base::JointState::RAW;
-            }
+            LOG_ERROR("The size of control_modes, thruster_coeff_pos and "
+                    "thruster_coeff_neg do not agree (control_modes: %i, "
+                    "thruster_coeff_pos: %i, thruster_coeff_neg: %i)",
+                    numberOfThrusters, coeffPos.size(), coeffNeg.size());
+            return false;
         }
     }
-
-    // Check control_modes
-    for (uint i=0; i < numberOfThrusters; i++)
+    // In case control_modes wasn't set, checks if the other two arrays have the same length
+    else if(coeffPos.size() != coeffNeg.size())
     {
+        LOG_ERROR("The size of control_modes, thruster_coeff_pos and "
+                "thruster_coeff_neg do not agree (control_modes: %i, "
+                "thruster_coeff_pos: %i, thruster_coeff_neg: %i)",
+                numberOfThrusters, coeffPos.size(), coeffNeg.size());
+        return false;
+    }
+    // In case control_modes wasn't set but the other two arrays have the same length
+    else
+    {
+        LOG_WARN("The control_modes is being automatically set to RAW, "
+                 "since it wasn't previously set.");
+        numberOfThrusters = coeffPos.size();
+        controlModes.resize(numberOfThrusters, base::JointState::RAW);
+        _control_modes.set(controlModes);
+    }
+
+    for (uint i = 0; i < numberOfThrusters; i++)
+    {
+        // A different JointState other than SPEED and RAW was chosen
         if(controlModes[i] !=  base::JointState::SPEED && controlModes[i] !=  base::JointState::RAW)
         {
-            RTT::log(RTT::Error) << "Control Mode should be SPEED or RAW" << RTT::endlog();
-            exception(WRONG_SET_OF_CONTROLMODES);
+            LOG_ERROR("Control mode should be either SPEED or RAW.");
+            return false;
+        }
+        // When using RAW control mode, the calculation demands that the thruster voltage
+        // is set, and the latest can only assume positive values
+        if(controlModes[i] ==  base::JointState::RAW && thrusterVoltage <= 0)
+        {
+            LOG_ERROR("The control mode was set to RAW, but no positive value was assigned "
+                    "to thruster_voltage.");
+            return false;
+        }
+        // The thruster coefficients can only assume positive values
+        if (coeffPos[i] <= 0 || coeffNeg[i] <= 0)
+        {
+            LOG_ERROR("The thrusters coefficients (both positive and negative) should only "
+                    "have positive values.");
+            return false;
         }
     }
-
-
-
 
     return true;
 }
@@ -101,13 +110,11 @@ void ThrustersInput::updateHook()
 
     base::commands::Joints thrusterForces;
 
-    while (_cmd_in.read(thrusterForces) == RTT::NewData)
+    if(_cmd_in.read(thrusterForces) == RTT::NewData)
     {
         if(checkControlInput(thrusterForces))
         {
-
             calcOutput(thrusterForces);
-
             _cmd_out.write(thrusterForces);
         }
     }
@@ -130,34 +137,34 @@ bool ThrustersInput::checkControlInput(base::samples::Joints &cmd_in)
 {
     std::string textElement;
 
-    // No match of input.size with properties.size
+    // No match between input.size and the expected number of thrusters
     if(cmd_in.elements.size() != numberOfThrusters)
     {
-        RTT::log(RTT::Error) << "The input has not "<< numberOfThrusters <<
-                " thruster as predicted. Actual size is "<< cmd_in.elements.size() << ". Check configuration. "<< RTT::endlog();
+        LOG_ERROR("The input vector should have a size equal to %i, but actually it "
+                "has size equal to %i. Check configuration. ", numberOfThrusters, cmd_in.elements.size());
         exception(UNEXPECTED_THRUSTER_INPUT);
         return false;
     }
 
     for (uint i = 0; i < numberOfThrusters; i++)
     {
-        // Define how to call the problematic thruster
-        std::string textThruster;
-        if(cmd_in.size() == numberOfThrusters)
-            textThruster = cmd_in.names[i];
-        else
-        {
-            std::stringstream number;
-            number << i;
-            textThruster = number.str();
-        }
-
         // Verify if the EFFORT mode is a valid input or a nan
         if (!cmd_in.elements[i].hasEffort())
         {
-            textElement = "effort";
-            RTT::log(RTT::Error) << "The field "<< textElement << " of thruster "<<
-                    textThruster << " was not set." << RTT::endlog();
+            // Define how to call the problematic thruster
+            std::string textThruster;
+
+            // Check whether names were specified for the thrusters
+            if(cmd_in.names.size() == numberOfThrusters)
+                textThruster = cmd_in.names[i];
+            else
+            {
+                std::stringstream number;
+                number << i;
+                textThruster = number.str();
+            }
+
+            LOG_ERROR("The field effort of the thruster %s was not set.", textThruster.c_str());
             exception(UNSET_THRUSTER_INPUT);
             return false;
         }
@@ -175,18 +182,18 @@ void ThrustersInput::calcOutput(base::samples::Joints &cmd_out)
         if(controlModes[i] == base::JointState::SPEED)
         {
             if(cmd_out.elements[i].effort >= 0)
-                cmd_out.elements[i].speed = sqrt(fabs(cmd_out.elements[i].effort) / coeffPos[i]);
+                cmd_out.elements[i].speed = + sqrt(fabs(cmd_out.elements[i].effort) / coeffPos[i]);
             else
-                cmd_out.elements[i].speed = sqrt(fabs(cmd_out.elements[i].effort) / coeffNeg[i]) * -1.0;
+                cmd_out.elements[i].speed = - sqrt(fabs(cmd_out.elements[i].effort) / coeffNeg[i]);
         }
         // Force = Cv * V * |V|
         // V = pwm * thrusterVoltage
         else if(controlModes[i] == base::JointState::RAW)
         {
             if(cmd_out.elements[i].effort >= 0)
-                cmd_out.elements[i].raw = sqrt(fabs(cmd_out.elements[i].effort / coeffPos[i])) / thrusterVoltage;
+                cmd_out.elements[i].raw = + sqrt(fabs(cmd_out.elements[i].effort / coeffPos[i])) / thrusterVoltage;
             else
-                cmd_out.elements[i].raw = sqrt(fabs(cmd_out.elements[i].effort / coeffNeg[i])) * -1.0 / thrusterVoltage;
+                cmd_out.elements[i].raw = - sqrt(fabs(cmd_out.elements[i].effort / coeffNeg[i])) / thrusterVoltage;
         }
     }
 }
