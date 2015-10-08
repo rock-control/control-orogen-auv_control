@@ -108,14 +108,13 @@ void ThrustersInput::updateHook()
 {
     ThrustersInputBase::updateHook();
 
-    base::commands::Joints thrusterForces;
-
-    if(_cmd_in.read(thrusterForces) == RTT::NewData)
+    base::commands::Joints input;
+    if(_cmd_in.read(input) == RTT::NewData)
     {
-        if(checkControlInput(thrusterForces))
+        if(checkControlInput(input))
         {
-            calcOutput(thrusterForces);
-            _cmd_out.write(thrusterForces);
+            base::commands::Joints output = calcOutput(input);
+            _cmd_out.write(output);
         }
     }
 
@@ -133,7 +132,7 @@ void ThrustersInput::cleanupHook()
     ThrustersInputBase::cleanupHook();
 }
 
-bool ThrustersInput::checkControlInput(base::samples::Joints &cmd_in)
+bool ThrustersInput::checkControlInput(base::samples::Joints const &cmd_in)
 {
     std::string textElement;
 
@@ -174,26 +173,31 @@ bool ThrustersInput::checkControlInput(base::samples::Joints &cmd_in)
     return true;
 }
 
-void ThrustersInput::calcOutput(base::samples::Joints &cmd_out)
+base::samples::Joints ThrustersInput::calcOutput(base::samples::Joints const &cmd_in) const
 {
+    base::samples::Joints cmd_out;
+    cmd_out.elements.resize(numberOfThrusters);
     for (uint i = 0; i < numberOfThrusters; i++)
     {
         // Force = Cv * Speed * |Speed|
         if(controlModes[i] == base::JointState::SPEED)
         {
-            if(cmd_out.elements[i].effort >= 0)
-                cmd_out.elements[i].speed = + sqrt(fabs(cmd_out.elements[i].effort) / coeffPos[i]);
+            if(cmd_in.elements[i].effort >= 0)
+                cmd_out.elements[i].speed = + sqrt(fabs(cmd_in.elements[i].effort) / coeffPos[i]);
             else
-                cmd_out.elements[i].speed = - sqrt(fabs(cmd_out.elements[i].effort) / coeffNeg[i]);
+                cmd_out.elements[i].speed = - sqrt(fabs(cmd_in.elements[i].effort) / coeffNeg[i]);
         }
         // Force = Cv * V * |V|
         // V = pwm * thrusterVoltage
         else if(controlModes[i] == base::JointState::RAW)
         {
-            if(cmd_out.elements[i].effort >= 0)
-                cmd_out.elements[i].raw = + sqrt(fabs(cmd_out.elements[i].effort / coeffPos[i])) / thrusterVoltage;
+            if(cmd_in.elements[i].effort >= 0)
+                cmd_out.elements[i].raw = + sqrt(fabs(cmd_in.elements[i].effort / coeffPos[i])) / thrusterVoltage;
             else
-                cmd_out.elements[i].raw = - sqrt(fabs(cmd_out.elements[i].effort / coeffNeg[i])) / thrusterVoltage;
+                cmd_out.elements[i].raw = - sqrt(fabs(cmd_in.elements[i].effort / coeffNeg[i])) / thrusterVoltage;
         }
     }
+    cmd_out.names = cmd_in.names;
+    return cmd_out;
 }
+

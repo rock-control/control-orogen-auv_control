@@ -138,8 +138,8 @@ describe 'auv_control::ThrustersInput configuration' do
 
     data = assert_has_one_new_sample cmd_out, 1
     
-    assert (data.elements[0].speed - 1.9235 < 0.001)
-    assert (data.elements[1].speed - 2.07364 < 0.001)
+    assert (data.elements[0].speed - 1.9235).abs < 0.001
+    assert (data.elements[1].speed - 2.07364).abs < 0.001
         
   end
 
@@ -161,8 +161,8 @@ describe 'auv_control::ThrustersInput configuration' do
 
     data = assert_has_one_new_sample cmd_out, 1
     
-    assert (data.elements[0].speed + 1.3693 < 0.001)
-    assert (data.elements[1].speed + 0.9354 < 0.001)
+    assert (data.elements[0].speed + 1.3693).abs < 0.001
+    assert (data.elements[1].speed + 0.9354).abs < 0.001
         
   end
 
@@ -184,8 +184,8 @@ describe 'auv_control::ThrustersInput configuration' do
 
     data = assert_has_one_new_sample cmd_out, 1
     
-    assert (data.elements[0].raw - 0.0686 < 0.001)
-    assert (data.elements[1].raw - 0.0288 < 0.001)
+    assert (data.elements[0].raw - 0.0686).abs < 0.001
+    assert (data.elements[1].raw - 0.0288).abs < 0.001
   end
 
   it 'testing negative raw calculated value' do
@@ -206,8 +206,8 @@ describe 'auv_control::ThrustersInput configuration' do
 
     data = assert_has_one_new_sample cmd_out, 1
     
-    assert (data.elements[0].raw + 0.1302 < 0.001)
-    assert (data.elements[1].raw + 0.1036 < 0.001)
+    assert (data.elements[0].raw + 0.1302).abs < 0.001
+    assert (data.elements[1].raw + 0.1036).abs < 0.001
   end
 
 end
