@@ -90,6 +90,9 @@ task_context 'BasePIDController' do
     # Use the Ideal (false) or Parallel PID-Settings 
     property "use_parallel_pid_settings", "bool", false
 
+    # Defines if the derivative will be applied to the error or to the output in the PID controller
+    property "apply_derivative_to_error", "bool", false
+
     # Under this Value the axis are not controled. Output is 0.
     property "variance_threshold", "double"
 

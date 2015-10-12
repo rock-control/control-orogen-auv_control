@@ -58,6 +58,16 @@ bool BasePIDController::configureHook()
     if (! BasePIDControllerBase::configureHook())
         return false;
 
+    // set derivative mode
+    motor_controller::DerivativeMode derivative_mode = motor_controller::Output;
+    if(_apply_derivative_to_error)
+        derivative_mode = motor_controller::Error;
+    for (int i = 0; i < 3; ++i)
+    {
+        mLinearPIDs[i].setDerivativeMode(derivative_mode);
+        mAngularPIDs[i].setDerivativeMode(derivative_mode);
+    }
+
     use_parallel_pid_settings = _use_parallel_pid_settings;
     setPid_settings(_pid_settings.get());
     setParallel_pid_settings(_parallel_pid_settings.get());

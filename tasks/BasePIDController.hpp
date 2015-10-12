@@ -4,6 +4,7 @@
 #define AUV_CONTROL_BASEPIDCONTROLLER_TASK_HPP
 
 #include "auv_control/BasePIDControllerBase.hpp"
+#include <motor_controller/PID.hpp>
 
 namespace auv_control {
 
