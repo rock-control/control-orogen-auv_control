@@ -352,4 +352,20 @@ task_context "ThrustersInput" do
     port_driven 'cmd_in'                   
 end
 
+# Task that works as switch betwen two commands
+task_context "CommandInjection" do
 
+    # Timeput for the injection command
+    property "cmd_injection_timeout", "double", 0.05
+
+    # The cascade input command
+    input_port "cmd_cascade", "base::LinearAngular6DCommand"
+
+    # Non NaN values will be injected in the cascade input
+    input_port "cmd_injection", "base::LinearAngular6DCommand"
+
+    # The output command
+    output_port "cmd_out", "base::LinearAngular6DCommand"
+
+    port_driven "cmd_cascade"
+end
