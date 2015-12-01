@@ -197,6 +197,7 @@ base::samples::Joints ThrustersInput::calcOutput(base::samples::Joints const &cm
                 cmd_out.elements[i].raw = - sqrt(fabs(cmd_in.elements[i].effort / coeffNeg[i])) / thrusterVoltage;
         }
     }
+    cmd_out.time = cmd_in.time;
     cmd_out.names = cmd_in.names;
     return cmd_out;
 }
