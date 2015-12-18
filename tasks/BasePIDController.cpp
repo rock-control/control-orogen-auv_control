@@ -86,6 +86,13 @@ void BasePIDController::updateHook()
 }
 void BasePIDController::errorHook()
 {
+    // reset the contollers since the control loop is interrupted
+    for (unsigned i = 0; i < 3; ++i)
+    {
+        mLinearPIDs[i].reset();
+        mAngularPIDs[i].reset();
+    }
+
     BasePIDControllerBase::errorHook();
 }
 void BasePIDController::stopHook()
