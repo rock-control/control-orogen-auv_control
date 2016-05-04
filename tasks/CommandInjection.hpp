@@ -27,21 +27,21 @@ namespace auv_control {
 	friend class CommandInjectionBase;
     protected:
         base::Time newest_injection_sample;
-
+        bool calcOutput();
 
     public:
         /** TaskContext constructor for CommandInjection
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        CommandInjection(std::string const& name = "auv_control::CommandInjection", TaskCore::TaskState initial_state = Stopped);
+        CommandInjection(std::string const& name = "auv_control::CommandInjection");
 
         /** TaskContext constructor for CommandInjection 
          * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
          * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        CommandInjection(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        CommandInjection(std::string const& name, RTT::ExecutionEngine* engine);
 
         /** Default deconstructor of CommandInjection
          */
