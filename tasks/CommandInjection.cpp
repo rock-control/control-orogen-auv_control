@@ -30,15 +30,16 @@ bool CommandInjection::calcOutput()
 
         if((base::Time::now() - newest_injection_sample).toSeconds() <= _cmd_injection_timeout.value())
         {
+            const ExpectedInputs& expected_inputs = _expected_inputs.value();
             for(unsigned i = 0; i < 3; i++)
             {
-                if(!base::isNaN(cmd_injection.linear[i]))
+                if(!base::isNaN(cmd_injection.linear[i]) && expected_inputs.linear[i])
                     output_command.linear[i] = cmd_injection.linear[i];
             }
 
             for(unsigned i = 0; i < 3; i++)
             {
-                if(!base::isNaN(cmd_injection.angular[i]))
+                if(!base::isNaN(cmd_injection.angular[i]) && expected_inputs.angular[i])
                     output_command.angular[i] = cmd_injection.angular[i];
             }
         }
