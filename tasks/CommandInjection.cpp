@@ -22,31 +22,40 @@ bool CommandInjection::calcOutput()
 {
     base::LinearAngular6DCommand output_command = merged_command;
 
-    if(_cmd_injection.connected())
+    base::LinearAngular6DCommand cmd_injection;
+    if(receiveCommandInjection(cmd_injection))
     {
-        base::LinearAngular6DCommand cmd_injection;
-        if(_cmd_injection.readNewest(cmd_injection) == RTT::NewData)
-            newest_injection_sample = base::Time::now();
-
-        if((base::Time::now() - newest_injection_sample).toSeconds() <= _cmd_injection_timeout.value())
+        const ExpectedInputs& expected_inputs = _expected_inputs.value();
+        for(unsigned i = 0; i < 3; i++)
         {
-            const ExpectedInputs& expected_inputs = _expected_inputs.value();
-            for(unsigned i = 0; i < 3; i++)
-            {
-                if(!base::isNaN(cmd_injection.linear[i]) && expected_inputs.linear[i])
-                    output_command.linear[i] = cmd_injection.linear[i];
-            }
+            if(!base::isNaN(cmd_injection.linear[i]) && expected_inputs.linear[i])
+                output_command.linear[i] = cmd_injection.linear[i];
+        }
 
-            for(unsigned i = 0; i < 3; i++)
-            {
-                if(!base::isNaN(cmd_injection.angular[i]) && expected_inputs.angular[i])
-                    output_command.angular[i] = cmd_injection.angular[i];
-            }
+        for(unsigned i = 0; i < 3; i++)
+        {
+            if(!base::isNaN(cmd_injection.angular[i]) && expected_inputs.angular[i])
+                output_command.angular[i] = cmd_injection.angular[i];
         }
     }
 
     _cmd_out.write(output_command);
     return true;
+}
+
+bool CommandInjection::receiveCommandInjection(base::LinearAngular6DCommand& cmd_injection)
+{
+    RTT::FlowStatus status = _cmd_injection.readNewest(cmd_injection);
+    if(status == RTT::OldData && (base::Time::now() - newest_injection_sample).toSeconds() <= _cmd_injection_timeout.value())
+    {
+        return true;
+    }
+    else if(status == RTT::NewData)
+    {
+        newest_injection_sample = base::Time::now();
+        return true;
+    }
+    return false;
 }
 
 /// The following lines are template definitions for the various state machine
@@ -57,6 +66,9 @@ bool CommandInjection::configureHook()
 {
     if (! CommandInjectionBase::configureHook())
         return false;
+
+    newest_injection_sample.microseconds = 0;
+
     return true;
 }
 bool CommandInjection::startHook()
