@@ -111,7 +111,7 @@ void ThrustersInput::updateHook()
     base::commands::Joints input;
     if(_cmd_in.read(input) == RTT::NewData)
     {
-        if(checkControlInput(input))
+        if(checkControlInput(input, base::JointState::EFFORT))
         {
             base::commands::Joints output = calcOutput(input);
             _cmd_out.write(output);
@@ -132,7 +132,7 @@ void ThrustersInput::cleanupHook()
     ThrustersInputBase::cleanupHook();
 }
 
-bool ThrustersInput::checkControlInput(base::samples::Joints const &cmd_in)
+bool ThrustersInput::checkControlInput(base::samples::Joints const &cmd_in, base::JointState::MODE mode)
 {
     std::string textElement;
 
@@ -147,10 +147,11 @@ bool ThrustersInput::checkControlInput(base::samples::Joints const &cmd_in)
 
     for (uint i = 0; i < numberOfThrusters; i++)
     {
-        // Verify if the EFFORT mode is a valid input or a nan
-        if (!cmd_in.elements[i].hasEffort())
+        // Verify if the desired mode field is a NaN
+        if (base::isNaN(cmd_in.elements[i].getField(mode)))
         {
             // Define how to call the problematic thruster
+            std::string textMode;
             std::string textThruster;
 
             // Check whether names were specified for the thrusters
@@ -163,7 +164,16 @@ bool ThrustersInput::checkControlInput(base::samples::Joints const &cmd_in)
                 textThruster = number.str();
             }
 
-            LOG_ERROR("The field effort of the thruster %s was not set.", textThruster.c_str());
+            if(mode == base::JointState::SPEED)
+                textMode = "SPEED";
+            else if(mode == base::JointState::RAW)
+                textMode = "RAW";
+            else if(mode == base::JointState::EFFORT)
+                textMode = "EFFORT";
+            else
+                textMode = "unsupported mode";
+
+            LOG_ERROR("The field %s of the thruster %s was not set.", textMode.c_str(), textThruster.c_str());
             exception(UNSET_THRUSTER_INPUT);
             return false;
         }

@@ -28,14 +28,14 @@ Configure the kind of control signal and thruster's properties
 	friend class ThrustersInputBase;
     protected:
 
-	base::VectorXd coeffPos;
+	    base::VectorXd coeffPos;
         base::VectorXd coeffNeg;
         std::vector<base::JointState::MODE> controlModes;
         double thrusterVoltage;
         uint numberOfThrusters;
 
         base::samples::Joints calcOutput(base::samples::Joints const &cmd_in) const;
-	bool checkControlInput(base::samples::Joints const &cmd_in);
+        bool checkControlInput(base::samples::Joints const &cmd_in, base::JointState::MODE mode);
 
     public:
         /** TaskContext constructor for ThrustersInput
