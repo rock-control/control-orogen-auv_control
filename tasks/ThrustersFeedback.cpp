@@ -39,13 +39,13 @@ bool ThrustersFeedback::startHook()
 }
 void ThrustersFeedback::updateHook()
 {
-    base::commands::Joints joint_samples;
-    if(_joint_samples_in.read(joint_samples) == RTT::NewData)
+    base::commands::Joints jointSamples;
+    if(_cmd_in.read(jointSamples) == RTT::NewData)
     {
-        if(ThrustersInput::checkControlInput(joint_samples, controlModes[0]))
+        if(ThrustersBase::checkControlInput(jointSamples, controlModes[0]))
         {
-            base::commands::Joints output = calcOutput(joint_samples);
-            _forces_out.write(output);
+            base::commands::Joints thrusterForces = calcOutput(jointSamples);
+            _cmd_out.write(thrusterForces);
         }
     }
 }
@@ -64,8 +64,8 @@ void ThrustersFeedback::cleanupHook()
 
 base::samples::Joints ThrustersFeedback::calcOutput(base::samples::Joints const &joint_samples) const
 {
-    base::samples::Joints forces;
-    forces.elements.resize(numberOfThrusters);
+    base::samples::Joints thrusterForces;
+    thrusterForces.elements.resize(numberOfThrusters);
     base::VectorXd feedback = base::VectorXd::Zero(numberOfThrusters);
 
     for (uint i = 0; i < numberOfThrusters; i++)
@@ -75,9 +75,9 @@ base::samples::Joints ThrustersFeedback::calcOutput(base::samples::Joints const 
         {
             feedback[i] = joint_samples.elements[i].speed;
             if(joint_samples.elements[i].speed >= 0)
-                forces.elements[i].effort = coeffPos[i] * feedback[i] * fabs(feedback[i]);
+                thrusterForces.elements[i].effort = coeffPos[i] * feedback[i] * fabs(feedback[i]);
             else
-                forces.elements[i].effort = coeffNeg[i] * feedback[i] * fabs(feedback[i]);
+                thrusterForces.elements[i].effort = coeffNeg[i] * feedback[i] * fabs(feedback[i]);
         }
         // Force = Cv * V * |V|
         // V = pwm * thrusterVoltage
@@ -85,14 +85,12 @@ base::samples::Joints ThrustersFeedback::calcOutput(base::samples::Joints const 
         {
             feedback[i] = joint_samples.elements[i].raw * thrusterVoltage;
             if(joint_samples.elements[i].speed >= 0)
-                forces.elements[i].effort = coeffPos[i] * feedback[i] * fabs(feedback[i]);
+                thrusterForces.elements[i].effort = coeffPos[i] * feedback[i] * fabs(feedback[i]);
             else
-                forces.elements[i].effort = coeffNeg[i] * feedback[i] * fabs(feedback[i]);
+                thrusterForces.elements[i].effort = coeffNeg[i] * feedback[i] * fabs(feedback[i]);
         }
     }
-
-    forces.time = joint_samples.time;
-    forces.names = joint_samples.names;
-
-    return forces;
+    thrusterForces.time = joint_samples.time;
+    thrusterForces.names = joint_samples.names;
+    return thrusterForces;
 }

@@ -26,8 +26,7 @@ namespace auv_control{
 	friend class ThrustersFeedbackBase;
     protected:
 
-	    base::samples::Joints calcOutput(base::samples::Joints const &joint_samples) const;
-	    bool checkControlInput(base::samples::Joints const &cmd_in);
+	    base::samples::Joints calcOutput(base::samples::Joints const &thruster_rotations) const;
 
     public:
         /** TaskContext constructor for ThrustersFeedback
