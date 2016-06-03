@@ -6,8 +6,8 @@ require 'minitest/autorun'
 describe 'auv_control::ThrustersFeedback configuration' do
   include Orocos::Test::Component
   start  'thrusters_feedback', 'auv_control::ThrustersFeedback' => 'thrusters_feedback'
-  reader 'thrusters_feedback', 'forces_out', :attr_name => 'forces_out'
-  writer 'thrusters_feedback', 'joint_samples_in', :attr_name => 'joint_samples_in'
+  reader 'thrusters_feedback', 'cmd_out', :attr_name => 'cmd_out'
+  writer 'thrusters_feedback', 'cmd_in', :attr_name => 'cmd_in'
 
   it 'thruster_coeff_pos < 0' do
 
@@ -90,13 +90,13 @@ describe 'auv_control::ThrustersFeedback configuration' do
     thrusters_feedback.configure  
     thrusters_feedback.start  
       
-    sample = thrusters_feedback.joint_samples_in.new_sample
+    sample = thrusters_feedback.cmd_in.new_sample
     
     # 3 thrusters inputs were sent and 2 are expected
     thruster = Types::Base::JointState.new
     thruster.effort = 3
     sample.elements = [thruster, thruster, thruster]
-    joint_samples_in.write sample 
+    cmd_in.write sample
 
     assert_state_change(thrusters_feedback) { |s| s == :UNEXPECTED_THRUSTER_INPUT } 
         
@@ -109,12 +109,12 @@ describe 'auv_control::ThrustersFeedback configuration' do
     thrusters_feedback.configure  
     thrusters_feedback.start  
 
-    sample = thrusters_feedback.joint_samples_in.new_sample
+    sample = thrusters_feedback.cmd_in.new_sample
       
     # the effort field was not set
     thruster = Types::Base::JointState.new
     sample.elements = [thruster, thruster]
-    joint_samples_in.write sample 
+    cmd_in.write sample
 
     assert_state_change(thrusters_feedback) { |s| s == :UNSET_THRUSTER_INPUT } 
         
@@ -127,16 +127,16 @@ describe 'auv_control::ThrustersFeedback configuration' do
     thrusters_feedback.configure  
     thrusters_feedback.start  
 
-    sample = thrusters_feedback.joint_samples_in.new_sample
+    sample = thrusters_feedback.cmd_in.new_sample
       
     thruster1 = Types::Base::JointState.new
     thruster2 = Types::Base::JointState.new
     thruster1.speed = 457
     thruster2.speed = 789
     sample.elements = [thruster1, thruster2]
-    joint_samples_in.write sample 
+    cmd_in.write sample
 
-    data = assert_has_one_new_sample forces_out, 1
+    data = assert_has_one_new_sample cmd_out, 1
     
     assert (data.elements[0].effort - 13.99).abs < 0.001
     assert (data.elements[1].effort - 41.701).abs < 0.001
@@ -150,16 +150,16 @@ describe 'auv_control::ThrustersFeedback configuration' do
     thrusters_feedback.configure  
     thrusters_feedback.start  
 
-    sample = thrusters_feedback.joint_samples_in.new_sample
+    sample = thrusters_feedback.cmd_in.new_sample
       
     thruster1 = Types::Base::JointState.new
     thruster2 = Types::Base::JointState.new
     thruster1.speed = -530
     thruster2.speed = -650
     sample.elements = [thruster1, thruster2]
-    joint_samples_in.write sample 
+    cmd_in.write sample
 
-    data = assert_has_one_new_sample forces_out, 1
+    data = assert_has_one_new_sample cmd_out, 1
     
     assert (data.elements[0].effort + 18.817).abs < 0.001
     assert (data.elements[1].effort + 28.302).abs < 0.001
@@ -173,16 +173,16 @@ describe 'auv_control::ThrustersFeedback configuration' do
     thrusters_feedback.configure  
     thrusters_feedback.start  
 
-    sample = thrusters_feedback.joint_samples_in.new_sample
+    sample = thrusters_feedback.cmd_in.new_sample
       
     thruster1 = Types::Base::JointState.new
     thruster2 = Types::Base::JointState.new
     thruster1.raw = 25
     thruster2.raw = 17
     sample.elements = [thruster1, thruster2]
-    joint_samples_in.write sample 
+    cmd_in.write sample
 
-    data = assert_has_one_new_sample forces_out, 1
+    data = assert_has_one_new_sample cmd_out, 1
     
     assert (data.elements[0].effort - 15.114).abs < 0.001
     assert (data.elements[1].effort - 6.9887).abs < 0.001
@@ -195,16 +195,16 @@ describe 'auv_control::ThrustersFeedback configuration' do
     thrusters_feedback.configure  
     thrusters_feedback.start  
 
-    sample = thrusters_feedback.joint_samples_in.new_sample
+    sample = thrusters_feedback.cmd_in.new_sample
       
     thruster1 = Types::Base::JointState.new
     thruster2 = Types::Base::JointState.new
     thruster1.raw = -49
     thruster2.raw = -31
     sample.elements = [thruster1, thruster2]
-    joint_samples_in.write sample 
+    cmd_in.write sample
 
-    data = assert_has_one_new_sample forces_out, 1
+    data = assert_has_one_new_sample cmd_out, 1
     
     assert (data.elements[0].effort + 58.061).abs < 0.001
     assert (data.elements[1].effort + 23.239).abs < 0.001
