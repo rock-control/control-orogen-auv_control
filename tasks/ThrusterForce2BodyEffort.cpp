@@ -46,7 +46,7 @@ void ThrusterForce2BodyEffort::updateHook()
 
     base::samples::Joints thrusterForces;
 
-    if(_thruster_forces.read(thrusterForces) == RTT::NewData)
+    while(_thruster_forces.read(thrusterForces) == RTT::NewData)
     {
         base::LinearAngular6DCommand bodyEffort;
         base::VectorXd thrusterForcesVector;

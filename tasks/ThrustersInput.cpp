@@ -43,7 +43,7 @@ void ThrustersInput::updateHook()
     ThrustersInputBase::updateHook();
 
     base::commands::Joints thrusterForces;
-    if(_cmd_in.read(thrusterForces) == RTT::NewData)
+    while(_cmd_in.read(thrusterForces) == RTT::NewData)
     {
         if(ThrustersBase::checkControlInput(thrusterForces, base::JointState::EFFORT))
         {

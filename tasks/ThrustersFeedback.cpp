@@ -40,7 +40,7 @@ bool ThrustersFeedback::startHook()
 void ThrustersFeedback::updateHook()
 {
     base::commands::Joints jointSamples;
-    if(_cmd_in.read(jointSamples) == RTT::NewData)
+    while(_cmd_in.read(jointSamples) == RTT::NewData)
     {
         if(ThrustersBase::checkControlInput(jointSamples, controlModes[0]))
         {
