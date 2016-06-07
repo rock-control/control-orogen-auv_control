@@ -38,10 +38,10 @@ describe 'auv_control::ThrusterForce2BodyEffort configuration' do
 
     data = assert_has_one_new_sample body_efforts, 1
 
-    assert (data.linear[0] - 60).abs < 0.001, "wrong expected surge value"
-    assert (data.linear[1] - 0.0).abs < 0.001, "wrong expected sway value"
-    assert (data.linear[2] + 100).abs < 0.001, "wrong expected heave value"
-    assert (data.angular[2] - 0.0).abs < 0.001, "wrong expected yaw value"
+    assert_in_delta data.linear[0], 60, 0.001, "wrong expected value for surge (x)"
+    assert_in_delta data.linear[1], 0, 0.001, "wrong expected value for sway (y)"
+    assert_in_delta data.linear[2], -100, 0.001, "wrong expected value for heave (z)"
+    assert_in_delta data.angular[2], 0, 0.001, "wrong expected value for yaw"
   end
 
   it 'testing thruster sway force values' do
@@ -52,7 +52,7 @@ describe 'auv_control::ThrusterForce2BodyEffort configuration' do
     thruster_force_2_body_effort.start  
 
     sample = thruster_force_2_body_effort.thruster_forces.new_sample
-      
+
     thruster1 = Types::Base::JointState.new
     thruster2 = Types::Base::JointState.new
     thruster3 = Types::Base::JointState.new
@@ -65,17 +65,17 @@ describe 'auv_control::ThrusterForce2BodyEffort configuration' do
     thruster4.effort = 32
     thruster5.effort = 0
     thruster6.effort = 0
-    
+
     sample.elements = [thruster1, thruster2, thruster3, thruster4, thruster5, thruster6]
 
     thruster_forces.write sample 
 
     data = assert_has_one_new_sample body_efforts, 1
 
-    assert (data.linear[0] - 0.0).abs < 0.001, "wrong expected surge value"
-    assert (data.linear[1] + 57).abs < 0.001, "wrong expected sway value"
-    assert (data.linear[2] + 0.0).abs < 0.001, "wrong expected heave value"
-    assert (data.angular[2] - 15.615).abs < 0.001, "wrong expected yaw value"
+    assert_in_delta data.linear[0], 0, 0.001, "wrong expected value for surge (x)"
+    assert_in_delta data.linear[1], -57, 0.001, "wrong expected value for sway (y)"
+    assert_in_delta data.linear[2], 0, 0.001, "wrong expected value for heave (z)"
+    assert_in_delta data.angular[2], 15.615, 0.001, "wrong expected value for yaw"
   end
 
 end

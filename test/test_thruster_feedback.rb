@@ -33,14 +33,16 @@ describe 'auv_control::ThrustersFeedback configuration' do
 
   it 'wrong control_modes size' do
 
-    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",['default', 'control_mode_3_raw'], true)
+    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",
+        ['default', 'control_mode_3_raw'], true)
     
     assert_raises(Orocos::StateTransitionFailed) { thrusters_feedback.configure }
   end
 
   it 'wrong thruster_coeff_pos size' do
 
-    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",['default', 'thruster_coeff_pos_size_3'], true)
+    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",
+        ['default', 'thruster_coeff_pos_size_3'], true)
     
     assert_raises(Orocos::StateTransitionFailed) { thrusters_feedback.configure }
   end
@@ -58,7 +60,8 @@ describe 'auv_control::ThrustersFeedback configuration' do
 
   it 'pos and neg coefficients have different sizes' do
 
-    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",['default', 'thruster_coeff_pos_size_3'], true)
+    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",
+        ['default', 'thruster_coeff_pos_size_3'], true)
     
     aux = thrusters_feedback.control_modes
     aux.clear
@@ -69,7 +72,8 @@ describe 'auv_control::ThrustersFeedback configuration' do
 
   it 'control modes set to EFFORT' do
 
-    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",['default', 'control_modes_effort'], true)
+    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",
+        ['default', 'control_modes_effort'], true)
     
     assert_raises(Orocos::StateTransitionFailed) { thrusters_feedback.configure }
   end
@@ -99,7 +103,6 @@ describe 'auv_control::ThrustersFeedback configuration' do
     cmd_in.write sample
 
     assert_state_change(thrusters_feedback) { |s| s == :UNEXPECTED_THRUSTER_INPUT } 
-        
   end
   
   it 'thruster input not set' do
@@ -117,12 +120,12 @@ describe 'auv_control::ThrustersFeedback configuration' do
     cmd_in.write sample
 
     assert_state_change(thrusters_feedback) { |s| s == :UNSET_THRUSTER_INPUT } 
-        
   end
   
   it 'testing positive speed calculated value' do
 
-    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",['default', 'control_modes_speed'], true)
+    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",
+        ['default', 'control_modes_speed'], true)
     
     thrusters_feedback.configure  
     thrusters_feedback.start  
@@ -138,14 +141,16 @@ describe 'auv_control::ThrustersFeedback configuration' do
 
     data = assert_has_one_new_sample cmd_out, 1
     
-    assert (data.elements[0].effort - 13.99).abs < 0.001
-    assert (data.elements[1].effort - 41.701).abs < 0.001
-        
+    assert_in_delta data.elements[0].effort, 13.99, 0.001,
+        "wrong expected value for thruster 1"
+    assert_in_delta data.elements[1].effort, 41.701, 0.001,
+        "wrong expected value for thruster 2"
   end
 
   it 'testing negative speed calculated value' do
 
-    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",['default', 'control_modes_speed'], true)
+    thrusters_feedback.apply_conf_file("auv_control::ThrustersFeedback.yml",
+        ['default', 'control_modes_speed'], true)
     
     thrusters_feedback.configure  
     thrusters_feedback.start  
@@ -161,9 +166,10 @@ describe 'auv_control::ThrustersFeedback configuration' do
 
     data = assert_has_one_new_sample cmd_out, 1
     
-    assert (data.elements[0].effort + 18.817).abs < 0.001
-    assert (data.elements[1].effort + 28.302).abs < 0.001
-        
+    assert_in_delta data.elements[0].effort, -18.817, 0.001,
+        "wrong expected value for thruster 1"
+    assert_in_delta data.elements[1].effort, -28.302, 0.001,
+        "wrong expected value for thruster 2"
   end
 
   it 'testing positive raw calculated value' do
@@ -184,8 +190,10 @@ describe 'auv_control::ThrustersFeedback configuration' do
 
     data = assert_has_one_new_sample cmd_out, 1
     
-    assert (data.elements[0].effort - 15.114).abs < 0.001
-    assert (data.elements[1].effort - 6.9887).abs < 0.001
+    assert_in_delta data.elements[0].effort, 15.114, 0.001,
+        "wrong expected value for thruster 1"
+    assert_in_delta data.elements[1].effort, 6.9887, 0.001,
+        "wrong expected value for thruster 2"
   end
 
   it 'testing negative raw calculated value' do
@@ -206,8 +214,10 @@ describe 'auv_control::ThrustersFeedback configuration' do
 
     data = assert_has_one_new_sample cmd_out, 1
     
-    assert (data.elements[0].effort + 58.061).abs < 0.001
-    assert (data.elements[1].effort + 23.239).abs < 0.001
+    assert_in_delta data.elements[0].effort, -58.061, 0.001,
+        "wrong expected value for thruster 1"
+    assert_in_delta data.elements[1].effort, -23.239, 0.001,
+        "wrong expected value for thruster 2"
   end
 
 end
