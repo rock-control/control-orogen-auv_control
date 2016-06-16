@@ -54,17 +54,17 @@ void ThrusterForce2BodyEffort::updateHook()
         unsigned int numberOfThrusters = thrusterMatrix.cols();
         thrusterForcesVector = base::VectorXd::Zero(numberOfThrusters);
 
+        if(thrusterForces.elements.size() != numberOfThrusters)
+        {
+            LOG_ERROR("The input vector should have a size equal to %i, but actually it "
+                    "has size equal to %i. Check configuration. ",
+                    numberOfThrusters, thrusterForces.elements.size());
+            exception(UNEXPECTED_THRUSTER_INPUT);
+            return;
+        }
+
         for(int i = 0; i < numberOfThrusters; i++)
         {
-            if(thrusterForces.elements.size() != numberOfThrusters)
-            {
-                LOG_ERROR("The input vector should have a size equal to %i, but actually it "
-                        "has size equal to %i. Check configuration. ",
-                        numberOfThrusters, thrusterForces.elements.size());
-                exception(UNEXPECTED_THRUSTER_INPUT);
-                return;
-            }
-
             if(!thrusterForces.elements[i].hasEffort())
             {
                 std::string textThruster;
