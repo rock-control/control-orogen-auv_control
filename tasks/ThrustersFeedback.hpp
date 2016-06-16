@@ -1,52 +1,50 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_THRUSTERSINPUT_TASK_HPP
-#define AUV_CONTROL_THRUSTERSINPUT_TASK_HPP
+#ifndef AUV_CONTROL_THRUSTERSFEEDBACK_TASK_HPP
+#define AUV_CONTROL_THRUSTERSFEEDBACK_TASK_HPP
 
-#include "auv_control/ThrustersInputBase.hpp"
+#include "auv_control/ThrustersFeedbackBase.hpp"
 
-namespace auv_control {
+namespace auv_control{
 
-    /*! \class ThrustersInput 
+    /*! \class ThrustersFeedback
      * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
      * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
      * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
-     * Task that convert forces[N] to thruster's control signal.
-Receive as input AccelerationController.cmd_out and gives as output the control signal for each thruster
-Configure the kind of control signal and thruster's properties
+     * Task that converts thruster's feedback from rpm to force.
      * \details
      * The name of a TaskContext is primarily defined via:
      \verbatim
      deployment 'deployment_name'
-         task('custom_task_name','auv_control::ThrustersInput')
+         task('custom_task_name','auv_control::ThrustersFeedback')
      end
      \endverbatim
-     *  It can be dynamically adapted when the deployment is called with a prefix argument. 
+     *  It can be dynamically adapted when the deployment is called with a prefix argument.
      */
-    class ThrustersInput : public ThrustersInputBase
+    class ThrustersFeedback : public ThrustersFeedbackBase
     {
-	friend class ThrustersInputBase;
+	friend class ThrustersFeedbackBase;
     protected:
 
-        base::samples::Joints calcOutput(base::samples::Joints const &thruster_forces) const;
+	    base::samples::Joints calcOutput(base::samples::Joints const &thruster_rotations) const;
 
     public:
-        /** TaskContext constructor for ThrustersInput
+        /** TaskContext constructor for ThrustersFeedback
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        ThrustersInput(std::string const& name = "auv_control::ThrustersInput");
+        ThrustersFeedback(std::string const& name = "auv_control::ThrustersFeedback");
 
-        /** TaskContext constructor for ThrustersInput 
-         * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
-         * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
+        /** TaskContext constructor for ThrustersFeedback
+         * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices.
+         * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task.
          * 
          */
-        ThrustersInput(std::string const& name, RTT::ExecutionEngine* engine);
+        ThrustersFeedback(std::string const& name, RTT::ExecutionEngine* engine);
 
-        /** Default deconstructor of ThrustersInput
+        /** Default deconstructor of ThrustersFeedback
          */
-	~ThrustersInput();
+	~ThrustersFeedback();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the
@@ -77,7 +75,7 @@ Configure the kind of control signal and thruster's properties
          *
          * The error(), exception() and fatal() calls, when called in this hook,
          * allow to get into the associated RunTimeError, Exception and
-         * FatalError states. 
+         * FatalError states.
          *
          * In the first case, updateHook() is still called, and recover() allows
          * you to go back into the Running state.  In the second case, the

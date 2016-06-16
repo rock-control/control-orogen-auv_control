@@ -318,11 +318,10 @@ task_context "OptimalHeadingController" do
     error_states :WAIT_FOR_ORIENTATION_SAMPLE
 end
 
-# Task that convert forces[N] to thruster's control signal.  
-# Receive as input AccelerationController.cmd_out and gives as output the control signal to the thruster's driver 
-# Configure the kind of control signal and thruster's properties
-task_context "ThrustersInput" do
+# Base task for ThrustersInput and ThrustersFeedback
+task_context "ThrustersBase" do
     needs_configuration
+    abstract
 
     # Convert thruster signal into forces, in positive direction or CW.
     # Should have a size equal to the number of thrusters
@@ -341,15 +340,63 @@ task_context "ThrustersInput" do
     # Thruster[N] = Coeff * voltage * |voltage|  
     property "thruster_voltage", "double", 0  
 
-    # Forces that each thruster should apply. Should contain data in cmd_in.effort
+    # The description about the ports are specified in ThrustersInput and
+    # ThrustersFeedback tasks
     input_port "cmd_in", "base::commands::Joints"
 
-    # Generated motor commands
     output_port "cmd_out", "base::commands::Joints"
 
     exception_states :UNSET_THRUSTER_INPUT, :UNEXPECTED_THRUSTER_INPUT 
                     
-    port_driven 'cmd_in'                   
+    port_driven 'cmd_in'
+end
+
+# Task that convert thruster forces to thruster's rotation.
+#
+# AccelerationController.cmd_out --> ThrustersInput --> Demultiplexer.cmd_in
+#
+task_context "ThrustersInput" do
+    needs_configuration
+    subclasses "ThrustersBase"
+
+    # cmd_in: forces that each thruster should apply. Should contain data in cmd_in.effort
+    # cmd_out: Generated motor commands
+end
+
+# Task that converts thruster's feedback from RPM or PWM to thruster forces.
+#
+# Multiplexer.joint_samples --> ThrustersFeedback --> ThrusterForce2BodyEffort.thruster_forces
+#
+task_context "ThrustersFeedback" do
+    needs_configuration
+    subclasses "ThrustersBase"
+
+    # cmd_in: thrusters rotation feedback
+    # cmd_out: thrusters forces
+end
+
+# Task that converts thruster's forces to body efforts.
+#
+# ThrustersFeedback.cmd_out --> ThrusterForce2BodyEffort --> Wherever body efforts are required
+#
+task_context "ThrusterForce2BodyEffort" do
+    needs_configuration
+
+    # Matrix with size of 6 * n. n means the count of thrusters that are used.
+    # The rows 0 to 2 of the matrix are the linear axis. The lines 3 to 5 of the
+    # matrix are the angular axis.
+    property "thruster_configuration_matrix", "base::MatrixXd"
+
+    # Thruster individual forces
+    input_port "thruster_forces", "base::commands::Joints"
+
+    # Body efforts once the thruster configuration matrix is applied to the
+    # thruster forces
+    output_port "body_efforts", "base::LinearAngular6DCommand"
+
+    exception_states :UNSET_THRUSTER_INPUT, :UNEXPECTED_THRUSTER_INPUT
+
+    port_driven 'thruster_forces'
 end
 
 # Task that works as switch betwen two commands

@@ -1,0 +1,44 @@
+--- name:default
+# Matrix with size of 6 * n. n means the count of thrusters that are used.
+# The rows 0 to 2 of the matrix are the linear axis. The lines 3 to 5 of the
+# matrix are the angular axis.
+thruster_configuration_matrix:
+  rows: 6
+  cols: 6
+  data:
+  - 1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - -0.42
+  - 1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.42
+  - 0.0
+  - -1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - -0.5735
+  - 0.0
+  - -1.0
+  - 0.0
+  - -0.0
+  - 0.0
+  - 0.936
+  - 0.0
+  - 0.0
+  - -1.0
+  - 0.0
+  - 0.4235
+  - 0.0
+  - 0.0
+  - 0.0
+  - -1.0
+  - -0.0
+  - -0.556
+  - 0.0
