@@ -67,7 +67,6 @@ void ThrusterForce2BodyEffort::updateHook()
 
             if(!thrusterForces.elements[i].hasEffort())
             {
-                std::cout << "teste 4" << std::endl;
                 std::string textThruster;
 
                 // Check whether names were specified for the thrusters
