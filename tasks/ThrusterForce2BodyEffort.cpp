@@ -63,7 +63,7 @@ void ThrusterForce2BodyEffort::updateHook()
             return;
         }
 
-        for(int i = 0; i < numberOfThrusters; i++)
+        for(uint i = 0; i < numberOfThrusters; i++)
         {
             if(!thrusterForces.elements[i].hasEffort())
             {
