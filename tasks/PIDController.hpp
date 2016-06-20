@@ -4,6 +4,7 @@
 #define AUV_CONTROL_PIDCONTROLLER_TASK_HPP
 
 #include "auv_control/PIDControllerBase.hpp"
+#include <base/Timeout.hpp>
 
 namespace auv_control {
 
@@ -28,6 +29,8 @@ world or aligned frames, and outputs "whatever" in the same frame
     protected:
         bool on_init;
         bool isPoseSampleValid();
+
+        base::Timeout new_pose_samples_timeout;
 
 
     public:

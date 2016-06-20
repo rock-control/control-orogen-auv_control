@@ -18,10 +18,20 @@ WorldToAligned::~WorldToAligned()
 {
 }
 
+bool WorldToAligned::configureHook()
+{
+    if (!WorldToAlignedBase::configureHook())
+        return false;
+
+    new_pose_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+
+    return true;
+}
+
 bool WorldToAligned::startHook()
 {
     on_init = true;
-    if (!Base::startHook())
+    if (!WorldToAlignedBase::startHook())
         return false;
 
     auv_control::ExpectedInputs expected_inputs = _expected_inputs.get();
@@ -35,18 +45,30 @@ bool WorldToAligned::startHook()
 }
 void WorldToAligned::updateHook()
 {
-    if (_pose_samples.readNewest(currentPose) == RTT::NoData){
+    RTT::FlowStatus status = _pose_samples.readNewest(currentPose);
+    if (status == RTT::NoData){
         if(state() != WAIT_FOR_POSE_SAMPLE){
             error(WAIT_FOR_POSE_SAMPLE);
         }
         return;
-    } else if(!this->isPoseSampleValid(currentPose)){
-            if(!on_init){
-                exception(POSE_SAMPLE_INVALID);
-            }
-            return;
+    }
+    else if (status == RTT::OldData && new_pose_samples_timeout.elapsed()){
+        if(state() != WAIT_FOR_POSE_SAMPLE){
+            error(WAIT_FOR_POSE_SAMPLE);
         }
+        return;
+    }
+    else{
+        new_pose_samples_timeout.restart();
+    }
 
+
+    if(!this->isPoseSampleValid(currentPose)){
+        if(!on_init){
+            exception(POSE_SAMPLE_INVALID);
+        }
+        return;
+    }
 
     WorldToAlignedBase::updateHook();
     on_init = false;
@@ -56,7 +78,7 @@ void WorldToAligned::errorHook()
 {
     if( state() == WAIT_FOR_POSE_SAMPLE){
         base::samples::RigidBodyState pose_sample;
-        if (_pose_samples.readNewest(pose_sample) != RTT::NoData){
+        if (_pose_samples.readNewest(pose_sample) == RTT::NewData){
             recover();
         }
     }
