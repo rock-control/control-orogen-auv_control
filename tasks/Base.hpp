@@ -5,7 +5,6 @@
 
 #include "auv_control/BaseBase.hpp"
 #include <string.h>
-#include <base/float.h>
 
 namespace auv_control {
 
