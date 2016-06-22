@@ -277,7 +277,7 @@ task_context "WaypointNavigator" do
     periodic(0.01)
 end
 
-# Task to convert MotionCommand2D into a velocity
+# Task to convert base/commands/Motion2D into a velocity
 #
 # This allows to reuse control algorithms that deal with 2D motions (such as the
 # trajectory_follower)
@@ -285,10 +285,10 @@ task_context "MotionCommand2DConverter" do
     needs_configuration
 
     # Command input as a velocity motion in the plan
-    input_port "cmd_in", "base::MotionCommand2D"
+    input_port "cmd_in", "/base/commands/Motion2D"
     # Command output as an aligned velocity. Only the heading and X velocities
     # are set
-    output_port "cmd_out", "base::LinearAngular6DCommand"
+    output_port "cmd_out", "/base/LinearAngular6DCommand"
 
     port_driven "cmd_in"
 end

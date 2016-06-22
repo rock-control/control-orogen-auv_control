@@ -3,9 +3,9 @@
 
 #include <motor_controller/PID.hpp> 
 #include <math.h>
-#include <base/time.h>
-#include <base/eigen.h>
-#include <base/float.h>
+#include <base/Time.hpp>
+#include <base/Eigen.hpp>
+#include <base/Float.hpp>
 
 namespace auv_control{
     struct ExpectedInputs{
