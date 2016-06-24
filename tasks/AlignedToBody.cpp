@@ -28,6 +28,9 @@ bool AlignedToBody::configureHook()
 {
     if (! AlignedToBodyBase::configureHook())
         return false;
+
+    new_orientation_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+
     return true;
 }
 bool AlignedToBody::startHook()
@@ -65,6 +68,15 @@ void AlignedToBody::updateHook()
         }
         return;
     }
+    else if (status == RTT::OldData && new_orientation_samples_timeout.elapsed()){
+        if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
+            error(WAIT_FOR_ORIENTATION_SAMPLE);
+        }
+        return;
+    }
+    else{
+        new_orientation_samples_timeout.restart();
+    }
 
     if(!base::samples::RigidBodyState::isValidValue(orientation_sample.orientation)){
         if(!on_init){
@@ -80,7 +92,7 @@ void AlignedToBody::updateHook()
 void AlignedToBody::errorHook()
 {
     if(state() == WAIT_FOR_ORIENTATION_SAMPLE){
-        if(_orientation_samples.readNewest(orientation_sample) != RTT::NoData){
+        if(_orientation_samples.readNewest(orientation_sample) == RTT::NewData){
             recover();
         }
     }

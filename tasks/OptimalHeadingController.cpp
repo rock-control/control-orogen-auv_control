@@ -29,6 +29,9 @@ bool OptimalHeadingController::configureHook()
 {
     if (! OptimalHeadingControllerBase::configureHook())
         return false;
+
+    new_orientation_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+
     return true;
 }
 bool OptimalHeadingController::startHook()
@@ -39,11 +42,21 @@ bool OptimalHeadingController::startHook()
 }
 void OptimalHeadingController::updateHook()
 {
-    if (_orientation_samples.readNewest(orientation_sample) == RTT::NoData){
+    RTT::FlowStatus status = _orientation_samples.readNewest(orientation_sample);
+    if (status == RTT::NoData){
         if(state() != WAIT_FOR_ORIENTATION_SAMPLE){
             error(WAIT_FOR_ORIENTATION_SAMPLE);
         }
         return;
+    }
+    else if (status == RTT::OldData && new_orientation_samples_timeout.elapsed()){
+        if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
+            error(WAIT_FOR_ORIENTATION_SAMPLE);
+        }
+        return;
+    }
+    else{
+        new_orientation_samples_timeout.restart();
     }
     
     OptimalHeadingControllerBase::updateHook();
@@ -53,7 +66,7 @@ void OptimalHeadingController::errorHook()
 {
     if( state() == WAIT_FOR_ORIENTATION_SAMPLE){
         base::samples::RigidBodyState orientation_sample;
-        if (_orientation_samples.readNewest(orientation_sample) != RTT::NoData){
+        if (_orientation_samples.readNewest(orientation_sample) == RTT::NewData){
             recover();
         }
     }

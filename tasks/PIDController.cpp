@@ -30,6 +30,9 @@ bool PIDController::configureHook()
 {
     if (! PIDControllerBase::configureHook())
         return false;
+
+    new_pose_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+
     return true;
 }
 bool PIDController::startHook()
@@ -40,12 +43,23 @@ bool PIDController::startHook()
 }
 void PIDController::updateHook()
 {
-    if (_pose_samples.readNewest(pose_sample) == RTT::NoData){
+    RTT::FlowStatus status = _pose_samples.readNewest(pose_sample);
+    if (status == RTT::NoData){
         if(state() != WAIT_FOR_POSE_SAMPLE){
             error(WAIT_FOR_POSE_SAMPLE);
         }
         return;
     }
+    else if (status == RTT::OldData && new_pose_samples_timeout.elapsed()){
+        if(state() != WAIT_FOR_POSE_SAMPLE){
+            error(WAIT_FOR_POSE_SAMPLE);
+        }
+        return;
+    }
+    else{
+        new_pose_samples_timeout.restart();
+    }
+
 
     if (_position_control)
     {
@@ -109,7 +123,7 @@ void PIDController::errorHook()
 {
     if( state() == WAIT_FOR_POSE_SAMPLE){
         base::samples::RigidBodyState pose_sample;
-        if (_pose_samples.readNewest(pose_sample) != RTT::NoData){
+        if (_pose_samples.readNewest(pose_sample) == RTT::NewData){
             recover();
         }
     }

@@ -6,6 +6,7 @@
 #include "auv_control/WorldToAlignedBase.hpp"
 #include <math.h>
 #include <float.h>
+#include <base/Timeout.hpp>
 
 namespace auv_control {
 
@@ -15,6 +16,7 @@ namespace auv_control {
     protected:
         base::samples::RigidBodyState currentPose;
         bool on_init;
+        base::Timeout new_pose_samples_timeout;
 
         void keepPosition();
         bool calcOutput();
@@ -26,6 +28,8 @@ namespace auv_control {
         WorldToAligned(std::string const& name, RTT::ExecutionEngine* engine);
 
 	    ~WorldToAligned();
+
+        bool configureHook();
 
         bool startHook();
 

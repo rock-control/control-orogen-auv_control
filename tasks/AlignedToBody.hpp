@@ -4,6 +4,7 @@
 #define AUV_CONTROL_ALIGNEDTOBODY_TASK_HPP
 
 #include "auv_control/AlignedToBodyBase.hpp"
+#include <base/Timeout.hpp>
 
 namespace auv_control {
 
@@ -27,6 +28,7 @@ frame as input and outputs the same commands, but expressed in the body frame.
 	friend class AlignedToBodyBase;
     protected:
         base::samples::RigidBodyState orientation_sample;
+        base::Timeout new_orientation_samples_timeout;
         bool on_init;
         bool calcOutput();
 
