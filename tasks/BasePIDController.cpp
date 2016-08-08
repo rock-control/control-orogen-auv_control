@@ -156,6 +156,7 @@ bool BasePIDController::calcOutput()
         }
     }
 
+    output_command.time = pose_sample.time;
     _pid_state.write(pid_state);
     _cmd_out.write(output_command);
     

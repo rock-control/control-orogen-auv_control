@@ -44,21 +44,18 @@ bool PIDController::startHook()
 void PIDController::updateHook()
 {
     RTT::FlowStatus status = _pose_samples.readNewest(pose_sample);
-    if (status == RTT::NoData){
-        if(state() != WAIT_FOR_POSE_SAMPLE){
-            error(WAIT_FOR_POSE_SAMPLE);
+    if (status != RTT::NewData)
+    {
+        if(new_pose_samples_timeout.elapsed())
+        {
+            exception(POSE_TIMEOUT);
+            return;
         }
+        if(state() != WAIT_FOR_POSE_SAMPLE)
+            state(WAIT_FOR_POSE_SAMPLE);
         return;
     }
-    else if (status == RTT::OldData && new_pose_samples_timeout.elapsed()){
-        if(state() != WAIT_FOR_POSE_SAMPLE){
-            error(WAIT_FOR_POSE_SAMPLE);
-        }
-        return;
-    }
-    else{
-        new_pose_samples_timeout.restart();
-    }
+    new_pose_samples_timeout.restart();
 
 
     if (_position_control)
@@ -121,13 +118,6 @@ void PIDController::updateHook()
 }
 void PIDController::errorHook()
 {
-    if( state() == WAIT_FOR_POSE_SAMPLE){
-        base::samples::RigidBodyState pose_sample;
-        if (_pose_samples.readNewest(pose_sample) == RTT::NewData){
-            recover();
-        }
-    }
-
     PIDControllerBase::errorHook();
 }
 void PIDController::stopHook()

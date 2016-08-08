@@ -107,11 +107,9 @@ task_context 'BasePIDController' do
 
     # The states of the pid-controllers
     output_port 'pid_state', '/auv_control/LinearAngular6DPIDState'
-    
-    error_states :WAIT_FOR_POSE_SAMPLE
-    
-    runtime_states :UNSURE_POSE_SAMPLE
-    exception_states :POSE_SAMPLE_INVALID
+
+    runtime_states :UNSURE_POSE_SAMPLE, :WAIT_FOR_POSE_SAMPLE
+    exception_states :POSE_SAMPLE_INVALID, :POSE_TIMEOUT
 end
 
 # Controller that takes either positions or velocities, expressed in either the
