@@ -1,4 +1,4 @@
-require 'pry'
+require 'minitest/autorun'
 require 'minitest/spec'
 require 'orocos/test/component'
 
@@ -7,10 +7,9 @@ describe 'auv_control::Base' do
 
     # We cannot instanciate an auv_control::Base component, as it is abstract.
     # Instead, use WorldToAligned to test the Base functionality
-    start 'task', 'tests_auv_control::Base'
+    start 'task', 'auv_control::WorldToAligned' => 'task'
     reader 'task', 'cmd_out', :attr_name => 'cmd_out'
 
-    describe "addCommandInput" do
         it "should create a port with the given name prefixed with cmd_" do
             task.addCommandInput 'test', 0
             port = task.cmd_test
@@ -23,9 +22,7 @@ describe 'auv_control::Base' do
             task.addCommandInput('test', 0)
             refute task.addCommandInput('test', 0)
         end
-    end
 
-    describe "updateHook" do
         before do
             task.expected_inputs do |v|
                 v.linear[0] = 1
@@ -189,13 +186,10 @@ describe 'auv_control::Base' do
             cmd0.write sample
             assert_state_change(task) { |s| s == :WAIT_FOR_INPUT }
         end
-    end
 
-    describe "cleanupHook" do
         it "should delete all created ports" do
             task.addCommandInput '0', 0
             task.configure
             task.cleanup
         end
-    end
 end
