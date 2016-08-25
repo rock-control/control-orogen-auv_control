@@ -142,6 +142,10 @@ task_context "WorldToAligned" do
     # given as input
     input_port 'pose_samples', 'base::samples::RigidBodyState'
 
+    # This property defines the timeout for the pose_samples input port in seconds.
+    # 0 means that the timeout would be ignored.
+    property "timeout_pose", "double", 1
+
     # The output command.
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
 
@@ -159,9 +163,9 @@ task_context "AlignedToBody" do
     # Only the orientation is being used (to be more precise, only the pitch and
     # roll angles)
     input_port 'orientation_samples', 'base::samples::RigidBodyState'
-    
-    # This property defines the timeout for the cmd_in input port in seconds. 0
-    # means that the timeout would be ignored.
+
+    # This property defines the timeout for the orientation_samples input port in seconds.
+    # 0 means that the timeout would be ignored.
     property "timeout_orientation", "double", 1
 
     # The output command. It is expressed in the body frame, and is of the same

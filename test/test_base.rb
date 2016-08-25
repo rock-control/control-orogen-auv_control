@@ -171,49 +171,57 @@ describe 'auv_control::Base' do
             pose.write pose_sample
             assert_state_change(task) { |s| s == :INPUT_UNEXPECTED }
         end
-        # it "should go in TIMEOUT state if one port is not updated for its specified timeout" do
-        #     task.addCommandInput '0', 1
-        #     cmd0 = task.cmd_0.writer
-        #     pose = task.pose_samples.writer
-        #     task.configure
-        #     task.start
-        #     sample = invalidated_command
-        #     sample.linear[0] = 1
-        #     sample.linear[1] = 1
-        #     cmd0.write sample
-        #     pos = pose_sample
-        #     pose.write pos
-        #     puts "sample.time: #{sample.time} + #{sample.time.usec}"
-        #     sample = invalidated_command
-        #     sample.time = Time.now + 2
-        #     puts "sample.time2: #{sample.time} + #{sample.time.usec}"
-        #     sample.linear[0] = 1
-        #     sample.linear[1] = 1
-        #     cmd0.write sample
-        #     pos.time = Time.now
-        #     pose.write pos
-        #     sleep(0.01)
-        #     assert_state_change(task) { |s| s == :TIMEOUT }
-        # end
-        # it "should not check for timeouts on ports that have a timeout value of zero" do
-        #     task.addCommandInput '0', 0
-        #     cmd0 = task.cmd_0.writer
-        #     pose = task.pose_samples.writer
-        #     task.configure
-        #     task.start
-        #     sample = invalidated_command
-        #     sample.linear[0] = 1
-        #     sample.linear[1] = 1
-        #     cmd0.write sample
-        #     pose.write pose_sample
-        #     sample = invalidated_command
-        #     sample.time = Time.now + 1000
-        #     sample.linear[0] = 1
-        #     sample.linear[1] = 1
-        #     cmd0.write sample
-        #     pose.write pose_sample
-        #     assert_state_change(task) { |s| s != :TIMEOUT }
-        # end
+        it "should go in TIMEOUT state if one port is not updated for its specified timeout and recover in case of new data" do
+            task.addCommandInput '0', 1
+            cmd0 = task.cmd_0.writer
+            pose = task.pose_samples.writer
+            task.timeout_pose = 10
+            task.keep_position_on_exception = false
+
+            task.configure
+            task.start
+            sample = invalidated_command
+            sample.linear[0] = 1
+            sample.linear[1] = 1
+
+            cmd0.write sample
+            pose.write pose_sample
+            cmd_out0 = assert_has_one_new_sample cmd_out, 1
+            assert_equal sample.time.usec, cmd_out0.time.usec
+            sample = invalidated_command
+            cmd_out0 = assert_has_no_new_sample cmd_out, 1
+            sleep(1)
+            assert_equal :TIMEOUT, task.state_reader.read
+
+            sample.time = Time.now
+            sample.linear[0] = 1
+            sample.linear[1] = 1
+            cmd0.write sample
+            sleep(0.02)
+            cmd_out0 = assert_has_one_new_sample cmd_out, 1
+            assert_equal :CONTROLLING, task.state_reader.read
+        end
+        it "should not check for timeouts on ports that have a timeout value of zero" do
+            task.addCommandInput '0', 0
+            cmd0 = task.cmd_0.writer
+            pose = task.pose_samples.writer
+            task.timeout_pose = 10
+            task.configure
+            task.start
+            sample = invalidated_command
+            sample.linear[0] = 1
+            sample.linear[1] = 1
+            cmd0.write sample
+            pose.write pose_sample
+            sample = invalidated_command
+            sample.time = Time.now
+            sleep(2)
+            sample.linear[0] = 1
+            sample.linear[1] = 1
+            cmd0.write sample
+            pose.write pose_sample
+            assert_state_change(task) { |s| s != :TIMEOUT }
+        end
         it "should wait in WAIT_FOR_INPUT state if there is no data on one of the input ports" do
             task.addCommandInput '0', 0
             task.addCommandInput '1', 0

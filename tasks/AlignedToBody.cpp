@@ -29,7 +29,7 @@ bool AlignedToBody::configureHook()
     if (! AlignedToBodyBase::configureHook())
         return false;
 
-    new_orientation_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+    new_orientation_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_orientation.value()));
 
     return true;
 }

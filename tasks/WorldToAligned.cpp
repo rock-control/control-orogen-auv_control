@@ -23,7 +23,7 @@ bool WorldToAligned::configureHook()
     if (!WorldToAlignedBase::configureHook())
         return false;
 
-    new_pose_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+    new_pose_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_pose.value()));
 
     return true;
 }
