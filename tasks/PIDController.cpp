@@ -47,12 +47,7 @@ void PIDController::updateHook()
     if (status != RTT::NewData)
     {
         if(new_pose_samples_timeout.elapsed())
-        {
             exception(POSE_TIMEOUT);
-            return;
-        }
-        if(state() != WAIT_FOR_POSE_SAMPLE)
-            state(WAIT_FOR_POSE_SAMPLE);
         return;
     }
     new_pose_samples_timeout.restart();

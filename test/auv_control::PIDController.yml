@@ -14,7 +14,7 @@ expected_inputs:
   - true
 # If true, the component will send a zero command before getting into an
 # exception state. Otherwise, it will not do anything
-keep_position_on_exception: true
+keep_position_on_exception: false
 # If true write NaN on all axis, in keep position case
 nan_on_keep_position: false
 # Parallel Settings for the PID controllers
