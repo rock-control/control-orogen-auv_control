@@ -61,22 +61,21 @@ bool AlignedToBody::calcOutput()
 void AlignedToBody::updateHook()
 {
     RTT::FlowStatus status = _orientation_samples.readNewest(orientation_sample);
-
-    if(status == RTT::NoData){
-        if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
-            error(WAIT_FOR_ORIENTATION_SAMPLE);
+    if (status != RTT::NewData)
+    {
+        if(new_orientation_samples_timeout.elapsed())
+        {
+            exception(ORIENTATION_TIMEOUT);
+            return;
         }
-        return;
-    }
-    else if (status == RTT::OldData && new_orientation_samples_timeout.elapsed()){
-        if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
-            error(WAIT_FOR_ORIENTATION_SAMPLE);
+        if(status == RTT::NoData)
+        {
+            state(WAIT_FOR_ORIENTATION_SAMPLE);
+            return;
         }
-        return;
     }
-    else{
+    else
         new_orientation_samples_timeout.restart();
-    }
 
     if(!base::samples::RigidBodyState::isValidValue(orientation_sample.orientation)){
         if(!on_init){
@@ -91,11 +90,6 @@ void AlignedToBody::updateHook()
 }
 void AlignedToBody::errorHook()
 {
-    if(state() == WAIT_FOR_ORIENTATION_SAMPLE){
-        if(_orientation_samples.readNewest(orientation_sample) == RTT::NewData){
-            recover();
-        }
-    }
 
     AlignedToBodyBase::errorHook();
 }

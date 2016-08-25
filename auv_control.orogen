@@ -144,9 +144,9 @@ task_context "WorldToAligned" do
 
     # The output command.
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
-    
-    error_states :WAIT_FOR_POSE_SAMPLE
-    exception_states :POSE_SAMPLE_INVALID
+
+    runtime_states :WAIT_FOR_POSE_SAMPLE
+    exception_states :POSE_SAMPLE_INVALID, :POSE_TIMEOUT
 end
 
 # Controller that takes either velocities or efforts expressed in the aligned
@@ -168,9 +168,9 @@ task_context "AlignedToBody" do
     # nature than the input (efforts if the inputs are efforts, velocities if
     # the inputs are velocities)
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
-    
-    error_states :WAIT_FOR_ORIENTATION_SAMPLE
-    exception_states :ORIENTATION_SAMPLE_INVALID
+
+    runtime_states :WAIT_FOR_ORIENTATION_SAMPLE
+    exception_states :ORIENTATION_SAMPLE_INVALID, :ORIENTATION_TIMEOUT
 end
 
 # Generates thruster commands based on a thruster matrix and a force-torque

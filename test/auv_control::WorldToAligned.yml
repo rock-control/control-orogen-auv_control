@@ -1,0 +1,31 @@
+--- name:default
+# This property defines which parts of the command input is expected to be
+# set once we merged all the declared input ports.
+expected_inputs:
+  linear:
+  - true
+  - true
+  - true
+  angular:
+  - true
+  - true
+  - true
+# If true, the component will send a zero command before getting into an
+# exception state. Otherwise, it will not do anything
+keep_position_on_exception: false
+# If true write NaN on all axis, in keep position case
+nan_on_keep_position: false
+# The domain of what we are converting (true:position or false:velocity or
+# efforts)
+position_control: false
+# This property defines the safty behavior ath the merging of the input-ports.
+# If the property is on true (default) the merged command need to be like in
+# the expected_inputs property defined. Else the expected_inputs are ignored
+# while the merged comand are unic.
+safe_mode: true
+# This property defines the timeout for the cascade input port in seconds. 0
+# means that the timeout would be ignored.
+timeout_cascade: 1.0
+# This property defines the timeout for the cmd_in input port in seconds. 0
+# means that the timeout would be ignored.
+timeout_in: 1.0

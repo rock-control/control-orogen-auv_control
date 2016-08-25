@@ -46,21 +46,21 @@ bool WorldToAligned::startHook()
 void WorldToAligned::updateHook()
 {
     RTT::FlowStatus status = _pose_samples.readNewest(currentPose);
-    if (status == RTT::NoData){
-        if(state() != WAIT_FOR_POSE_SAMPLE){
-            error(WAIT_FOR_POSE_SAMPLE);
+    if(status != RTT::NewData)
+    {
+        if(new_pose_samples_timeout.elapsed())
+        {
+            exception(POSE_TIMEOUT);
+            return;
         }
-        return;
-    }
-    else if (status == RTT::OldData && new_pose_samples_timeout.elapsed()){
-        if(state() != WAIT_FOR_POSE_SAMPLE){
-            error(WAIT_FOR_POSE_SAMPLE);
+        if(status == RTT::NoData)
+        {
+            state(WAIT_FOR_POSE_SAMPLE);
+            return;
         }
-        return;
     }
-    else{
+    else
         new_pose_samples_timeout.restart();
-    }
 
 
     if(!this->isPoseSampleValid(currentPose)){
@@ -76,13 +76,6 @@ void WorldToAligned::updateHook()
 
 void WorldToAligned::errorHook()
 {
-    if( state() == WAIT_FOR_POSE_SAMPLE){
-        base::samples::RigidBodyState pose_sample;
-        if (_pose_samples.readNewest(pose_sample) == RTT::NewData){
-            recover();
-        }
-    }
-
     WorldToAlignedBase::errorHook();
 }
 
@@ -110,6 +103,14 @@ void WorldToAligned::keepPosition(){
     }
     //write the command
     _cmd_out.write(output_command);
+}
+
+bool WorldToAligned::calcOutput(const LinearAngular6DCommandStatus &merging_command){
+    // In case there is an OLD_COMMAND, it should not output the same cmd again,
+    // but no error occurred
+    if (merging_command.status == OLD_COMMAND)
+        return true;
+    return calcOutput();
 }
 
 bool WorldToAligned::calcOutput(){
