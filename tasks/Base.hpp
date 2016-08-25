@@ -29,9 +29,40 @@ namespace auv_control {
         void registerInput(std::string const& name, int timeout, InputPortType* input_port);
         InputPortType* deregisterInput(std::string const& name);
         base::Time newestCommandTime;
-        bool verifyTimeout();
 
-        bool gatherInputCommand();
+        /** Check for timeout in input ports
+         *
+         * Check both in system time (time.now()) and sample time (newest_command)
+         * In case of Timeout, switch to exception state TIMEOUT
+         * @param newest_command. Time of last command in all ports
+         * @return bool. True if there is no Timeout. False in Timeout case
+         */
+        bool verifyTimeout(const base::Time &newest_command);
+
+        /** Check if all expected data field are present
+         *
+         * In case of missing any data field, switch to INPUT_MISSING state
+         * @param expect, the expected fields that need to present
+         * @param command to be verified
+         * return bool. True if there is no missing data. False in that case
+         */
+        bool verifyMissingData(const auv_control::ExpectedInputs &expected, const base::LinearAngular6DCommand &command);
+
+        /** Check for connected ports
+         *
+         * @param in_ports: vector of input ports to be verified
+         * @return vector of address of connected ports
+         */
+        std::vector<Base::InputPortInfo*> checkConnectedPorts(std::vector<Base::InputPortInfo> &in_ports) const;
+
+        /** Gather input from connected input ports
+         *
+         * @param merging_command, where the commands will be safe
+         * @param cmd_status, Define the status of merging_command, NEW_COMMAND, OLD_COMMAND, NO_COMMAND or INVALID_COMMAND
+         * @param connected_ports to be analyzed.
+         * @return States of wich it should go
+         */
+        States gatherInputCommand(LinearAngular6DCommandStatus &merging_command, std::vector<Base::InputPortInfo*> &connected_ports);
 
         /** Creates a new input port called cmd_name of the type
          * LinearAngular6DCommand. Once defined, this input port will be merged
@@ -39,13 +70,25 @@ namespace auv_control {
          * corresponding output
          */
         virtual bool addCommandInput(::std::string const & name, double timeout);
-        
+
         /** Send a "do not move" command to the next level
          *
          * This is called if the keep_position_on_exception property is set and
          * the component goes into an exception state
          */
         virtual void keepPosition();
+
+        /** Computes the output based on the value received in merged_command (command and status)
+         *
+         * As calcOutput is defined in the derived class, the class Base can not handle
+         * the States of derived class. In that case, any state transition in DerivedClass::calcOutput
+         * should return a false. Like that there would not a interference with Base's states.
+         *
+         * @param merging_command, The command itself and its status
+         * @return bool. TRUE if there is NO state transition in derived class,
+         *               FALSE otherwise.
+         */
+        virtual bool calcOutput(const LinearAngular6DCommandStatus &merging_command);
 
         /** Computes the output based on the value stored in merged_command. It
          * is called after merged_command has been updated
@@ -125,12 +168,20 @@ namespace auv_control {
          * before calling start() again.
          */
         void cleanupHook();
+
+        /** Do one loop of read inputs and computing output
+         *
+         * It will be called in updateHook() and errorHook(),
+         * and it can transit in both states, according its return.
+         *
+         * @return States which it should go.
+         */
+        States OneLoop();
     private:
-        bool merge(bool const expected[], base::Vector3d const& current, base::Vector3d& merged);
-        
- 
+        States merge(auv_control::ExpectedInputs const& expected, base::LinearAngular6DCommand const& current, base::LinearAngular6DCommand &merged);
+
+
     };
 }
 
 #endif
-

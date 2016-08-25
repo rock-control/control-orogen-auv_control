@@ -48,51 +48,46 @@ bool Base::startHook()
 
 void Base::updateHook()
 {
-    
     BaseBase::updateHook();
-    if(!this->gatherInputCommand()){
-        if (_keep_position_on_exception.get()){    
-            this->keepPosition();
-        }
+
+    States stat = OneLoop();
+    // Error in calcOutput, state transitions should be handle in derived class
+    if(stat == ERROR_CALCOUTPUT)
+        return;
+    // Check for local error in Base
+    if(stat != CONTROLLING && stat != CONTROLLING_UNSAFE)
+    {
+        error(stat);
         return;
     }
-
-    if(!this->calcOutput()){
-        if (_keep_position_on_exception.get()){    
-            this->keepPosition();
-        }
-        return;
-    }
-
-    if (_safe_mode.get() && state() != CONTROLLING){
-        state(CONTROLLING);
-    } else if (!_safe_mode.get() && state() != CONTROLLING_UNSAFE){
-        state(CONTROLLING_UNSAFE);
-    }
+    // Switch to specific Running state defined in Base
+    if(state() != stat);
+        state(stat);
 }
 
 
 
 void Base::errorHook()
 {
-    
     BaseBase::errorHook();
-    
-    if (state() == INPUT_MISSING ||
-        state() == INPUT_COLLIDING ||
-        state() == INPUT_UNEXPECTED ||
-        state() == TIMEOUT ||
-        state() == WAIT_FOR_CONNECTED_INPUT_PORT ||
-        state() == WAIT_FOR_INPUT){
-        
-        if (this->gatherInputCommand()){
-            recover();
-        }
-    }
 
-    if (_keep_position_on_exception.get()){    
-        this->keepPosition();
+    States stat = OneLoop();
+    // Error in calcOutput, state transitions should be handle in derived class
+    if(stat == ERROR_CALCOUTPUT)
+        return;
+    // Return to Running state
+    if(stat == CONTROLLING || stat == CONTROLLING_UNSAFE)
+    {
+        state(stat);
+        recover();
+        return;
     }
+    // Switch beetwen error states if it's the case
+    if(state() != stat)
+        error(stat);
+
+    if (_keep_position_on_exception.get())
+        this->keepPosition();
 }
 
 void Base::stopHook()
@@ -112,6 +107,27 @@ void Base::cleanupHook()
         delete port;
         input_ports.pop_back();
     }
+}
+
+Base::States Base::OneLoop()
+{
+    std::vector<Base::InputPortInfo*> in_ports = checkConnectedPorts(input_ports);
+    if(!in_ports.size())
+        return WAIT_FOR_CONNECTED_INPUT_PORT;
+
+    LinearAngular6DCommandStatus merging_command;
+    States state = this->gatherInputCommand(merging_command, in_ports);
+
+    if (state != CONTROLLING)
+        return state;
+
+    if (!this->calcOutput(merging_command))
+        return ERROR_CALCOUTPUT;
+
+    if (_safe_mode.get())
+        return CONTROLLING;
+
+    return CONTROLLING_UNSAFE;
 }
 
 void Base::registerInput(std::string const& name, int timeout, InputPortType* input_port)
@@ -138,95 +154,78 @@ Base::InputPortType* Base::deregisterInput(std::string const& name)
     return 0;
 }
 
-bool Base::gatherInputCommand(){
+Base::States Base::gatherInputCommand(LinearAngular6DCommandStatus &merging_command, std::vector<Base::InputPortInfo*> &connected_ports)
+{
     // The command that is being merged. It is written to this->merged_command
     // only if everything has been validated
-
-    base::LinearAngular6DCommand merging_command;
-    bool has_connected_port = false;
-    for(unsigned int i = 0; i < input_ports.size(); i++){
+    bool has_at_least_one_new_command = false;
+    for(unsigned int i = 0; i < connected_ports.size(); i++){
         base::LinearAngular6DCommand current_port;
-        InputPortInfo& port_info = input_ports.at(i);
+        InputPortInfo& port_info = *connected_ports.at(i);
         InputPortType* port = port_info.input_port;
-        if (!port->connected()){
-            continue;
-        }
-        has_connected_port = true;
 
         RTT::FlowStatus status = port->readNewest(current_port);
 
-        if(status == RTT::NoData){
-            if(state() != WAIT_FOR_INPUT){
-                error(WAIT_FOR_INPUT);
-            }
-            return false;
-        } else if(status == RTT::NewData){
+        if(status == RTT::NoData)
+        {
+            merging_command.status = NO_COMMAND;
+            return WAIT_FOR_INPUT;
+        }
+        else if(status == RTT::NewData)
+        {   // Not all input is OldData
+            has_at_least_one_new_command = true;
             port_info.last_sample_time = current_port.time;
             port_info.last_system_time = base::Time::now();
-            if (newestCommandTime < current_port.time){
+            if (newestCommandTime < current_port.time)
                 newestCommandTime = current_port.time;
-            }
         }
-
-        if(!(merge(_expected_inputs.get().linear, current_port.linear, merging_command.linear) &&
-                    merge(_expected_inputs.get().angular, current_port.angular, merging_command.angular))){
-            return false;
-        }   
-    }
-    
-    if(!has_connected_port){
-        if(state() != WAIT_FOR_CONNECTED_INPUT_PORT){
-            error(WAIT_FOR_CONNECTED_INPUT_PORT);
-        }
-        return false;
+        States merge_state = merge(_expected_inputs.get(), current_port, merging_command.command);
+        if(merge_state != CONTROLLING)
+            return merge_state;
     }
 
-    // Verify that no port is timing out
-    if (!newestCommandTime.isNull())
-    {
-        if (!verifyTimeout())
-            return false;
-    }
+    if (!verifyTimeout(newestCommandTime))
+        return TIMEOUT;
+    if(_safe_mode.get() && !verifyMissingData(_expected_inputs.get(), merging_command.command))
+        return INPUT_MISSING;
+    merging_command.command.time = newestCommandTime;
+    // For compatiblity purpose.
+    merged_command = merging_command.command;
 
-    if(_safe_mode.get()){
-        for(int j = 0; j < 3; j++)
-        {
-            if(base::isUnset(merging_command.linear(j)) && (_expected_inputs.get().linear[j])){
-                if(state() != INPUT_MISSING){
-                    error(INPUT_MISSING);
-                }
-                return false;
-            }
-            if(base::isUnset(merging_command.angular(j)) && (_expected_inputs.get().angular[j])){
-                if(state() != INPUT_MISSING){
-                    error(INPUT_MISSING);
-                }
-                return false;
-            }
-            
-        }
-    }
-    merging_command.time = newestCommandTime;
-    merged_command = merging_command;
-    return true;         
+    merging_command.status = NEW_COMMAND;
+    if (!has_at_least_one_new_command)
+        merging_command.status = OLD_COMMAND;
+    return CONTROLLING;
 }
 
-bool Base::verifyTimeout()
+bool Base::verifyTimeout(const base::Time &newest_command)
 {
+    // In case it's not initialzed
+    if(newest_command.isNull())
+        return true;
     for (unsigned int i = 0; i < input_ports.size(); ++i)
     {
-        if(input_ports[i].input_port->connected()){
+        if(input_ports[i].input_port->connected())
+        {
             double timeout = input_ports[i].timeout;
             base::Time port_time = input_ports[i].last_sample_time;
-            if (timeout != 0 && ((newestCommandTime - port_time).toSeconds() > timeout || 
-                                (base::Time::now() - input_ports[i].last_system_time).toSeconds() > timeout))
-            {
-                if(state() != TIMEOUT){
-                    error(TIMEOUT);
-                }
+            if (timeout != 0 && ((newest_command - port_time).toSeconds() > timeout))
                 return false;
-            }
+            if (timeout != 0 && ((base::Time::now() - input_ports[i].last_system_time).toSeconds() > timeout))
+                return false;
         }
+    }
+    return true;
+}
+
+bool Base::verifyMissingData(const auv_control::ExpectedInputs &expected, const base::LinearAngular6DCommand &command)
+{
+    for(int j = 0; j < 3; j++)
+    {
+        if(base::isUnset(command.linear[j]) && expected.linear[j])
+            return false;
+        if(base::isUnset(command.angular[j]) && expected.angular[j])
+            return false;
     }
     return true;
 }
@@ -241,33 +240,46 @@ bool Base::addCommandInput(std::string const & name, double timeout){
     return true;
 }
 
-bool Base::merge(bool const expected[], base::Vector3d const& current, base::Vector3d& merged){
-    for(int i = 0; i < 3; i++){
-        if(base::isUnset(current(i))){
-            continue;
-        }else if(_safe_mode.get() && !expected[i]){
-            if(state() != INPUT_UNEXPECTED){
-                error(INPUT_UNEXPECTED);
-            }
-            return false;
-        }else if(!base::isUnset(merged(i))){
-            //Ther is a value in the merged value and the value is set on this port.
-            //This is an error!
-            if(state() != INPUT_COLLIDING){
-                error(INPUT_COLLIDING);
-            }
-            return false; 
-        }else{
-            //No value of this type in the merged value and the value is set on this
-            //port. So write the Value from this Port in the merged value.
-            merged(i) = current(i);
-        }
+Base::States Base::merge(auv_control::ExpectedInputs const& expected, base::LinearAngular6DCommand const& current, base::LinearAngular6DCommand &merged)
+{
+    for(int i = 0; i < 3; i++)
+    {
+        if(_safe_mode.get() && !expected.linear[i] && !base::isUnset(current.linear[i]))
+            return INPUT_UNEXPECTED;
+        if(_safe_mode.get() && !expected.angular[i] && !base::isUnset(current.angular[i]))
+            return INPUT_UNEXPECTED;
+
+        //There is a value in the merged value and the value is set on this port.
+        //This is an error!
+        if(!base::isUnset(merged.linear[i]) && !base::isUnset(current.linear[i]))
+            return INPUT_COLLIDING;
+        if(!base::isUnset(merged.angular[i]) && !base::isUnset(current.angular[i]))
+            return INPUT_COLLIDING;
+
+        //No value of this type in the merged value and the value is set on this
+        //port. So write the Value from this Port in the merged value.
+        if(base::isUnset(merged.linear[i]))
+            merged.linear[i] = current.linear[i];
+        if(base::isUnset(merged.angular[i]))
+            merged.angular[i] = current.angular[i];
     }
-    return true;
+    return CONTROLLING;
 }
 
+std::vector<Base::InputPortInfo*> Base::checkConnectedPorts(std::vector<InputPortInfo> &in_ports) const
+{
+    std::vector<Base::InputPortInfo*> connected_ports;
+    for(unsigned int i = 0; i < in_ports.size(); i++)
+    {
+        if(in_ports.at(i).input_port->connected())
+            connected_ports.push_back(&in_ports.at(i));
+    }
+    return connected_ports;
+}
 
 void Base::keepPosition(){
-    
-}
 
+}
+bool Base::calcOutput(const LinearAngular6DCommandStatus &merging_command){
+    return this->calcOutput();
+}

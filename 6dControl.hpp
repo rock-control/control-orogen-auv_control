@@ -28,7 +28,26 @@ namespace auv_control{
         PIDState linear[3];
         PIDState angular[3];
     };
-}    
+
+    enum CommandStatus
+    {
+        NEW_COMMAND,
+        OLD_COMMAND,
+        NO_COMMAND,
+        INVALID_COMMAND,
+    };
+
+    struct LinearAngular6DCommandStatus
+    {
+        base::LinearAngular6DCommand command;
+        CommandStatus status;
+
+        LinearAngular6DCommandStatus(){
+            command = base::LinearAngular6DCommand();
+            status = INVALID_COMMAND;
+        }
+    };
+}
 
 namespace base{
     struct LinearAngular6DWaypoint{
