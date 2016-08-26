@@ -116,4 +116,40 @@ describe 'auv_control::PIDController' do
         end
     end
 
+    it "should provide the correct output according the pose_sample, considering auv moving along X axis only" do
+
+        pid.apply_conf_file("auv_control::PIDController.yml")
+        pid.timeout_in = 10
+        pid.position_control = true
+        pid.world_frame = true
+        gainK = pid.pid_settings.linear[0].K
+
+        pid.configure
+        pid.start
+
+        # linear pose = (0,0,0)
+        pose_sample = generate_default_pose
+        # linear set_point = (1,0,0)
+        set_point = generate_default_cmd
+        cmd_in.write set_point
+
+        for i in 0..3
+            pose_sample.time = Time.now
+            # Updating position
+            pose_sample.position[0] += 0.1*i
+            pose_samples.write pose_sample
+            sleep(0.01)
+            cmd_out0 = assert_has_one_new_sample cmd_out, 1
+            assert_equal pose_sample.time.usec, cmd_out0.time.usec
+            # Calc expected command output
+            command_linX = gainK*(set_point.linear[0] - pose_sample.position[0])
+            assert_equal command_linX, cmd_out0.linear[0]
+
+            for j in 1..5
+                # No more repeated sample here.
+                cmd_out1 = assert_has_no_new_sample cmd_out, 0.1
+            end
+        end
+    end
+
 end
