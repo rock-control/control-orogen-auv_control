@@ -96,6 +96,10 @@ task_context 'BasePIDController' do
     # Under this Value the axis are not controled. Output is 0.
     property "variance_threshold", "double"
 
+    # This property defines the timeout for the pose_samples input port in seconds.
+    # 0 means that the timeout would be ignored.
+    property "timeout_pose", "double", 1
+
     # The system state. Only the parts of the state that are controlled needs to
     # be available (i.e. if the command involves only orientation, only the
     # orientation part is really needed)

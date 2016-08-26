@@ -27,30 +27,49 @@ generate commands
     {
 	friend class BasePIDControllerBase;
     protected:
-        motor_controller::PID mLinearPIDs[3];
-        motor_controller::PID mAngularPIDs[3];
-        bool use_parallel_pid_settings;
-        base::samples::RigidBodyState pose_sample;
 
+        struct currentState{
+            base::Vector3d linear;
+            base::Vector3d angular;
+            base::Time time;
+        };
+        struct currentCov{
+            base::Matrix3d linear;
+            base::Matrix3d angular;
+            base::Time time;
+        };
+        /** The current system's state, including the linear and angular part
+         * It must be updated by subclasses before calling their base updateHook
+         * class
+         */
+        currentState mCurrentState;
+        /** The current system state's covariance, including the linear and angular part
+         * It must be updated by subclasses before calling their base updateHook
+         * class
+         */
+        currentCov mCurrentCov;
+        /** The PIDs, including the linear and angular part
+         * It need to have it states updated
+         */
+        LinearAngular6DPID mPIDs;
+
+        bool calcOutput(const LinearAngular6DCommandStatus &merged_command);
         bool calcOutput();
         void keepPosition();
 
-        base::Matrix3d currentLinearCov;
-        base::Matrix3d currentAngularCov;
 
         virtual bool setParallel_pid_settings(::base::LinearAngular6DParallelPIDSettings const & value);
         virtual bool setPid_settings(::base::LinearAngular6DPIDSettings const & value);
 
-        /** The current linear part of the system's state
-         * It must be updated by subclasses before calling their base updateHook
-         * class
+        /** Compute PID control and it status for 6 DOF (linear and angular)
+         *
+         * @param reference, the disered state
+         * @param current_state, measured state
+         * @param pid, the controller used and be updated
+         * @return pair of LinearAngular6D Command and PIDStates
          */
-        base::Vector3d currentLinear;
-        /** The current angular part of the system's state
-         * It must be updated by subclasses before calling their base updateHook
-         * class
-         */
-        base::Vector3d currentAngular;
+         std::pair<base::LinearAngular6DCommand, LinearAngular6DPIDState> calcPIDStateCommand(
+            const base::LinearAngular6DCommand &reference, const currentState &current_state, LinearAngular6DPID &pid);
 
     public:
         /** TaskContext constructor for BasePIDController

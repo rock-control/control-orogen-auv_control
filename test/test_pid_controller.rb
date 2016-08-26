@@ -122,6 +122,7 @@ describe 'auv_control::PIDController' do
         pid.timeout_in = 10
         pid.position_control = true
         pid.world_frame = true
+        # The gains other than K are zero
         gainK = pid.pid_settings.linear[0].K
 
         pid.configure

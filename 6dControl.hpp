@@ -27,6 +27,12 @@ namespace auv_control{
     struct LinearAngular6DPIDState{
         PIDState linear[3];
         PIDState angular[3];
+        base::Time time;
+    };
+
+    struct LinearAngular6DPID{
+        motor_controller::PID linear[3];
+        motor_controller::PID angular[3];
     };
 
     enum CommandStatus
