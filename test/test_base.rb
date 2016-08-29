@@ -175,7 +175,7 @@ describe 'auv_control::Base' do
             task.addCommandInput '0', 1
             cmd0 = task.cmd_0.writer
             pose = task.pose_samples.writer
-            task.timeout_pose = 10
+            task.timeout_pose = Time.at(10)
             task.keep_position_on_exception = false
 
             task.configure
@@ -205,7 +205,7 @@ describe 'auv_control::Base' do
             task.addCommandInput '0', 0
             cmd0 = task.cmd_0.writer
             pose = task.pose_samples.writer
-            task.timeout_pose = 10
+            task.timeout_pose = Time.at(10)
             task.configure
             task.start
             sample = invalidated_command

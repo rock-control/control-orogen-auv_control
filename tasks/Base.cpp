@@ -32,6 +32,8 @@ bool Base::configureHook()
 
     registerInput("in", _timeout_in.get(), &_cmd_in);
     registerInput("cascade", _timeout_cascade.get(), &_cmd_cascade);
+    // Assuming a max number of input ports of 6 (3 for each DOF, linear and angular)
+    connected_input_ports.reserve(6);
     return true;
 }
 
@@ -111,17 +113,16 @@ void Base::cleanupHook()
 
 Base::States Base::performOneLoop()
 {
-    std::vector<Base::InputPortInfo*> in_ports = checkConnectedPorts(input_ports);
-    if(!in_ports.size())
+    if(!checkConnectedPorts(input_ports, connected_input_ports))
         return WAIT_FOR_CONNECTED_INPUT_PORT;
 
-    LinearAngular6DCommandStatus merging_command;
-    States state = this->gatherInputCommand(merging_command, in_ports);
+    LinearAngular6DCommandStatus merged_command;
+    States state = this->gatherInputCommand(merged_command, connected_input_ports);
 
     if (state != CONTROLLING)
         return state;
 
-    if (!this->calcOutput(merging_command))
+    if (!this->calcOutput(merged_command))
         return RUNTIME_ERROR;
 
     if (_safe_mode.get())
@@ -264,15 +265,16 @@ Base::States Base::merge(auv_control::ExpectedInputs const& expected, base::Line
     return CONTROLLING;
 }
 
-std::vector<Base::InputPortInfo*> Base::checkConnectedPorts(std::vector<InputPortInfo> &in_ports) const
-{
-    std::vector<Base::InputPortInfo*> connected_ports;
-    for(unsigned int i = 0; i < in_ports.size(); i++)
+bool Base::checkConnectedPorts(std::vector<Base::InputPortInfo> &input_ports, std::vector<Base::InputPortInfo*> &connected_input_ports)
+{   // Clear vector before assign connected ports
+    if(!connected_input_ports.empty())
+        connected_input_ports.erase(connected_input_ports.begin(), connected_input_ports.end());
+    for(unsigned int i = 0; i < input_ports.size(); i++)
     {
-        if(in_ports.at(i).input_port->connected())
-            connected_ports.push_back(&in_ports.at(i));
+        if(input_ports.at(i).input_port->connected())
+            connected_input_ports.push_back(&input_ports.at(i));
     }
-    return connected_ports;
+    return !connected_input_ports.empty();
 }
 
 void Base::keepPosition(){

@@ -24,6 +24,7 @@ namespace auv_control {
         };    
     
         std::vector<InputPortInfo> input_ports;
+        std::vector<Base::InputPortInfo*> connected_input_ports;
 
         void registerInput(std::string const& name, int timeout, InputPortType* input_port);
         InputPortType* deregisterInput(std::string const& name);
@@ -49,10 +50,11 @@ namespace auv_control {
 
         /** Check for connected ports
          *
-         * @param in_ports: vector of input ports to be verified
-         * @return vector of address of connected ports
+         * @param input_ports: vector of input ports to be verified
+         * @param connected_input_ports: vector of address of connected input_ports to be assigned
+         * @return bool. TRUE if at least one port is connected, FALSE otherwise
          */
-        std::vector<Base::InputPortInfo*> checkConnectedPorts(std::vector<Base::InputPortInfo> &in_ports) const;
+        bool checkConnectedPorts(std::vector<Base::InputPortInfo> &input_ports, std::vector<Base::InputPortInfo*> &connected_input_ports);
 
         /** Gather input from connected input ports
          *
