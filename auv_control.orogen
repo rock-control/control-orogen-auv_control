@@ -67,7 +67,7 @@ task_context "Base" do
     dynamic_input_port(/cmd_\w+/, "base::LinearAngular6DCommand")    
 
     runtime_states :CONTROLLING, :CONTROLLING_UNSAFE
-    error_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT, :WAIT_FOR_CONNECTED_INPUT_PORT, :WAIT_FOR_INPUT, :ERROR_CALCOUTPUT
+    error_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT, :WAIT_FOR_CONNECTED_INPUT_PORT, :WAIT_FOR_INPUT
 
     # Deployed with a 10ms period by default
     periodic 0.01
@@ -96,9 +96,9 @@ task_context 'BasePIDController' do
     # Under this Value the axis are not controled. Output is 0.
     property "variance_threshold", "double"
 
-    # This property defines the timeout for the pose_samples input port in seconds.
-    # 0 means that the timeout would be ignored.
-    property "timeout_pose", "double", 1
+    # This property defines the timeout for the pose_samples input port.
+    # 0 means that the timeout would be ignored. Default is 1 second
+    property "timeout_pose", "base::Time"
 
     # The system state. Only the parts of the state that are controlled needs to
     # be available (i.e. if the command involves only orientation, only the
@@ -146,9 +146,9 @@ task_context "WorldToAligned" do
     # given as input
     input_port 'pose_samples', 'base::samples::RigidBodyState'
 
-    # This property defines the timeout for the pose_samples input port in seconds.
-    # 0 means that the timeout would be ignored.
-    property "timeout_pose", "double", 1
+    # This property defines the timeout for the pose_samples input port.
+    # 0 means that the timeout would be ignored. Default is 1 second
+    property "timeout_pose", "base::Time"
 
     # The output command.
     output_port 'cmd_out', 'base::LinearAngular6DCommand'
@@ -168,9 +168,9 @@ task_context "AlignedToBody" do
     # roll angles)
     input_port 'orientation_samples', 'base::samples::RigidBodyState'
 
-    # This property defines the timeout for the orientation_samples input port in seconds.
-    # 0 means that the timeout would be ignored.
-    property "timeout_orientation", "double", 1
+    # This property defines the timeout for the orientation_samples input port.
+    # 0 means that the timeout would be ignored. Default is 1 second
+    property "timeout_orientation", "base::Time"
 
     # The output command. It is expressed in the body frame, and is of the same
     # nature than the input (efforts if the inputs are efforts, velocities if

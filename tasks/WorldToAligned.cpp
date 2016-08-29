@@ -7,11 +7,13 @@ using namespace auv_control;
 WorldToAligned::WorldToAligned(std::string const& name)
     : WorldToAlignedBase(name)
 {
+    _timeout_pose.set(base::Time::fromSeconds(1));
 }
 
 WorldToAligned::WorldToAligned(std::string const& name, RTT::ExecutionEngine* engine)
     : WorldToAlignedBase(name, engine)
 {
+    _timeout_pose.set(base::Time::fromSeconds(1));
 }
 
 WorldToAligned::~WorldToAligned()
@@ -23,7 +25,7 @@ bool WorldToAligned::configureHook()
     if (!WorldToAlignedBase::configureHook())
         return false;
 
-    new_pose_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_pose.value()));
+    new_pose_samples_timeout = base::Timeout(_timeout_pose.get());
 
     return true;
 }

@@ -8,12 +8,14 @@ PIDController::PIDController(std::string const& name)
     : PIDControllerBase(name)
 {
     _variance_threshold.set(base::infinity<double>());
+    _timeout_pose.set(base::Time::fromSeconds(1));
 }
 
 PIDController::PIDController(std::string const& name, RTT::ExecutionEngine* engine)
     : PIDControllerBase(name, engine)
 {
     _variance_threshold.set(base::infinity<double>());
+    _timeout_pose.set(base::Time::fromSeconds(1));
 }
 
 PIDController::~PIDController()
@@ -31,7 +33,7 @@ bool PIDController::configureHook()
     if (! PIDControllerBase::configureHook())
         return false;
 
-    new_pose_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_pose.value()));
+    new_pose_samples_timeout = base::Timeout(_timeout_pose.get());
 
     return true;
 }

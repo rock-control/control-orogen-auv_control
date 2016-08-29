@@ -176,7 +176,7 @@ namespace auv_control {
          *
          * @return States which it should go.
          */
-        States OneLoop();
+        States performOneLoop();
     private:
         States merge(auv_control::ExpectedInputs const& expected, base::LinearAngular6DCommand const& current, base::LinearAngular6DCommand &merged);
 

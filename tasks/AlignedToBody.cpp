@@ -7,11 +7,13 @@ using namespace auv_control;
 AlignedToBody::AlignedToBody(std::string const& name)
     : AlignedToBodyBase(name)
 {
+    _timeout_orientation.set(base::Time::fromSeconds(1));
 }
 
 AlignedToBody::AlignedToBody(std::string const& name, RTT::ExecutionEngine* engine)
     : AlignedToBodyBase(name, engine)
 {
+    _timeout_orientation.set(base::Time::fromSeconds(1));
 }
 
 AlignedToBody::~AlignedToBody()
@@ -29,7 +31,7 @@ bool AlignedToBody::configureHook()
     if (! AlignedToBodyBase::configureHook())
         return false;
 
-    new_orientation_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_orientation.value()));
+    new_orientation_samples_timeout = base::Timeout(_timeout_orientation.get());
 
     return true;
 }

@@ -50,9 +50,9 @@ void Base::updateHook()
 {
     BaseBase::updateHook();
 
-    States stat = OneLoop();
+    States stat = performOneLoop();
     // Error in calcOutput, state transitions should be handle in derived class
-    if(stat == ERROR_CALCOUTPUT)
+    if(stat == RUNTIME_ERROR)
         return;
     // Check for local error in Base
     if(stat != CONTROLLING && stat != CONTROLLING_UNSAFE)
@@ -71,9 +71,9 @@ void Base::errorHook()
 {
     BaseBase::errorHook();
 
-    States stat = OneLoop();
+    States stat = performOneLoop();
     // Error in calcOutput, state transitions should be handle in derived class
-    if(stat == ERROR_CALCOUTPUT)
+    if(stat == RUNTIME_ERROR)
         return;
     // Return to Running state
     if(stat == CONTROLLING || stat == CONTROLLING_UNSAFE)
@@ -109,7 +109,7 @@ void Base::cleanupHook()
     }
 }
 
-Base::States Base::OneLoop()
+Base::States Base::performOneLoop()
 {
     std::vector<Base::InputPortInfo*> in_ports = checkConnectedPorts(input_ports);
     if(!in_ports.size())
@@ -122,7 +122,7 @@ Base::States Base::OneLoop()
         return state;
 
     if (!this->calcOutput(merging_command))
-        return ERROR_CALCOUTPUT;
+        return RUNTIME_ERROR;
 
     if (_safe_mode.get())
         return CONTROLLING;
