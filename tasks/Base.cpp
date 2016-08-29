@@ -154,7 +154,7 @@ Base::InputPortType* Base::deregisterInput(std::string const& name)
     return 0;
 }
 
-Base::States Base::gatherInputCommand(LinearAngular6DCommandStatus &merging_command, std::vector<Base::InputPortInfo*> &connected_ports)
+Base::States Base::gatherInputCommand(LinearAngular6DCommandStatus &merged_command, std::vector<Base::InputPortInfo*> &connected_ports)
 {
     // The command that is being merged. It is written to this->merged_command
     // only if everything has been validated
@@ -168,7 +168,7 @@ Base::States Base::gatherInputCommand(LinearAngular6DCommandStatus &merging_comm
 
         if(status == RTT::NoData)
         {
-            merging_command.status = NO_COMMAND;
+            merged_command.status = NO_COMMAND;
             return WAIT_FOR_INPUT;
         }
         else if(status == RTT::NewData)
@@ -179,22 +179,20 @@ Base::States Base::gatherInputCommand(LinearAngular6DCommandStatus &merging_comm
             if (newestCommandTime < current_port.time)
                 newestCommandTime = current_port.time;
         }
-        States merge_state = merge(_expected_inputs.get(), current_port, merging_command.command);
+        States merge_state = merge(_expected_inputs.get(), current_port, merged_command.command);
         if(merge_state != CONTROLLING)
             return merge_state;
     }
 
     if (!verifyTimeout(newestCommandTime))
         return TIMEOUT;
-    if(_safe_mode.get() && !verifyMissingData(_expected_inputs.get(), merging_command.command))
+    if(_safe_mode.get() && !verifyMissingData(_expected_inputs.get(), merged_command.command))
         return INPUT_MISSING;
-    merging_command.command.time = newestCommandTime;
-    // For compatiblity purpose.
-    merged_command = merging_command.command;
+    merged_command.command.time = newestCommandTime;
 
-    merging_command.status = NEW_COMMAND;
+    merged_command.status = NEW_COMMAND;
     if (!has_at_least_one_new_command)
-        merging_command.status = OLD_COMMAND;
+        merged_command.status = OLD_COMMAND;
     return CONTROLLING;
 }
 
@@ -279,7 +277,4 @@ std::vector<Base::InputPortInfo*> Base::checkConnectedPorts(std::vector<InputPor
 
 void Base::keepPosition(){
 
-}
-bool Base::calcOutput(const LinearAngular6DCommandStatus &merging_command){
-    return this->calcOutput();
 }

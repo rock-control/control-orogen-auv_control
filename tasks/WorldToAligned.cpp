@@ -107,18 +107,15 @@ void WorldToAligned::keepPosition(){
     _cmd_out.write(output_command);
 }
 
-bool WorldToAligned::calcOutput(const LinearAngular6DCommandStatus &merging_command){
+bool WorldToAligned::calcOutput(const LinearAngular6DCommandStatus &merged_command){
     // In case there is an OLD_COMMAND, it should not output the same cmd again,
     // but no error occurred
-    if (merging_command.status == OLD_COMMAND)
+    if (merged_command.status == OLD_COMMAND)
         return true;
-    return calcOutput();
-}
 
-bool WorldToAligned::calcOutput(){
     base::LinearAngular6DCommand output_command;
 
-    base::Vector3d target_xyz = merged_command.linear;
+    base::Vector3d target_xyz = merged_command.command.linear;
     if (_position_control)
         target_xyz -= currentPose.position;
 
@@ -130,7 +127,7 @@ bool WorldToAligned::calcOutput(){
     output_command.linear = Eigen::AngleAxisd(-yaw, Eigen::Vector3d::UnitZ()) * target_xy;
     output_command.linear(2) = target_xyz(2);
 
-    output_command.angular = merged_command.angular;
+    output_command.angular = merged_command.command.angular;
     if (_position_control)
     {
         // And shift the yaw target by the current yaw (leaving pitch and roll)
@@ -143,7 +140,7 @@ bool WorldToAligned::calcOutput(){
     }
         
     // Finally, set the timestamp of the output
-    output_command.time = merged_command.time;
+    output_command.time = merged_command.command.time;
     _cmd_out.write(output_command);
     return true;
 }

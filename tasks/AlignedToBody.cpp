@@ -45,10 +45,9 @@ bool AlignedToBody::startHook()
     return validateInputExpectations(expect.linear, "linear") &&
         validateInputExpectations(expect.angular, "angular");
 }
-bool AlignedToBody::calcOutput()
+bool AlignedToBody::calcOutput(const LinearAngular6DCommandStatus &merged_command)
 {
- 
-    base::LinearAngular6DCommand output_command = merged_command;
+    base::LinearAngular6DCommand output_command = merged_command.command;
 
     double yaw = base::getYaw(orientation_sample.orientation);
     Eigen::Quaterniond orientation_pr =

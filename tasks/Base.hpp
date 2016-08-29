@@ -24,7 +24,6 @@ namespace auv_control {
         };    
     
         std::vector<InputPortInfo> input_ports;
-        base::LinearAngular6DCommand merged_command;        
 
         void registerInput(std::string const& name, int timeout, InputPortType* input_port);
         InputPortType* deregisterInput(std::string const& name);
@@ -62,7 +61,7 @@ namespace auv_control {
          * @param connected_ports to be analyzed.
          * @return States of wich it should go
          */
-        States gatherInputCommand(LinearAngular6DCommandStatus &merging_command, std::vector<Base::InputPortInfo*> &connected_ports);
+        States gatherInputCommand(LinearAngular6DCommandStatus &merged_command, std::vector<Base::InputPortInfo*> &connected_ports);
 
         /** Creates a new input port called cmd_name of the type
          * LinearAngular6DCommand. Once defined, this input port will be merged
@@ -88,13 +87,8 @@ namespace auv_control {
          * @return bool. TRUE if there is NO state transition in derived class,
          *               FALSE otherwise.
          */
-        virtual bool calcOutput(const LinearAngular6DCommandStatus &merging_command);
+        virtual bool calcOutput(const LinearAngular6DCommandStatus &merging_command) = 0;
 
-        /** Computes the output based on the value stored in merged_command. It
-         * is called after merged_command has been updated
-         */ 
-        virtual bool calcOutput() = 0;
-        
     public:
         /** TaskContext constructor for Base
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.

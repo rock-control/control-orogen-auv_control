@@ -18,9 +18,9 @@ CommandInjection::~CommandInjection()
 {
 }
 
-bool CommandInjection::calcOutput()
+bool CommandInjection::calcOutput(const LinearAngular6DCommandStatus &merged_command)
 {
-    base::LinearAngular6DCommand output_command = merged_command;
+    base::LinearAngular6DCommand output_command = merged_command.command;
 
     base::LinearAngular6DCommand cmd_injection;
     if(receiveCommandInjection(cmd_injection))

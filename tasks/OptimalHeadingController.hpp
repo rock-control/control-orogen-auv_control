@@ -33,7 +33,7 @@ Frame.
         base::samples::RigidBodyState orientation_sample;
         base::Timeout new_orientation_samples_timeout;
         void keep();
-        bool calcOutput();
+        bool calcOutput(const LinearAngular6DCommandStatus &merged_command);
 
 
     public:

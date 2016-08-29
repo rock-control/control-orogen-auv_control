@@ -19,8 +19,7 @@ namespace auv_control {
         base::Timeout new_pose_samples_timeout;
 
         void keepPosition();
-        bool calcOutput(const LinearAngular6DCommandStatus &merging_command);
-        bool calcOutput();
+        bool calcOutput(const LinearAngular6DCommandStatus &merged_command);
         bool isPoseSampleValid(base::samples::RigidBodyState pose);
 
     public:

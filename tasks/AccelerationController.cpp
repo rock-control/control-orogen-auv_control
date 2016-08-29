@@ -135,10 +135,10 @@ bool AccelerationController::startHook()
 
     return true;
 }
-bool AccelerationController::calcOutput()
+bool AccelerationController::calcOutput(const LinearAngular6DCommandStatus &merged_command)
 {
 
-    inputVector << merged_command.linear, merged_command.angular;
+    inputVector << merged_command.command.linear, merged_command.command.angular;
     for (int i = 0; i < 6; ++i)
     {
         if (base::isUnset(inputVector(i)))
@@ -174,7 +174,7 @@ bool AccelerationController::calcOutput()
             }
         }
         jointCommand[i].setField(controlModes[i], cmdVector(i));
-        jointCommand.time = merged_command.time;
+        jointCommand.time = merged_command.command.time;
     }
     _cmd_out.write(jointCommand);
 

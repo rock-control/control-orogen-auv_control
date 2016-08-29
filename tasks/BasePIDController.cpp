@@ -171,9 +171,6 @@ bool BasePIDController::calcOutput(const LinearAngular6DCommandStatus &merged_co
     return true;
 }
 
-bool BasePIDController::calcOutput()
-{return true;}
-
 void BasePIDController::keepPosition(){
     base::LinearAngular6DCommand output_command;
     output_command.time = mCurrentState.time;

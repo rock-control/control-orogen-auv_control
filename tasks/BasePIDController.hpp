@@ -54,7 +54,6 @@ generate commands
         LinearAngular6DPID mPIDs;
 
         bool calcOutput(const LinearAngular6DCommandStatus &merged_command);
-        bool calcOutput();
         void keepPosition();
 
 
