@@ -47,9 +47,9 @@ bool AlignedToBody::startHook()
 }
 bool AlignedToBody::calcOutput(const LinearAngular6DCommandStatus &merged_command)
 {
-    // In case there is an OLD_COMMAND, it should not output the same cmd again,
+    // In case there is an OldData, it should not output the same cmd again,
     // but no error occurred
-    if (merged_command.status == OLD_COMMAND)
+    if (merged_command.status == RTT::OldData)
         return true;
 
     base::LinearAngular6DCommand output_command = merged_command.command;

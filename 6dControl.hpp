@@ -7,6 +7,7 @@
 #include <base/Eigen.hpp>
 #include <base/Float.hpp>
 #include <base/commands/LinearAngular6DCommand.hpp>
+#include <rtt/FlowStatus.hpp>
 
 namespace auv_control{
     struct ExpectedInputs{
@@ -35,22 +36,14 @@ namespace auv_control{
         motor_controller::PID angular[3];
     };
 
-    enum CommandStatus
-    {
-        NEW_COMMAND,
-        OLD_COMMAND,
-        NO_COMMAND,
-        INVALID_COMMAND,
-    };
-
     struct LinearAngular6DCommandStatus
     {
         base::LinearAngular6DCommand command;
-        CommandStatus status;
+        RTT::FlowStatus status;
 
         LinearAngular6DCommandStatus(){
             command = base::LinearAngular6DCommand();
-            status = INVALID_COMMAND;
+            status = RTT::NoData;
         }
     };
 }

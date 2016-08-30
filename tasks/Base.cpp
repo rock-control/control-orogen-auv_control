@@ -160,6 +160,7 @@ Base::States Base::gatherInputCommand(LinearAngular6DCommandStatus &merged_comma
     // The command that is being merged. It is written to this->merged_command
     // only if everything has been validated
     bool has_at_least_one_new_command = false;
+    merged_command.status = RTT::NoData;
     for(unsigned int i = 0; i < connected_ports.size(); i++){
         base::LinearAngular6DCommand current_port;
         InputPortInfo& port_info = *connected_ports.at(i);
@@ -168,10 +169,7 @@ Base::States Base::gatherInputCommand(LinearAngular6DCommandStatus &merged_comma
         RTT::FlowStatus status = port->readNewest(current_port);
 
         if(status == RTT::NoData)
-        {
-            merged_command.status = NO_COMMAND;
             return WAIT_FOR_INPUT;
-        }
         else if(status == RTT::NewData)
         {   // Not all input is OldData
             has_at_least_one_new_command = true;
@@ -189,11 +187,11 @@ Base::States Base::gatherInputCommand(LinearAngular6DCommandStatus &merged_comma
         return TIMEOUT;
     if(_safe_mode.get() && !verifyMissingData(_expected_inputs.get(), merged_command.command))
         return INPUT_MISSING;
-    merged_command.command.time = newestCommandTime;
 
-    merged_command.status = NEW_COMMAND;
+    merged_command.command.time = newestCommandTime;
+    merged_command.status = RTT::NewData;
     if (!has_at_least_one_new_command)
-        merged_command.status = OLD_COMMAND;
+        merged_command.status = RTT::OldData;
     return CONTROLLING;
 }
 
