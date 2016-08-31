@@ -262,7 +262,7 @@ Base::States Base::merge(auv_control::ExpectedInputs const& expected, base::Line
 bool Base::checkConnectedPorts(std::vector<Base::InputPortInfo> &input_ports, std::vector<Base::InputPortInfo*> &connected_input_ports)
 {   // Clear vector before assign connected ports
     if(!connected_input_ports.empty())
-        connected_input_ports.erase(connected_input_ports.begin(), connected_input_ports.end());
+        connected_input_ports.clear();
     for(unsigned int i = 0; i < input_ports.size(); i++)
     {
         if(input_ports.at(i).input_port->connected())

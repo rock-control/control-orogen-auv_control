@@ -58,8 +58,7 @@ namespace auv_control {
 
         /** Gather input from connected input ports
          *
-         * @param merging_command, where the commands will be safe
-         * @param cmd_status, Define the status of merging_command, NEW_COMMAND, OLD_COMMAND, NO_COMMAND or INVALID_COMMAND
+         * @param merged_command, where the commands will be safe all together with its RTT:FlowStatus
          * @param connected_ports to be analyzed.
          * @return States of wich it should go
          */
@@ -89,7 +88,7 @@ namespace auv_control {
          * @return bool. TRUE if there is NO state transition in derived class,
          *               FALSE otherwise.
          */
-        virtual bool calcOutput(const LinearAngular6DCommandStatus &merging_command) = 0;
+        virtual bool calcOutput(const LinearAngular6DCommandStatus &merged_command) = 0;
 
     public:
         /** TaskContext constructor for Base

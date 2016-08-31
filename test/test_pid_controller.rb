@@ -66,7 +66,7 @@ describe 'auv_control::PIDController' do
         cmd_in.write set_point
         cmd_out0 = assert_has_one_new_sample cmd_out, 0.1
         assert_state_change(pid) { |s| s == :CONTROLLING }
-        sleep(pid.timeout_in)
+        sleep(pid.timeout_pose.to_i)
         assert_state_change(pid) { |s| s == :POSE_TIMEOUT }
     end
 

@@ -58,7 +58,7 @@ describe 'auv_control::WorldToAligned' do
     it "should go to exception POSE_TIMEOUT" do
 
         world_to_aligned.apply_conf_file("auv_control::WorldToAligned.yml")
-
+        world_to_aligned.timeout_in = world_to_aligned.timeout_pose.to_i+1
         world_to_aligned.configure
         world_to_aligned.start
 
@@ -72,7 +72,7 @@ describe 'auv_control::WorldToAligned' do
         cmd_in.write generate_default_cmd
         assert_state_change(world_to_aligned) { |s| s == :CONTROLLING }
         cmd_out0 = assert_has_one_new_sample cmd_out, 0.1
-        sleep(world_to_aligned.timeout_in)
+        sleep(world_to_aligned.timeout_pose.to_i)
         cmd_out0 = assert_has_no_new_sample cmd_out, 0.1
         assert_equal :POSE_TIMEOUT, world_to_aligned.state_reader.read
     end
