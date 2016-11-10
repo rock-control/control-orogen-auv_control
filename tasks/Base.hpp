@@ -8,6 +8,15 @@
 
 namespace auv_control {
 
+    struct LinearAngular6DCommandStatus{
+        base::LinearAngular6DCommand command;
+        RTT::FlowStatus status;
+        LinearAngular6DCommandStatus(){
+            command = base::LinearAngular6DCommand();
+            status = RTT::NoData;
+        }
+    };
+
     class Base : public BaseBase
     {
 	friend class BaseBase;
@@ -21,8 +30,8 @@ namespace auv_control {
             InputPortType *input_port;
             InputPortInfo()
                 :input_port(0){}
-        };    
-    
+        };
+
         std::vector<InputPortInfo> input_ports;
         std::vector<Base::InputPortInfo*> connected_input_ports;
 

@@ -35,17 +35,6 @@ namespace auv_control{
         motor_controller::PID linear[3];
         motor_controller::PID angular[3];
     };
-
-    struct LinearAngular6DCommandStatus
-    {
-        base::LinearAngular6DCommand command;
-        RTT::FlowStatus status;
-
-        LinearAngular6DCommandStatus(){
-            command = base::LinearAngular6DCommand();
-            status = RTT::NoData;
-        }
-    };
 }
 
 namespace base{
