@@ -32,10 +32,10 @@ task_context "Base" do
     # This port is statically defined for simplicity reasons, additional ports
     # can be created using the addCommandInput operation
     input_port("cmd_in", "/base/LinearAngular6DCommand")
-    
-    # This property defines the timeout for the cmd_in input port in seconds. 0
-    # means that the timeout would be ignored.
-    property "timeout_in", "double", 1
+
+    # This property defines the timeout for the cmd_in input port. 0
+    # means that the timeout would be ignored. Default is 1 second.
+    property "timeout_in", "/base/Time"
 
     # When used in a cascade, this input port can be used to feed the output of
     # the controllers before.
@@ -45,11 +45,11 @@ task_context "Base" do
     # This port is statically defined for simplicity reasons, additional ports
     # can be created using the addCommandInput operation
     input_port('cmd_cascade', '/base/LinearAngular6DCommand')
-    
-    # This property defines the timeout for the cascade input port in seconds. 0
-    # means that the timeout would be ignored.
-    property "timeout_cascade", "double", 1
-   
+
+    # This property defines the timeout for the cascade input port. 0
+    # means that the timeout would be ignored. Default is 1 second.
+    property "timeout_cascade", "/base/Time"
+
     #This property defines the safty behavior ath the merging of the input-ports.
     #If the property is on true (default) the merged command need to be like in
     #the expected_inputs property defined. Else the expected_inputs are ignored 
@@ -62,7 +62,7 @@ task_context "Base" do
     # already exists
     operation("addCommandInput").
         argument("name", "string").
-        argument("timeout", "double").
+        argument("timeout", "/base/Time").
         returns('bool')
     dynamic_input_port(/cmd_\w+/, "/base/LinearAngular6DCommand")
 

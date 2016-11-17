@@ -24,7 +24,7 @@ namespace auv_control {
         typedef RTT::InputPort<base::LinearAngular6DCommand> InputPortType;
         struct InputPortInfo{
             std::string name;
-            double timeout;
+            base::Time timeout;
             base::Time last_sample_time;
             base::Time last_system_time;
             InputPortType *input_port;
@@ -35,7 +35,7 @@ namespace auv_control {
         std::vector<InputPortInfo> input_ports;
         std::vector<Base::InputPortInfo*> connected_input_ports;
 
-        void registerInput(std::string const& name, int timeout, InputPortType* input_port);
+        void registerInput(std::string const& name, base::Time timeout, InputPortType* input_port);
         InputPortType* deregisterInput(std::string const& name);
         base::Time newestCommandTime;
 
@@ -78,7 +78,7 @@ namespace auv_control {
          * into the merged_command command before the controller calculates the
          * corresponding output
          */
-        virtual bool addCommandInput(::std::string const & name, double timeout);
+        virtual bool addCommandInput(::std::string const & name, ::base::Time const & timeout);
 
         /** Send a "do not move" command to the next level
          *

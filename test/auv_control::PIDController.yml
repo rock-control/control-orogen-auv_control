@@ -142,10 +142,12 @@ position_control: true
 safe_mode: true
 # This property defines the timeout for the cascade input port in seconds. 0
 # means that the timeout would be ignored.
-timeout_cascade: 1.0
+timeout_cascade:
+    microseconds: 1000000
 # This property defines the timeout for the cmd_in input port in seconds. 0
 # means that the timeout would be ignored.
-timeout_in: 1.0
+timeout_in:
+    microseconds: 1000000
 # Use the Ideal (false) or Parallel PID-Settings
 use_parallel_pid_settings: false
 # Under this Value the axis are not controled. Output is 0.

@@ -30,7 +30,7 @@ bool OptimalHeadingController::configureHook()
     if (! OptimalHeadingControllerBase::configureHook())
         return false;
 
-    new_orientation_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+    new_orientation_samples_timeout = base::Timeout(_timeout_in.value());
 
     return true;
 }

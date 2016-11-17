@@ -26,7 +26,7 @@ describe 'auv_control::WorldToAligned' do
     end
 
     it "should create a port with the given name prefixed with cmd_" do
-        world_to_aligned.addCommandInput 'test', 0
+        world_to_aligned.addCommandInput 'test', Time.at(0)
         port = world_to_aligned.cmd_test
         assert_equal '/base/commands/LinearAngular6DCommand_m', port.type.name
     end
@@ -58,7 +58,7 @@ describe 'auv_control::WorldToAligned' do
     it "should go to exception POSE_TIMEOUT" do
 
         world_to_aligned.apply_conf_file("auv_control::WorldToAligned.yml")
-        world_to_aligned.timeout_in = world_to_aligned.timeout_pose.to_i+1
+        world_to_aligned.timeout_in = Time.at(world_to_aligned.timeout_pose.to_i+1)
         world_to_aligned.configure
         world_to_aligned.start
 

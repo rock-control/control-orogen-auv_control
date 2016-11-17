@@ -74,7 +74,7 @@ describe 'auv_control::PIDController' do
 
         pid.apply_conf_file("auv_control::PIDController.yml")
         pid.variance_threshold = 1
-        pid.timeout_in = 10
+        pid.timeout_in = Time.at(10)
 
         pid.configure
         pid.start
@@ -94,7 +94,7 @@ describe 'auv_control::PIDController' do
     it "should not crash with just one set_point" do
 
         pid.apply_conf_file("auv_control::PIDController.yml")
-        pid.timeout_in = 10
+        pid.timeout_in = Time.at(10)
 
         pid.configure
         pid.start
@@ -119,7 +119,7 @@ describe 'auv_control::PIDController' do
     it "should provide the correct output according the pose_sample, considering auv moving along X axis only" do
 
         pid.apply_conf_file("auv_control::PIDController.yml")
-        pid.timeout_in = 10
+        pid.timeout_in = Time.at(10)
         pid.position_control = true
         pid.world_frame = true
         # The gains other than K are zero

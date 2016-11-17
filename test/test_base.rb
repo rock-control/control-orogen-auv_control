@@ -11,16 +11,16 @@ describe 'auv_control::Base' do
     reader 'task', 'cmd_out', :attr_name => 'cmd_out'
 
         it "should create a port with the given name prefixed with cmd_" do
-            task.addCommandInput('test', 0)
+            task.addCommandInput('test', Time.at(0))
             port = task.cmd_test
             assert_equal '/base/commands/LinearAngular6DCommand_m', port.type.name
         end
         it "should return true when the port could be created" do
-            assert task.addCommandInput('test', 0)
+            assert task.addCommandInput('test', Time.at(0))
         end
         it "should return false when the port already exists" do
-            task.addCommandInput('test', 0)
-            refute task.addCommandInput('test', 0)
+            task.addCommandInput('test', Time.at(0))
+            refute task.addCommandInput('test', Time.at(0))
         end
 
         before do
@@ -47,8 +47,8 @@ describe 'auv_control::Base' do
         end
 
         it "should merge all its inputs" do
-            task.addCommandInput '0', 0
-            task.addCommandInput '1', 0
+            task.addCommandInput '0', Time.at(0)
+            task.addCommandInput '1', Time.at(0)
             cmd0 = task.cmd_0.writer
             cmd1 = task.cmd_1.writer
             pose = task.pose_samples.writer
@@ -73,7 +73,7 @@ describe 'auv_control::Base' do
             assert Base.unset?(merged.angular[2])
         end
         it "should use the cmd_in port if it is connected" do
-            task.addCommandInput '0', 0
+            task.addCommandInput '0', Time.at(0)
             cmd0 = task.cmd_0.writer
             cmd1 = task.cmd_in.writer
             pose = task.pose_samples.writer
@@ -98,7 +98,7 @@ describe 'auv_control::Base' do
             assert Base.unset?(merged.angular[2])
         end
         it "should use the cmd_cascade port if it is connected" do
-            task.addCommandInput '0', 0
+            task.addCommandInput '0', Time.at(0)
             cmd0 = task.cmd_0.writer
             cmd1 = task.cmd_cascade.writer
             pose = task.pose_samples.writer
@@ -123,7 +123,7 @@ describe 'auv_control::Base' do
             assert Base.unset?(merged.angular[2])
         end
         it "should go in INPUT_MISSING state if an expected input is not there" do
-            task.addCommandInput '0', 0
+            task.addCommandInput '0', Time.at(0)
             cmd0 = task.cmd_0.writer
             pose = task.pose_samples.writer
 
@@ -137,8 +137,8 @@ describe 'auv_control::Base' do
             assert_state_change(task) { |s| s == :INPUT_MISSING }
         end
         it "should go in INPUT_COLLIDING state if two inputs provide the same value" do
-            task.addCommandInput '0', 0
-            task.addCommandInput '1', 0
+            task.addCommandInput '0', Time.at(0)
+            task.addCommandInput '1', Time.at(0)
             cmd0 = task.cmd_0.writer
             cmd1 = task.cmd_1.writer
             pose = task.pose_samples.writer
@@ -156,7 +156,7 @@ describe 'auv_control::Base' do
             assert_state_change(task) { |s| s == :INPUT_COLLIDING }
         end
         it "should go in INPUT_UNEXPECTED state if there is a value for an unexpected input" do
-            task.addCommandInput '0', 0
+            task.addCommandInput '0', Time.at(0)
             cmd0 = task.cmd_0.writer
             pose = task.pose_samples.writer
 
@@ -172,7 +172,7 @@ describe 'auv_control::Base' do
             assert_state_change(task) { |s| s == :INPUT_UNEXPECTED }
         end
         it "should go in TIMEOUT state if one port is not updated for its specified timeout and recover in case of new data" do
-            task.addCommandInput '0', 1
+            task.addCommandInput '0', Time.at(1)
             cmd0 = task.cmd_0.writer
             pose = task.pose_samples.writer
             task.timeout_pose = Time.at(10)
@@ -202,7 +202,7 @@ describe 'auv_control::Base' do
             assert_equal :CONTROLLING, task.state_reader.read
         end
         it "should not check for timeouts on ports that have a timeout value of zero" do
-            task.addCommandInput '0', 0
+            task.addCommandInput '0', Time.at(0)
             cmd0 = task.cmd_0.writer
             pose = task.pose_samples.writer
             task.timeout_pose = Time.at(10)
@@ -223,8 +223,8 @@ describe 'auv_control::Base' do
             assert_state_change(task) { |s| s != :TIMEOUT }
         end
         it "should wait in WAIT_FOR_INPUT state if there is no data on one of the input ports" do
-            task.addCommandInput '0', 0
-            task.addCommandInput '1', 0
+            task.addCommandInput '0', Time.at(0)
+            task.addCommandInput '1', Time.at(0)
             cmd0 = task.cmd_0.writer
             cmd1 = task.cmd_1.writer
             pose = task.pose_samples.writer
@@ -240,7 +240,7 @@ describe 'auv_control::Base' do
         end
 
         it "should delete all created ports" do
-            task.addCommandInput '0', 0
+            task.addCommandInput '0', Time.at(0)
             task.configure
             task.cleanup
         end

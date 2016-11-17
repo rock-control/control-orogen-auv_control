@@ -7,11 +7,15 @@ using namespace auv_control;
 Base::Base(std::string const& name)
     : BaseBase(name)
 {
+    _timeout_in.set(base::Time::fromSeconds(1));
+    _timeout_cascade.set(base::Time::fromSeconds(1));
 }
 
 Base::Base(std::string const& name, RTT::ExecutionEngine* engine)
     : BaseBase(name, engine)
 {
+    _timeout_in.set(base::Time::fromSeconds(1));
+    _timeout_cascade.set(base::Time::fromSeconds(1));
 }
 
 Base::~Base()
@@ -131,7 +135,7 @@ Base::States Base::performOneLoop()
     return CONTROLLING_UNSAFE;
 }
 
-void Base::registerInput(std::string const& name, int timeout, InputPortType* input_port)
+void Base::registerInput(std::string const& name, base::Time timeout, InputPortType* input_port)
 {
     InputPortInfo info;
     info.name = name;
@@ -200,11 +204,11 @@ bool Base::verifyTimeout(const base::Time &newest_command)
     {
         if(input_ports[i].input_port->connected())
         {
-            double timeout = input_ports[i].timeout;
+            base::Time timeout = input_ports[i].timeout;
             base::Time port_time = input_ports[i].last_sample_time;
-            if (timeout != 0 && ((newest_command - port_time).toSeconds() > timeout))
+            if (timeout.toSeconds() != 0 && ((newest_command - port_time) > timeout))
                 return false;
-            if (timeout != 0 && ((base::Time::now() - input_ports[i].last_system_time).toSeconds() > timeout))
+            if (timeout.toSeconds() != 0 && ((base::Time::now() - input_ports[i].last_system_time) > timeout))
                 return false;
         }
     }
@@ -223,7 +227,7 @@ bool Base::verifyMissingData(const auv_control::ExpectedInputs &expected, const 
     return true;
 }
 
-bool Base::addCommandInput(std::string const & name, double timeout){
+bool Base::addCommandInput(std::string const & name, base::Time const & timeout){
     if (provides()->hasService("cmd_" + name))
         return false;
 
