@@ -7,11 +7,13 @@ using namespace auv_control;
 AlignedToBody::AlignedToBody(std::string const& name)
     : AlignedToBodyBase(name)
 {
+    _timeout_orientation.set(base::Time::fromSeconds(1));
 }
 
 AlignedToBody::AlignedToBody(std::string const& name, RTT::ExecutionEngine* engine)
     : AlignedToBodyBase(name, engine)
 {
+    _timeout_orientation.set(base::Time::fromSeconds(1));
 }
 
 AlignedToBody::~AlignedToBody()
@@ -29,7 +31,7 @@ bool AlignedToBody::configureHook()
     if (! AlignedToBodyBase::configureHook())
         return false;
 
-    new_orientation_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+    new_orientation_samples_timeout = base::Timeout(_timeout_orientation.get());
 
     return true;
 }
@@ -43,10 +45,14 @@ bool AlignedToBody::startHook()
     return validateInputExpectations(expect.linear, "linear") &&
         validateInputExpectations(expect.angular, "angular");
 }
-bool AlignedToBody::calcOutput()
+bool AlignedToBody::calcOutput(const LinearAngular6DCommandStatus &merged_command)
 {
- 
-    base::LinearAngular6DCommand output_command = merged_command;
+    // In case there is an OldData, it should not output the same cmd again,
+    // but no error occurred
+    if (merged_command.status == RTT::OldData)
+        return true;
+
+    base::LinearAngular6DCommand output_command = merged_command.command;
 
     double yaw = base::getYaw(orientation_sample.orientation);
     Eigen::Quaterniond orientation_pr =
@@ -61,22 +67,21 @@ bool AlignedToBody::calcOutput()
 void AlignedToBody::updateHook()
 {
     RTT::FlowStatus status = _orientation_samples.readNewest(orientation_sample);
-
-    if(status == RTT::NoData){
-        if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
-            error(WAIT_FOR_ORIENTATION_SAMPLE);
+    if (status != RTT::NewData)
+    {
+        if(new_orientation_samples_timeout.elapsed())
+        {
+            exception(ORIENTATION_TIMEOUT);
+            return;
         }
-        return;
-    }
-    else if (status == RTT::OldData && new_orientation_samples_timeout.elapsed()){
-        if (state() != WAIT_FOR_ORIENTATION_SAMPLE){
-            error(WAIT_FOR_ORIENTATION_SAMPLE);
+        if(status == RTT::NoData)
+        {
+            state(WAIT_FOR_ORIENTATION_SAMPLE);
+            return;
         }
-        return;
     }
-    else{
+    else
         new_orientation_samples_timeout.restart();
-    }
 
     if(!base::samples::RigidBodyState::isValidValue(orientation_sample.orientation)){
         if(!on_init){
@@ -91,11 +96,6 @@ void AlignedToBody::updateHook()
 }
 void AlignedToBody::errorHook()
 {
-    if(state() == WAIT_FOR_ORIENTATION_SAMPLE){
-        if(_orientation_samples.readNewest(orientation_sample) == RTT::NewData){
-            recover();
-        }
-    }
 
     AlignedToBodyBase::errorHook();
 }

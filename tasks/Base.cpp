@@ -7,11 +7,15 @@ using namespace auv_control;
 Base::Base(std::string const& name)
     : BaseBase(name)
 {
+    _timeout_in.set(base::Time::fromSeconds(1));
+    _timeout_cascade.set(base::Time::fromSeconds(1));
 }
 
 Base::Base(std::string const& name, RTT::ExecutionEngine* engine)
     : BaseBase(name, engine)
 {
+    _timeout_in.set(base::Time::fromSeconds(1));
+    _timeout_cascade.set(base::Time::fromSeconds(1));
 }
 
 Base::~Base()
@@ -32,6 +36,8 @@ bool Base::configureHook()
 
     registerInput("in", _timeout_in.get(), &_cmd_in);
     registerInput("cascade", _timeout_cascade.get(), &_cmd_cascade);
+    // Assuming a max number of input ports of 6 (3 for each DOF, linear and angular)
+    connected_input_ports.reserve(6);
     return true;
 }
 
@@ -48,51 +54,46 @@ bool Base::startHook()
 
 void Base::updateHook()
 {
-    
     BaseBase::updateHook();
-    if(!this->gatherInputCommand()){
-        if (_keep_position_on_exception.get()){    
-            this->keepPosition();
-        }
+
+    States stat = performOneLoop();
+    // Error in calcOutput, state transitions should be handle in derived class
+    if(stat == RUNTIME_ERROR)
+        return;
+    // Check for local error in Base
+    if(stat != CONTROLLING && stat != CONTROLLING_UNSAFE)
+    {
+        error(stat);
         return;
     }
-
-    if(!this->calcOutput()){
-        if (_keep_position_on_exception.get()){    
-            this->keepPosition();
-        }
-        return;
-    }
-
-    if (_safe_mode.get() && state() != CONTROLLING){
-        state(CONTROLLING);
-    } else if (!_safe_mode.get() && state() != CONTROLLING_UNSAFE){
-        state(CONTROLLING_UNSAFE);
-    }
+    // Switch to specific Running state defined in Base
+    if(state() != stat);
+        state(stat);
 }
 
 
 
 void Base::errorHook()
 {
-    
     BaseBase::errorHook();
-    
-    if (state() == INPUT_MISSING ||
-        state() == INPUT_COLLIDING ||
-        state() == INPUT_UNEXPECTED ||
-        state() == TIMEOUT ||
-        state() == WAIT_FOR_CONNECTED_INPUT_PORT ||
-        state() == WAIT_FOR_INPUT){
-        
-        if (this->gatherInputCommand()){
-            recover();
-        }
-    }
 
-    if (_keep_position_on_exception.get()){    
-        this->keepPosition();
+    States stat = performOneLoop();
+    // Error in calcOutput, state transitions should be handle in derived class
+    if(stat == RUNTIME_ERROR)
+        return;
+    // Return to Running state
+    if(stat == CONTROLLING || stat == CONTROLLING_UNSAFE)
+    {
+        state(stat);
+        recover();
+        return;
     }
+    // Switch beetwen error states if it's the case
+    if(state() != stat)
+        error(stat);
+
+    if (_keep_position_on_exception.get())
+        this->keepPosition();
 }
 
 void Base::stopHook()
@@ -114,7 +115,27 @@ void Base::cleanupHook()
     }
 }
 
-void Base::registerInput(std::string const& name, int timeout, InputPortType* input_port)
+Base::States Base::performOneLoop()
+{
+    if(!checkConnectedPorts(input_ports, connected_input_ports))
+        return WAIT_FOR_CONNECTED_INPUT_PORT;
+
+    LinearAngular6DCommandStatus merged_command;
+    States state = this->gatherInputCommand(merged_command, connected_input_ports);
+
+    if (state != CONTROLLING)
+        return state;
+
+    if (!this->calcOutput(merged_command))
+        return RUNTIME_ERROR;
+
+    if (_safe_mode.get())
+        return CONTROLLING;
+
+    return CONTROLLING_UNSAFE;
+}
+
+void Base::registerInput(std::string const& name, base::Time timeout, InputPortType* input_port)
 {
     InputPortInfo info;
     info.name = name;
@@ -138,100 +159,75 @@ Base::InputPortType* Base::deregisterInput(std::string const& name)
     return 0;
 }
 
-bool Base::gatherInputCommand(){
+Base::States Base::gatherInputCommand(LinearAngular6DCommandStatus &merged_command, std::vector<Base::InputPortInfo*> &connected_ports)
+{
     // The command that is being merged. It is written to this->merged_command
     // only if everything has been validated
-
-    base::LinearAngular6DCommand merging_command;
-    bool has_connected_port = false;
-    for(unsigned int i = 0; i < input_ports.size(); i++){
+    merged_command.status = RTT::OldData;
+    for(unsigned int i = 0; i < connected_ports.size(); i++){
         base::LinearAngular6DCommand current_port;
-        InputPortInfo& port_info = input_ports.at(i);
+        InputPortInfo& port_info = *connected_ports.at(i);
         InputPortType* port = port_info.input_port;
-        if (!port->connected()){
-            continue;
-        }
-        has_connected_port = true;
 
         RTT::FlowStatus status = port->readNewest(current_port);
 
-        if(status == RTT::NoData){
-            if(state() != WAIT_FOR_INPUT){
-                error(WAIT_FOR_INPUT);
-            }
-            return false;
-        } else if(status == RTT::NewData){
+        if(status == RTT::NoData)
+            return WAIT_FOR_INPUT;
+        else if(status == RTT::NewData)
+        {   // Has at least one new data
+            merged_command.status = RTT::NewData;
             port_info.last_sample_time = current_port.time;
             port_info.last_system_time = base::Time::now();
-            if (newestCommandTime < current_port.time){
+            if (newestCommandTime < current_port.time)
                 newestCommandTime = current_port.time;
-            }
         }
-
-        if(!(merge(_expected_inputs.get().linear, current_port.linear, merging_command.linear) &&
-                    merge(_expected_inputs.get().angular, current_port.angular, merging_command.angular))){
-            return false;
-        }   
-    }
-    
-    if(!has_connected_port){
-        if(state() != WAIT_FOR_CONNECTED_INPUT_PORT){
-            error(WAIT_FOR_CONNECTED_INPUT_PORT);
-        }
-        return false;
+        States merge_state = merge(_expected_inputs.get(), current_port, merged_command.command);
+        if(merge_state != CONTROLLING)
+            return merge_state;
     }
 
-    // Verify that no port is timing out
-    if (!newestCommandTime.isNull())
-    {
-        if (!verifyTimeout())
-            return false;
-    }
+    if (!verifyTimeout(newestCommandTime))
+        return TIMEOUT;
+    if(_safe_mode.get() && !verifyMissingData(_expected_inputs.get(), merged_command.command))
+        return INPUT_MISSING;
 
-    if(_safe_mode.get()){
-        for(int j = 0; j < 3; j++)
-        {
-            if(base::isUnset(merging_command.linear(j)) && (_expected_inputs.get().linear[j])){
-                if(state() != INPUT_MISSING){
-                    error(INPUT_MISSING);
-                }
-                return false;
-            }
-            if(base::isUnset(merging_command.angular(j)) && (_expected_inputs.get().angular[j])){
-                if(state() != INPUT_MISSING){
-                    error(INPUT_MISSING);
-                }
-                return false;
-            }
-            
-        }
-    }
-    merging_command.time = newestCommandTime;
-    merged_command = merging_command;
-    return true;         
+    merged_command.command.time = newestCommandTime;
+    return CONTROLLING;
 }
 
-bool Base::verifyTimeout()
+bool Base::verifyTimeout(const base::Time &newest_command)
 {
+    // In case it's not initialzed
+    if(newest_command.isNull())
+        return true;
     for (unsigned int i = 0; i < input_ports.size(); ++i)
     {
-        if(input_ports[i].input_port->connected()){
-            double timeout = input_ports[i].timeout;
+        if(input_ports[i].input_port->connected())
+        {
+            base::Time timeout = input_ports[i].timeout;
             base::Time port_time = input_ports[i].last_sample_time;
-            if (timeout != 0 && ((newestCommandTime - port_time).toSeconds() > timeout || 
-                                (base::Time::now() - input_ports[i].last_system_time).toSeconds() > timeout))
-            {
-                if(state() != TIMEOUT){
-                    error(TIMEOUT);
-                }
+            if (timeout.toSeconds() != 0 && ((newest_command - port_time) > timeout))
                 return false;
-            }
+            if (timeout.toSeconds() != 0 && ((base::Time::now() - input_ports[i].last_system_time) > timeout))
+                return false;
         }
     }
     return true;
 }
 
-bool Base::addCommandInput(std::string const & name, double timeout){
+bool Base::verifyMissingData(const auv_control::ExpectedInputs &expected, const base::LinearAngular6DCommand &command)
+{
+    for(int j = 0; j < 3; j++)
+    {
+        if(base::isUnset(command.linear[j]) && expected.linear[j])
+            return false;
+        if(base::isUnset(command.angular[j]) && expected.angular[j])
+            return false;
+    }
+    return true;
+}
+
+bool Base::addCommandInput(std::string const & name, base::Time const & timeout){
     if (provides()->hasService("cmd_" + name))
         return false;
 
@@ -241,33 +237,44 @@ bool Base::addCommandInput(std::string const & name, double timeout){
     return true;
 }
 
-bool Base::merge(bool const expected[], base::Vector3d const& current, base::Vector3d& merged){
-    for(int i = 0; i < 3; i++){
-        if(base::isUnset(current(i))){
-            continue;
-        }else if(_safe_mode.get() && !expected[i]){
-            if(state() != INPUT_UNEXPECTED){
-                error(INPUT_UNEXPECTED);
-            }
-            return false;
-        }else if(!base::isUnset(merged(i))){
-            //Ther is a value in the merged value and the value is set on this port.
-            //This is an error!
-            if(state() != INPUT_COLLIDING){
-                error(INPUT_COLLIDING);
-            }
-            return false; 
-        }else{
-            //No value of this type in the merged value and the value is set on this
-            //port. So write the Value from this Port in the merged value.
-            merged(i) = current(i);
-        }
+Base::States Base::merge(auv_control::ExpectedInputs const& expected, base::LinearAngular6DCommand const& current, base::LinearAngular6DCommand &merged)
+{
+    for(int i = 0; i < 3; i++)
+    {
+        if(_safe_mode.get() && !expected.linear[i] && !base::isUnset(current.linear[i]))
+            return INPUT_UNEXPECTED;
+        if(_safe_mode.get() && !expected.angular[i] && !base::isUnset(current.angular[i]))
+            return INPUT_UNEXPECTED;
+
+        //There is a value in the merged value and the value is set on this port.
+        //This is an error!
+        if(!base::isUnset(merged.linear[i]) && !base::isUnset(current.linear[i]))
+            return INPUT_COLLIDING;
+        if(!base::isUnset(merged.angular[i]) && !base::isUnset(current.angular[i]))
+            return INPUT_COLLIDING;
+
+        //No value of this type in the merged value and the value is set on this
+        //port. So write the Value from this Port in the merged value.
+        if(base::isUnset(merged.linear[i]))
+            merged.linear[i] = current.linear[i];
+        if(base::isUnset(merged.angular[i]))
+            merged.angular[i] = current.angular[i];
     }
-    return true;
+    return CONTROLLING;
 }
 
+bool Base::checkConnectedPorts(std::vector<Base::InputPortInfo> &input_ports, std::vector<Base::InputPortInfo*> &connected_input_ports)
+{   // Clear vector before assign connected ports
+    if(!connected_input_ports.empty())
+        connected_input_ports.clear();
+    for(unsigned int i = 0; i < input_ports.size(); i++)
+    {
+        if(input_ports.at(i).input_port->connected())
+            connected_input_ports.push_back(&input_ports.at(i));
+    }
+    return !connected_input_ports.empty();
+}
 
 void Base::keepPosition(){
-    
-}
 
+}

@@ -30,7 +30,7 @@ frame as input and outputs the same commands, but expressed in the body frame.
         base::samples::RigidBodyState orientation_sample;
         base::Timeout new_orientation_samples_timeout;
         bool on_init;
-        bool calcOutput();
+        bool calcOutput(const LinearAngular6DCommandStatus &merged_command);
 
     public:
         /** TaskContext constructor for AlignedToBody

@@ -1,0 +1,156 @@
+--- name:default
+# Defines if the derivative will be applied to the error or to the output in the PID controller
+apply_derivative_to_error: false
+# This property defines which parts of the command input is expected to be
+# set once we merged all the declared input ports.
+expected_inputs:
+  linear:
+  - true
+  - true
+  - true
+  angular:
+  - true
+  - true
+  - true
+# If true, the component will send a zero command before getting into an
+# exception state. Otherwise, it will not do anything
+keep_position_on_exception: false
+# If true write NaN on all axis, in keep position case
+nan_on_keep_position: false
+# Parallel Settings for the PID controllers
+parallel_pid_settings:
+  linear:
+  - Ts: 0.0
+    Kp: 0.0
+    Ki: 0.0
+    Kd: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+  - Ts: 0.0
+    Kp: 0.0
+    Ki: 0.0
+    Kd: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+  - Ts: 0.0
+    Kp: 0.0
+    Ki: 0.0
+    Kd: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+  angular:
+  - Ts: 0.0
+    Kp: 0.0
+    Ki: 0.0
+    Kd: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+  - Ts: 0.0
+    Kp: 0.0
+    Ki: 0.0
+    Kd: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+  - Ts: 0.0
+    Kp: 0.0
+    Ki: 0.0
+    Kd: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+# Ideal Settings for the PID controllers
+pid_settings:
+  linear:
+  - Ts: 0.0
+    K: 2.0
+    Ti: 0.0
+    Td: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+  - Ts: 0.0
+    K: 1.0
+    Ti: 0.0
+    Td: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+  - Ts: 0.0
+    K: 1.0
+    Ti: 0.0
+    Td: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+  angular:
+  - Ts: 0.0
+    K: 0.0
+    Ti: 0.0
+    Td: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+  - Ts: 0.0
+    K: 0.0
+    Ti: 0.0
+    Td: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+  - Ts: 0.0
+    K: 0.0
+    Ti: 0.0
+    Td: 0.0
+    N: 0.0
+    B: 1.0
+    Tt: -1.0
+    YMin: 0.0
+    YMax: 0.0
+# The command domain (true:position or false:velocity)
+position_control: true
+# This property defines the safty behavior ath the merging of the input-ports.
+# If the property is on true (default) the merged command need to be like in
+# the expected_inputs property defined. Else the expected_inputs are ignored
+# while the merged comand are unic.
+safe_mode: true
+# This property defines the timeout for the cascade input port in seconds. 0
+# means that the timeout would be ignored.
+timeout_cascade:
+    microseconds: 1000000
+# This property defines the timeout for the cmd_in input port in seconds. 0
+# means that the timeout would be ignored.
+timeout_in:
+    microseconds: 1000000
+# Use the Ideal (false) or Parallel PID-Settings
+use_parallel_pid_settings: false
+# Under this Value the axis are not controled. Output is 0.
+variance_threshold: .inf
+# The command frame (true:world or false:aligned)
+world_frame: false

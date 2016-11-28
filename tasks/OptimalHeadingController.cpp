@@ -30,7 +30,7 @@ bool OptimalHeadingController::configureHook()
     if (! OptimalHeadingControllerBase::configureHook())
         return false;
 
-    new_orientation_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+    new_orientation_samples_timeout = base::Timeout(_timeout_in.value());
 
     return true;
 }
@@ -77,7 +77,7 @@ void OptimalHeadingController::errorHook()
 void OptimalHeadingController::keep(){
 }
 
-bool OptimalHeadingController::calcOutput(){
+bool OptimalHeadingController::calcOutput(const LinearAngular6DCommandStatus &merged_command){
     base::LinearAngular6DCommand output_command;
     double opt_heading;
     double opt_distance;
@@ -85,13 +85,13 @@ bool OptimalHeadingController::calcOutput(){
     opt_heading = _optimal_heading.get();
     opt_distance = _optimal_heading_distance.get();
 
-    output_command = merged_command;
-    
+    output_command = merged_command.command;
+
     //Set z to 0, to use only x and y fpr the distance
-    merged_command.linear(2) = 0;
-    if(merged_command.linear.norm() > opt_distance){
-        output_command.angular(2) = base::Angle::normalizeRad(atan2(merged_command.linear(1), merged_command.linear(0))
-                //+base::getYaw(orientation_sample.orientation) 
+    output_command.linear(2) = 0;
+    if(merged_command.command.linear.norm() > opt_distance){
+        output_command.angular(2) = base::Angle::normalizeRad(atan2(merged_command.command.linear(1), merged_command.command.linear(0))
+                //+base::getYaw(orientation_sample.orientation)
                 + opt_heading);
     }
     

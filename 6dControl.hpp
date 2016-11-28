@@ -7,6 +7,7 @@
 #include <base/Eigen.hpp>
 #include <base/Float.hpp>
 #include <base/commands/LinearAngular6DCommand.hpp>
+#include <rtt/FlowStatus.hpp>
 
 namespace auv_control{
     struct ExpectedInputs{
@@ -27,8 +28,14 @@ namespace auv_control{
     struct LinearAngular6DPIDState{
         PIDState linear[3];
         PIDState angular[3];
+        base::Time time;
     };
-}    
+
+    struct LinearAngular6DPID{
+        motor_controller::PID linear[3];
+        motor_controller::PID angular[3];
+    };
+}
 
 namespace base{
     struct LinearAngular6DWaypoint{

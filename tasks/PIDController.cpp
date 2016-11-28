@@ -8,12 +8,14 @@ PIDController::PIDController(std::string const& name)
     : PIDControllerBase(name)
 {
     _variance_threshold.set(base::infinity<double>());
+    _timeout_pose.set(base::Time::fromSeconds(1));
 }
 
 PIDController::PIDController(std::string const& name, RTT::ExecutionEngine* engine)
     : PIDControllerBase(name, engine)
 {
     _variance_threshold.set(base::infinity<double>());
+    _timeout_pose.set(base::Time::fromSeconds(1));
 }
 
 PIDController::~PIDController()
@@ -31,7 +33,7 @@ bool PIDController::configureHook()
     if (! PIDControllerBase::configureHook())
         return false;
 
-    new_pose_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+    new_pose_samples_timeout = base::Timeout(_timeout_pose.get());
 
     return true;
 }
@@ -43,52 +45,43 @@ bool PIDController::startHook()
 }
 void PIDController::updateHook()
 {
+    base::samples::RigidBodyState pose_sample;
     RTT::FlowStatus status = _pose_samples.readNewest(pose_sample);
-    if (status == RTT::NoData){
-        if(state() != WAIT_FOR_POSE_SAMPLE){
-            error(WAIT_FOR_POSE_SAMPLE);
-        }
+    if (status != RTT::NewData)
+    {
+        if(new_pose_samples_timeout.elapsed())
+            exception(POSE_TIMEOUT);
         return;
     }
-    else if (status == RTT::OldData && new_pose_samples_timeout.elapsed()){
-        if(state() != WAIT_FOR_POSE_SAMPLE){
-            error(WAIT_FOR_POSE_SAMPLE);
-        }
-        return;
-    }
-    else{
-        new_pose_samples_timeout.restart();
-    }
+    new_pose_samples_timeout.restart();
 
-
+    mCurrentCov.time = pose_sample.time;
+    mCurrentState.time = pose_sample.time;
     if (_position_control)
     {
-        currentLinearCov = pose_sample.cov_position;
+        mCurrentCov.angular = pose_sample.cov_orientation;
+        mCurrentCov.linear = pose_sample.cov_position;
 
-        if(currentLinearCov(0,0) > currentLinearCov(1,1)){
-            currentLinearCov(1,1) = currentLinearCov(0,0);
+        if(mCurrentCov.linear(0,0) > mCurrentCov.linear(1,1)){
+            mCurrentCov.linear(1,1) = mCurrentCov.linear(0,0);
         }
-        if(currentLinearCov(1,1) > currentLinearCov(0,0)){
-            currentLinearCov(0,0) = currentLinearCov(1,1);
+        if(mCurrentCov.linear(1,1) > mCurrentCov.linear(0,0)){
+            mCurrentCov.linear(0,0) = mCurrentCov.linear(1,1);
         }
 
-
-
-        currentAngularCov = pose_sample.cov_orientation;
-        
         // position control
         if (_world_frame)
         {
-            currentLinear = pose_sample.position;
-            currentAngular = base::Vector3d(
+            mCurrentState.linear = pose_sample.position;
+            mCurrentState.angular = base::Vector3d(
                 base::getRoll(pose_sample.orientation),
                 base::getPitch(pose_sample.orientation),
                 base::getYaw(pose_sample.orientation));
         }
         else
         {
-            currentLinear = base::Vector3d::Zero();
-            currentAngular = base::Vector3d(
+            mCurrentState.linear = base::Vector3d::Zero();
+            mCurrentState.angular = base::Vector3d(
                 base::getRoll(pose_sample.orientation),
                 base::getPitch(pose_sample.orientation),
                 0);
@@ -96,18 +89,18 @@ void PIDController::updateHook()
     }
     else
     {
-        currentLinearCov = pose_sample.cov_velocity;
-        currentAngularCov = pose_sample.cov_angular_velocity;
-        currentAngular = pose_sample.angular_velocity;
+        mCurrentCov.linear = pose_sample.cov_velocity;
+        mCurrentCov.angular = pose_sample.cov_angular_velocity;
+        mCurrentState.angular = pose_sample.angular_velocity;
 
         // velocity control
         if (_world_frame){
-            currentLinear = pose_sample.velocity;
-        } 
+            mCurrentState.linear = pose_sample.velocity;
+        }
         else
         {
             double yaw = base::getYaw(pose_sample.orientation);
-            currentLinear = Eigen::AngleAxisd(-yaw, Eigen::Vector3d::UnitZ()) *
+            mCurrentState.linear = Eigen::AngleAxisd(-yaw, Eigen::Vector3d::UnitZ()) *
                 pose_sample.velocity;
         }
     }
@@ -121,13 +114,6 @@ void PIDController::updateHook()
 }
 void PIDController::errorHook()
 {
-    if( state() == WAIT_FOR_POSE_SAMPLE){
-        base::samples::RigidBodyState pose_sample;
-        if (_pose_samples.readNewest(pose_sample) == RTT::NewData){
-            recover();
-        }
-    }
-
     PIDControllerBase::errorHook();
 }
 void PIDController::stopHook()
@@ -142,18 +128,14 @@ void PIDController::cleanupHook()
 bool PIDController::isPoseSampleValid(){
     for(int i = 0; i < 3; i++){
         if (_expected_inputs.get().linear[i] &&
-                base::isUnset<double>(currentLinear[i])){
+                base::isUnset<double>(mCurrentState.linear[i])){
             return false;
         }
-        
+
         if (_expected_inputs.get().angular[i] &&
-                base::isUnset<double>(currentAngular[i])){
+                base::isUnset<double>(mCurrentState.angular[i])){
             return false;
         }
     }
     return true;
 }
-
-
-
-

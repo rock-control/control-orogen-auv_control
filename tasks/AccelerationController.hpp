@@ -23,7 +23,7 @@ namespace auv_control {
         std::vector<std::string> names;
         base::JointLimits limits;
 
-        bool calcOutput();
+        bool calcOutput(const LinearAngular6DCommandStatus &merged_command);
 
     public:
         /** TaskContext constructor for AccelerationController

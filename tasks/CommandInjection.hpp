@@ -27,7 +27,7 @@ namespace auv_control {
 	friend class CommandInjectionBase;
     protected:
         base::Time newest_injection_sample;
-        bool calcOutput();
+        bool calcOutput(const LinearAngular6DCommandStatus &merged_command);
         bool receiveCommandInjection(base::LinearAngular6DCommand& cmd_injection);
 
     public:

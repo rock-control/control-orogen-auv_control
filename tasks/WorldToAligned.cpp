@@ -7,11 +7,13 @@ using namespace auv_control;
 WorldToAligned::WorldToAligned(std::string const& name)
     : WorldToAlignedBase(name)
 {
+    _timeout_pose.set(base::Time::fromSeconds(1));
 }
 
 WorldToAligned::WorldToAligned(std::string const& name, RTT::ExecutionEngine* engine)
     : WorldToAlignedBase(name, engine)
 {
+    _timeout_pose.set(base::Time::fromSeconds(1));
 }
 
 WorldToAligned::~WorldToAligned()
@@ -23,7 +25,7 @@ bool WorldToAligned::configureHook()
     if (!WorldToAlignedBase::configureHook())
         return false;
 
-    new_pose_samples_timeout = base::Timeout(base::Time::fromSeconds(_timeout_in.value()));
+    new_pose_samples_timeout = base::Timeout(_timeout_pose.get());
 
     return true;
 }
@@ -46,21 +48,21 @@ bool WorldToAligned::startHook()
 void WorldToAligned::updateHook()
 {
     RTT::FlowStatus status = _pose_samples.readNewest(currentPose);
-    if (status == RTT::NoData){
-        if(state() != WAIT_FOR_POSE_SAMPLE){
-            error(WAIT_FOR_POSE_SAMPLE);
+    if(status != RTT::NewData)
+    {
+        if(new_pose_samples_timeout.elapsed())
+        {
+            exception(POSE_TIMEOUT);
+            return;
         }
-        return;
-    }
-    else if (status == RTT::OldData && new_pose_samples_timeout.elapsed()){
-        if(state() != WAIT_FOR_POSE_SAMPLE){
-            error(WAIT_FOR_POSE_SAMPLE);
+        if(status == RTT::NoData)
+        {
+            state(WAIT_FOR_POSE_SAMPLE);
+            return;
         }
-        return;
     }
-    else{
+    else
         new_pose_samples_timeout.restart();
-    }
 
 
     if(!this->isPoseSampleValid(currentPose)){
@@ -76,13 +78,6 @@ void WorldToAligned::updateHook()
 
 void WorldToAligned::errorHook()
 {
-    if( state() == WAIT_FOR_POSE_SAMPLE){
-        base::samples::RigidBodyState pose_sample;
-        if (_pose_samples.readNewest(pose_sample) == RTT::NewData){
-            recover();
-        }
-    }
-
     WorldToAlignedBase::errorHook();
 }
 
@@ -112,10 +107,15 @@ void WorldToAligned::keepPosition(){
     _cmd_out.write(output_command);
 }
 
-bool WorldToAligned::calcOutput(){
+bool WorldToAligned::calcOutput(const LinearAngular6DCommandStatus &merged_command){
+    // In case there is an OldData, it should not output the same cmd again,
+    // but no error occurred
+    if (merged_command.status == RTT::OldData)
+        return true;
+
     base::LinearAngular6DCommand output_command;
 
-    base::Vector3d target_xyz = merged_command.linear;
+    base::Vector3d target_xyz = merged_command.command.linear;
     if (_position_control)
         target_xyz -= currentPose.position;
 
@@ -127,7 +127,7 @@ bool WorldToAligned::calcOutput(){
     output_command.linear = Eigen::AngleAxisd(-yaw, Eigen::Vector3d::UnitZ()) * target_xy;
     output_command.linear(2) = target_xyz(2);
 
-    output_command.angular = merged_command.angular;
+    output_command.angular = merged_command.command.angular;
     if (_position_control)
     {
         // And shift the yaw target by the current yaw (leaving pitch and roll)
@@ -140,7 +140,7 @@ bool WorldToAligned::calcOutput(){
     }
         
     // Finally, set the timestamp of the output
-    output_command.time = merged_command.time;
+    output_command.time = merged_command.command.time;
     _cmd_out.write(output_command);
     return true;
 }
