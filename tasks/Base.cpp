@@ -67,7 +67,7 @@ void Base::updateHook()
         return;
     }
     // Switch to specific Running state defined in Base
-    if(state() != stat);
+    if(state() != stat)
         state(stat);
 }
 
