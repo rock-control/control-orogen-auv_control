@@ -72,7 +72,7 @@ task_context "Base" do
     dynamic_input_port(/cmd_\w+/, "/base/LinearAngular6DCommand")
 
     runtime_states :CONTROLLING, :CONTROLLING_UNSAFE
-    error_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT, :WAIT_FOR_CONNECTED_INPUT_PORT, :WAIT_FOR_INPUT
+    error_states :INPUT_MISSING, :INPUT_COLLIDING, :INPUT_UNEXPECTED, :TIMEOUT, :WAIT_FOR_CONNECTED_INPUT_PORT
 
     # Deployed with a 10ms period by default
     periodic 0.01
