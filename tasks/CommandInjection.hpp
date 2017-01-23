@@ -29,6 +29,7 @@ namespace auv_control {
         base::Time newest_injection_sample;
         bool calcOutput(const LinearAngular6DCommandStatus &merged_command);
         bool receiveCommandInjection(base::LinearAngular6DCommand& cmd_injection);
+        void outputInjectedCommand();
 
     public:
         /** TaskContext constructor for CommandInjection

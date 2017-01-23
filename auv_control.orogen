@@ -417,4 +417,6 @@ task_context "CommandInjection" do
 
     # The output command
     output_port "cmd_out", "/base/LinearAngular6DCommand"
+
+    port_driven
 end
