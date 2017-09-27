@@ -1,7 +1,7 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "ThrusterForce2BodyEffort.hpp"
-#include "base/Logging.hpp"
+#include "base-logging/Logging.hpp"
 
 using namespace auv_control;
 

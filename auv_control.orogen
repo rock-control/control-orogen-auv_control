@@ -4,6 +4,7 @@ version "0.2"
 import_types_from "base"
 import_types_from "6dControl.hpp"
 using_library "motor_controller"
+using_library "base-logging", typekit: false
 
 typekit.export_types '/motor_controller/PIDSettings'
 
