@@ -3,7 +3,7 @@
 #include "AccelerationController.hpp"
 #include <base/JointState.hpp>
 #include <base/NamedVector.hpp>
-#include <base/Logging.hpp>
+#include <base-logging/Logging.hpp>
 
 using namespace auv_control;
 

@@ -1,7 +1,7 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "ThrustersBase.hpp"
-#include "base/Logging.hpp"
+#include "base-logging/Logging.hpp"
 
 using namespace auv_control;
 
