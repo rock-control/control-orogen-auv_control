@@ -40,7 +40,9 @@ bool AlignedToBody::startHook()
     on_init = true;
     if (! AlignedToBodyBase::startHook())
         return false;
-    
+
+    new_orientation_samples_timeout.restart();
+
     auv_control::ExpectedInputs expect(_expected_inputs.get());
     return validateInputExpectations(expect.linear, "linear") &&
         validateInputExpectations(expect.angular, "angular");
@@ -89,7 +91,7 @@ void AlignedToBody::updateHook()
         }
         return;
     }
-    
+
     AlignedToBodyBase::updateHook();
 
     on_init = false;

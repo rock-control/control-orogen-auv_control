@@ -43,6 +43,8 @@ bool WorldToAligned::startHook()
         return false;
     }
 
+    new_pose_samples_timeout.restart();
+
     return true;
 }
 void WorldToAligned::updateHook()
@@ -84,10 +86,10 @@ void WorldToAligned::errorHook()
 void WorldToAligned::keepPosition(){
     base::LinearAngular6DCommand output_command;
     output_command.time = currentPose.time;
-    
+
     if(!_nan_on_keep_position.get()){
-        output_command.linear(0) = 0; 
-        output_command.linear(1) = 0; 
+        output_command.linear(0) = 0;
+        output_command.linear(1) = 0;
         output_command.linear(2) = 0;
 
         output_command.roll() = base::getRoll(currentPose.orientation);
@@ -138,7 +140,7 @@ bool WorldToAligned::calcOutput(const LinearAngular6DCommandStatus &merged_comma
             output_command.angular(2)+=(2*M_PI);
 
     }
-        
+
     // Finally, set the timestamp of the output
     output_command.time = merged_command.command.time;
     _cmd_out.write(output_command);
@@ -146,19 +148,19 @@ bool WorldToAligned::calcOutput(const LinearAngular6DCommandStatus &merged_comma
 }
 
 bool WorldToAligned::isPoseSampleValid(base::samples::RigidBodyState pose){
-    if((!_safe_mode.get()) && 
-            (!base::samples::RigidBodyState::isValidValue(pose.position) || 
+    if((!_safe_mode.get()) &&
+            (!base::samples::RigidBodyState::isValidValue(pose.position) ||
              (!base::samples::RigidBodyState::isValidValue(pose.orientation)))){
         return false;
     } else {
         auv_control::ExpectedInputs expected_inputs = _expected_inputs.get();
-        if((expected_inputs.linear[0] || expected_inputs.linear[1]) && 
+        if((expected_inputs.linear[0] || expected_inputs.linear[1]) &&
                 (base::isUnset<double>(pose.position[0]) ||
                  base::isUnset<double>(pose.position[1]) ||
                  !base::samples::RigidBodyState::isValidValue(pose.orientation))){
             return false;
         }
-        
+
         if(expected_inputs.linear[2] && base::isUnset<double>(pose.position[2])){
             return false;
         }
