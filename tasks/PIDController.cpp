@@ -41,6 +41,9 @@ bool PIDController::startHook()
 {
     if (! PIDControllerBase::startHook())
         return false;
+
+    new_pose_samples_timeout.restart();
+
     return true;
 }
 void PIDController::updateHook()

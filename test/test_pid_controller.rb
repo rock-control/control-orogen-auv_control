@@ -70,6 +70,25 @@ describe 'auv_control::PIDController' do
         assert_state_change(pid) { |s| s == :POSE_TIMEOUT }
     end
 
+    it "should not go to exception POSE_TIMEOUT" do
+
+        pid.apply_conf_file("auv_control::PIDController.yml")
+
+        pid.configure
+        sleep(pid.timeout_pose.to_i)
+        pid.start
+
+        pose_sample = generate_default_pose
+        set_point = generate_default_cmd
+
+        sleep(0.1)
+
+        pose_samples.write pose_sample
+        cmd_in.write set_point
+        cmd_out0 = assert_has_one_new_sample cmd_out, 0.1
+        assert_state_change(pid) { |s| s == :CONTROLLING }
+    end
+
     it "should go to UNSURE_POSE_SAMPLE" do
 
         pid.apply_conf_file("auv_control::PIDController.yml")

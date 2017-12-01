@@ -38,6 +38,9 @@ bool OptimalHeadingController::startHook()
 {
     if (! OptimalHeadingControllerBase::startHook())
         return false;
+
+    new_orientation_samples_timeout.restart();
+
     return true;
 }
 void OptimalHeadingController::updateHook()
@@ -58,7 +61,7 @@ void OptimalHeadingController::updateHook()
     else{
         new_orientation_samples_timeout.restart();
     }
-    
+
     OptimalHeadingControllerBase::updateHook();
 }
 
@@ -94,7 +97,7 @@ bool OptimalHeadingController::calcOutput(const LinearAngular6DCommandStatus &me
                 //+base::getYaw(orientation_sample.orientation)
                 + opt_heading);
     }
-    
+
     //write the command
     _cmd_out.write(output_command);
 
