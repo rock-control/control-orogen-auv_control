@@ -76,9 +76,8 @@ end
 
 # Base implementation of all the tasks that use one PID controller per axis to
 # generate commands
-task_context 'BasePIDController' do
+task_context 'BasePIDController', subclasses: 'Base' do
     abstract
-    subclasses "Base"
 
     # Ideal Settings for the PID controllers
     property("pid_settings", "/base/LinearAngular6DPIDSettings").
@@ -119,8 +118,7 @@ end
 
 # Controller that takes either positions or velocities, expressed in either the
 # world or aligned frames, and outputs "whatever" in the same frame
-task_context "PIDController" do
-    subclasses "BasePIDController"
+task_context "PIDController", subclasses: 'BasePIDController' do
 
     # The command domain (true:position or false:velocity)
     property "position_control", "bool"
@@ -136,8 +134,7 @@ end
 #
 # Note that this task expects to either have both x,y inputs or none. Giving it
 # only X or only Y will result in a failure to start.
-task_context "WorldToAligned" do
-    subclasses "Base"
+task_context "WorldToAligned", subclasses: 'Base' do
 
     # The domain of what we are converting (true:position or false:velocity or
     # efforts)
@@ -160,8 +157,7 @@ end
 
 # Controller that takes either velocities or efforts expressed in the aligned
 # frame as input and outputs the same commands, but expressed in the body frame.
-task_context "AlignedToBody" do
-    subclasses "Base"
+task_context "AlignedToBody", subclasses: 'Base' do
 
     # The system pose in the world frame
     #
@@ -189,8 +185,7 @@ end
 #
 # It basically projects the (merged) input vector onto the thrusters using the
 # matrix
-task_context "AccelerationController" do
-    subclasses "Base"
+task_context "AccelerationController", subclasses: 'Base' do
 
     # Matrix with size of 6 * n. n means the count of thrusters that are used.
     # The rows 0 to 2 of the matrix are the linear axis. The lines 3 to 5 of the
@@ -247,8 +242,7 @@ task_context "ConstantCommand" do
 end
 
 # In this class the desired command, where depth is given in distance TO the floor in positive way!
-task_context "ConstantCommandGroundFollower" do 
-    subclasses "ConstantCommand"
+task_context "ConstantCommandGroundFollower", subclasses: 'ConstantCommand' do
 
     input_port "altimeter", "/base/samples/RigidBodyState"
     input_port "depth", "/base/samples/RigidBodyState"
@@ -304,8 +298,7 @@ end
 # orientation. So the vehicle can drive faster to his target 
 # position. This controler works with Commands in AlignedPosition 
 # Frame.
-task_context "OptimalHeadingController" do
-    subclasses "Base"
+task_context "OptimalHeadingController", subclasses: 'Base' do
 
     # The optimal orientation of the vehicle, if the target position
     # is on an orientation of 0.0
@@ -362,9 +355,8 @@ end
 #
 # AccelerationController.cmd_out --> ThrustersInput --> Demultiplexer.cmd_in
 #
-task_context "ThrustersInput" do
+task_context "ThrustersInput", subclasses: 'ThrustersBase' do
     needs_configuration
-    subclasses "ThrustersBase"
 
     # cmd_in: forces that each thruster should apply. Should contain data in cmd_in.effort
     # cmd_out: Generated motor commands
@@ -374,9 +366,8 @@ end
 #
 # Multiplexer.joint_samples --> ThrustersFeedback --> ThrusterForce2BodyEffort.thruster_forces
 #
-task_context "ThrustersFeedback" do
+task_context "ThrustersFeedback", subclasses: 'ThrustersBase' do
     needs_configuration
-    subclasses "ThrustersBase"
 
     # cmd_in: thrusters rotation feedback
     # cmd_out: thrusters forces
@@ -407,8 +398,7 @@ task_context "ThrusterForce2BodyEffort" do
 end
 
 # Task that works as switch betwen two commands
-task_context "CommandInjection" do
-    subclasses "Base"
+task_context "CommandInjection", subclasses: 'Base' do
 
     # Timeput for the injection command
     property "cmd_injection_timeout", "double", 0.05
