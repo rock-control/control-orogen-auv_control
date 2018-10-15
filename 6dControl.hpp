@@ -35,6 +35,11 @@ namespace auv_control{
         motor_controller::PID linear[3];
         motor_controller::PID angular[3];
     };
+
+    struct InputPortConfig{
+        std::string name;
+        base::Time timeout;
+    };
 }
 
 namespace base{

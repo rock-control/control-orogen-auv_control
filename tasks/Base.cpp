@@ -38,6 +38,15 @@ bool Base::configureHook()
     registerInput("cascade", _timeout_cascade.get(), &_cmd_cascade);
     // Assuming a max number of input ports of 6 (3 for each DOF, linear and angular)
     connected_input_ports.reserve(6);
+    std::vector<auv_control::InputPortConfig> additional_ports = _additional_command_input.get();
+    // Assuming only 4 ports are available since "in" and "cascade" are already registered
+    if (additional_ports.size() > 4){
+        additional_ports.resize(4);
+        std::cerr << "[Warning] Size of the additional input ports is bigger than 4. Taking the first four elements only!" << std::endl;
+    }
+    for(auto port : additional_ports){
+        addCommandInput(port.name, port.timeout);
+    }
     return true;
 }
 
