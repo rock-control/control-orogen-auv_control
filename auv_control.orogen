@@ -246,14 +246,26 @@ task_context "ConstantCommand" do
 end
 
 # In this class the desired command, where depth is given in distance TO the floor in positive way!
-task_context "ConstantCommandGroundFollower", subclasses: 'ConstantCommand' do
+task_context "GroundFollower" do
+
+    # The desired distance to ground, should be a positive number.
+    property 'distance_to_ground', 'double', 2.0
+
+    # Minimum saftey altitude, if altitude goes below this value a warning state is emitted and depth command is set to zero
+    property 'safety_distance', 'double', 1.0
 
     input_port "altimeter", "/base/samples/RigidBodyState"
     input_port "depth", "/base/samples/RigidBodyState"
+
+
     output_port "floor_position", "double"
-    
-    runtime_states(:NO_DEPTH_READING, :NO_ALTIMETER_READING)
+    # The output command.
+    output_port 'cmd_out', '/base/LinearAngular6DCommand'
+
+    runtime_states(:NO_DEPTH_READING, :NO_ALTIMETER_READING, :ALTIMETER_DROPOUT, :WARNING_LOW_ALTITUDE)
     exception_states(:INVALID_DEPTH_READING,:INVALID_NEGATIVE_ALTIMETER_READING, :INVALID_TARGET_DEPTH_CONFIG) 
+
+    periodic(0.01)
 end
     
 
