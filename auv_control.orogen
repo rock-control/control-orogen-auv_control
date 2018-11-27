@@ -65,6 +65,10 @@ task_context "Base" do
         argument("name", "string").
         argument("timeout", "/base/Time").
         returns('bool')
+
+    # This property allows additional command input ports to be added on configuration.
+    property "additional_command_input", "/std/vector<auv_control/InputPortConfig>"
+
     dynamic_input_port(/cmd_\w+/, "/base/LinearAngular6DCommand")
 
     runtime_states :CONTROLLING, :CONTROLLING_UNSAFE
