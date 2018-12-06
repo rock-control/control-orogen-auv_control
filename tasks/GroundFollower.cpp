@@ -1,7 +1,7 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "GroundFollower.hpp"
-#include <iostream>
+//#include <math.h>
 
 using namespace auv_control;
 
@@ -29,6 +29,16 @@ bool GroundFollower::configureHook()
 {
     if (! GroundFollowerBase::configureHook())
         return false;
+
+    new_altimeter_timeout = base::Timeout(_altimeter_timeout.get());
+    new_depth_timeout = base::Timeout(_depth_timeout.get());
+    altimeter_dropout_timeout = base::Timeout(_altimeter_dropout_timeout.get());
+
+    distance_to_ground_cmd = _distance_to_ground.get();
+    if(distance_to_ground_cmd <= 0){
+        exception(INVALID_TARGET_DEPTH_CONFIG);
+        return false;
+    }
     return true;
 }
 bool GroundFollower::startHook()
@@ -36,7 +46,10 @@ bool GroundFollower::startHook()
     if (! GroundFollowerBase::startHook())
         return false;
 
-    last_valid_ground_position = 0.0;
+    //last_valid_ground_position = NAN;
+    new_altimeter_timeout.restart();
+    new_depth_timeout.restart();
+    altimeter_dropout_timeout.restart();
     return true;
 }
 void GroundFollower::updateHook()
@@ -47,22 +60,30 @@ void GroundFollower::updateHook()
     RTT::FlowStatus depth_status = _depth.readNewest(depth);
 
     if(altimeter_status == RTT::NoData){
-        return state(NO_ALTIMETER_READING);
+        if(new_altimeter_timeout.elapsed())
+            exception(ALTIMETER_TIMEOUT);
+        else
+            state(NO_ALTIMETER_READING);
+        return;
     }
+    new_altimeter_timeout.restart();
 
     if(depth_status == RTT::NoData){
-        return state(NO_DEPTH_READING);
+        if(new_depth_timeout.elapsed())
+            exception(DEPTH_TIMEOUT);
+        else
+            state(NO_DEPTH_READING);
+        return;
     }
+    new_depth_timeout.restart();
+
     if(!depth.hasValidPosition(2)){
-        return exception(INVALID_DEPTH_READING);
+        exception(INVALID_DEPTH_READING);
+        return;
     }
     if(altimeter.position[2] <= 0){
-        return exception(INVALID_NEGATIVE_ALTIMETER_READING);
-    }
-
-    double distance_to_ground_cmd = _distance_to_ground.get();
-    if(distance_to_ground_cmd <= 0){
-        return exception(INVALID_TARGET_DEPTH_CONFIG);
+        exception(INVALID_NEGATIVE_ALTIMETER_READING);
+        return;
     }
 
     base::LinearAngular6DCommand cmd;
@@ -73,25 +94,27 @@ void GroundFollower::updateHook()
         last_valid_ground_position = depth.position[2] - altimeter.position[2];
         if(state() != RUNNING)
             state(RUNNING);
+        altimeter_dropout_timeout.restart();
     }
     else {
         if(state() != ALTIMETER_DROPOUT)
             state(ALTIMETER_DROPOUT);
+        if(altimeter_dropout_timeout.elapsed())
+            exception(ALTIMETER_DROPOUT_TIMEOUT);
+            return;
     }
 
 
-    if(last_valid_ground_position >= 0){
+    if(base::isUnset<double>(last_valid_ground_position)){
         // last valid distance is not initialized
-        cmd.linear[2] = 0.0;
+        state(NO_VALID_GROUND_DISTANCE);
+        return;
     }
     else if(depth.position[2] - last_valid_ground_position < _safety_distance.get()){
-        cmd.linear[2] = 0.0;
         state(WARNING_LOW_ALTITUDE);
     }
-    else{
-        cmd.linear[2] = last_valid_ground_position + distance_to_ground_cmd;
-    }
 
+    cmd.linear[2] = last_valid_ground_position + distance_to_ground_cmd;
 
     _floor_position.write(last_valid_ground_position);
     _cmd_out.write(cmd);

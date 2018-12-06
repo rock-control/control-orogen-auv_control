@@ -4,6 +4,7 @@
 #define AUV_CONTROL_GROUNDFOLLOWER_TASK_HPP
 
 #include "auv_control/GroundFollowerBase.hpp"
+#include <base/Timeout.hpp>
 
 namespace auv_control{
 
@@ -28,6 +29,10 @@ namespace auv_control{
         base::samples::RigidBodyState depth;
         base::samples::RigidBodyState altimeter;
         double last_valid_ground_position;
+        double distance_to_ground_cmd;
+        base::Timeout new_altimeter_timeout;
+        base::Timeout new_depth_timeout;
+        base::Timeout altimeter_dropout_timeout;
 
 
     public:
