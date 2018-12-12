@@ -82,6 +82,7 @@ void OptimalHeadingController::keep(){
 
 bool OptimalHeadingController::calcOutput(const LinearAngular6DCommandStatus &merged_command){
     base::LinearAngular6DCommand output_command;
+    base::Vector3d merged_linear;
     double opt_heading;
     double opt_distance;
 
@@ -89,10 +90,13 @@ bool OptimalHeadingController::calcOutput(const LinearAngular6DCommandStatus &me
     opt_distance = _optimal_heading_distance.get();
 
     output_command = merged_command.command;
+    
+    //copy the linear Part to can change it (for distance calculation) 
+    merged_linear = merged_command.command.linear;
 
     //Set z to 0, to use only x and y fpr the distance
-    output_command.linear(2) = 0;
-    if(merged_command.command.linear.norm() > opt_distance){
+    merged_linear(2) = 0;
+    if(merged_linear.norm() > opt_distance){
         output_command.angular(2) = base::Angle::normalizeRad(atan2(merged_command.command.linear(1), merged_command.command.linear(0))
                 //+base::getYaw(orientation_sample.orientation)
                 + opt_heading);
