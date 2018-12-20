@@ -46,7 +46,6 @@ bool GroundFollower::startHook()
     if (! GroundFollowerBase::startHook())
         return false;
 
-    //last_valid_ground_position = NAN;
     new_altimeter_timeout.restart();
     new_depth_timeout.restart();
     altimeter_dropout_timeout.restart();
@@ -59,23 +58,37 @@ void GroundFollower::updateHook()
     RTT::FlowStatus altimeter_status = _altimeter.readNewest(altimeter);
     RTT::FlowStatus depth_status = _depth.readNewest(depth);
 
-    if(altimeter_status == RTT::NoData){
+    if(altimeter_status == RTT::NoData){ // if no data recieved at all, wait for timeout then go in exception
+        if (state() != NO_ALTIMETER_READING)
+            state(NO_ALTIMETER_READING);
         if(new_altimeter_timeout.elapsed())
             exception(ALTIMETER_TIMEOUT);
-        else
-            state(NO_ALTIMETER_READING);
         return;
     }
-    new_altimeter_timeout.restart();
+    else if (altimeter_status == RTT::OldData) { // if no new data received, write out command using the old data, then go to exception after timeout
+        if(new_altimeter_timeout.elapsed()) {
+            exception(ALTIMETER_TIMEOUT);
+            return;
+            }
+    }
+    else
+        new_altimeter_timeout.restart();
 
     if(depth_status == RTT::NoData){
+        if (state() != NO_DEPTH_READING)
+            state(NO_DEPTH_READING);
         if(new_depth_timeout.elapsed())
             exception(DEPTH_TIMEOUT);
-        else
-            state(NO_DEPTH_READING);
         return;
     }
-    new_depth_timeout.restart();
+    else if (depth_status == RTT::OldData) {
+        if(new_depth_timeout.elapsed()) {
+            exception(DEPTH_TIMEOUT);
+            return;
+            }
+    }
+    else
+        new_depth_timeout.restart();
 
     if(!depth.hasValidPosition(2)){
         exception(INVALID_DEPTH_READING);
@@ -96,7 +109,7 @@ void GroundFollower::updateHook()
             state(RUNNING);
         altimeter_dropout_timeout.restart();
     }
-    else {
+    else { //a dropout can be a sample with nan
         if(state() != ALTIMETER_DROPOUT)
             state(ALTIMETER_DROPOUT);
         if(altimeter_dropout_timeout.elapsed())
