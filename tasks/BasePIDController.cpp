@@ -74,10 +74,26 @@ std::pair<base::LinearAngular6DCommand, LinearAngular6DPIDState> BasePIDControll
         // Angular case
         if (!base::isUnset(reference.angular(i)))
         {
-            command_out.angular[i] =
-                pid.angular[i].update(current_state.angular(i),
-                                   reference.angular(i),
-                                   current_state.time.toSeconds());
+            if (_position_in_world_frame)
+            {
+                /* calculate the angle difference as current state and set reference to zero */
+                double current_state_angular = current_state.angular(i) - reference.angular(i);
+                while(current_state_angular > M_PI)
+                    current_state_angular-=(2*M_PI);
+                while(current_state_angular < -M_PI)
+                    current_state_angular+=(2*M_PI);
+                command_out.angular[i] =
+                    pid.angular[i].update(current_state_angular,
+                                       0.0,
+                                       current_state.time.toSeconds());
+            }
+            else
+            {
+                command_out.angular[i] =
+                    pid.angular[i].update(current_state.angular(i),
+                                       reference.angular(i),
+                                       current_state.time.toSeconds());
+            }
             pid_state.angular[i] = auv_control::PIDState(pid.angular[i].getState(), true);
         }
         else
