@@ -37,9 +37,13 @@ bool CommandInjection::calcOutput(const LinearAngular6DCommandStatus &merged_com
             if(!base::isNaN(cmd_injection.angular[i]) && expected_inputs.angular[i])
                 output_command.angular[i] = cmd_injection.angular[i];
         }
+
+        if(_keep_alive.value())
+            _cmd_out.write(output_command);
     }
 
-    _cmd_out.write(output_command);
+    if(!_keep_alive.value())
+        _cmd_out.write(output_command);
     return true;
 }
 

@@ -404,8 +404,11 @@ end
 # Task that works as switch betwen two commands
 task_context "CommandInjection", subclasses: 'Base' do
 
-    # Timeput for the injection command
+    # Timeout for the injection command
     property "cmd_injection_timeout", "double", 0.05
+
+    # Needs a keep alive command (NaN's in cmd_injection) in order to forward the cascade command
+    property "keep_alive", "bool", false
 
     # Non NaN values will be injected in the cascade input
     input_port "cmd_injection", "/base/LinearAngular6DCommand"
