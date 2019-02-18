@@ -33,8 +33,8 @@ describe 'auv_control::Base' do
         def invalidated_command
             sample = task.cmd_in.new_sample
             sample.time = Time.now
-            sample.linear = Types::Base::Vector3d.Unset
-            sample.angular = Types::Base::Vector3d.Unset
+            sample.linear = Eigen::Vector3.Unset
+            sample.angular = Eigen::Vector3.Unset
             sample
         end
 
@@ -222,21 +222,25 @@ describe 'auv_control::Base' do
             pose.write pose_sample
             assert_state_change(task) { |s| s != :TIMEOUT }
         end
-        it "should wait in WAIT_FOR_INPUT state if there is no data on one of the input ports" do
+
+        it "should control if multiple inputs are connected, with only producing all the expected data" do
             task.addCommandInput '0', Time.at(0)
             task.addCommandInput '1', Time.at(0)
             cmd0 = task.cmd_0.writer
             cmd1 = task.cmd_1.writer
             pose = task.pose_samples.writer
 
+            task.expected_inputs = Hash[linear: [true, true, false], angular: [false, false, false]]
             task.keep_position_on_exception = false
             task.configure
             task.start
+
             sample = invalidated_command
             sample.linear[0] = 1
+            sample.linear[1] = 1
             cmd0.write sample
             pose.write pose_sample
-            assert_state_change(task) { |s| s == :WAIT_FOR_INPUT }
+            assert_state_change(task) { |s| s == :CONTROLLING }
         end
 
         it "should delete all created ports" do

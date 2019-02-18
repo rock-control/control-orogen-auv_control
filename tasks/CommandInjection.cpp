@@ -80,10 +80,32 @@ bool CommandInjection::startHook()
 void CommandInjection::updateHook()
 {
     CommandInjectionBase::updateHook();
+    if (state() != CONTROLLING)
+        outputInjectedCommand();
 }
 void CommandInjection::errorHook()
 {
     CommandInjectionBase::errorHook();
+    if (state() != CONTROLLING)
+        outputInjectedCommand();
+}
+void CommandInjection::outputInjectedCommand()
+{
+    base::LinearAngular6DCommand cmd_injection;
+    if(receiveCommandInjection(cmd_injection))
+    {
+        const ExpectedInputs& expected_inputs = _expected_inputs.value();
+        for(unsigned i = 0; i < 3; i++)
+        {
+            if(!expected_inputs.linear[i])
+                cmd_injection.linear[i] = base::unknown<float>();
+            if(!expected_inputs.angular[i])
+                cmd_injection.angular[i] = base::unknown<float>();
+        }
+
+        if (verifyMissingData(_expected_inputs.get(), cmd_injection))
+            _cmd_out.write(cmd_injection);
+    }
 }
 void CommandInjection::stopHook()
 {

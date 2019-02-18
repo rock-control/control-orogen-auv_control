@@ -176,9 +176,7 @@ Base::States Base::gatherInputCommand(LinearAngular6DCommandStatus &merged_comma
 
         RTT::FlowStatus status = port->readNewest(current_port);
 
-        if(status == RTT::NoData)
-            return WAIT_FOR_INPUT;
-        else if(status == RTT::NewData)
+        if(status == RTT::NewData)
         {   // Has at least one new data
             merged_command.status = RTT::NewData;
             port_info.last_sample_time = current_port.time;
