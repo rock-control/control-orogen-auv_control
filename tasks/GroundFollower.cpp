@@ -34,9 +34,10 @@ bool GroundFollower::configureHook()
     new_depth_timeout = base::Timeout(_depth_timeout.get());
     altimeter_dropout_timeout = base::Timeout(_altimeter_dropout_timeout.get());
 
+    last_valid_ground_position = NAN;
+
     distance_to_ground_cmd = _distance_to_ground.get();
     if(distance_to_ground_cmd <= 0){
-        exception(INVALID_TARGET_DEPTH_CONFIG);
         return false;
     }
     return true;
