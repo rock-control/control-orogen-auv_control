@@ -273,10 +273,10 @@ task_context "WaypointNavigator" do
     output_port "cmd_out", "/base/LinearAngular6DCommand"
    
     # Shows error between current and desired waypoint for debuging,
-    # current waypoint is navigated by this controller and remaining waypoints zo follow 
+    # current waypoint is navigated by this controller and remaining waypoints to follow
     output_port("waypoint_info", "/base/LinearAngular6DWaypointInfo")
 
-    runtime_states :WAIT_FOR_WAYPOINTS, :KEEP_WAYPOINT,
+    runtime_states :WAIT_FOR_WAYPOINTS, :KEEP_WAYPOINT, :FINISHED,
         :FOLLOWING_WAYPOINTS, :POSE_SAMPLE_MISSING
 
     periodic(0.01)
