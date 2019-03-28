@@ -71,8 +71,8 @@ void WaypointNavigator::updateHook()
                 waypoints.pop_front();
                 if (waypoints.size() == 0){
                     keep_position = true;
-                    if(state() != KEEP_WAYPOINT){
-                        state(KEEP_WAYPOINT);
+                    if(state() != FINISHED){
+                        state(FINISHED);
                     }
                 } else {
                     state(FOLLOWING_WAYPOINTS);
@@ -133,4 +133,3 @@ void WaypointNavigator::cleanupHook()
 
     
 }
-
