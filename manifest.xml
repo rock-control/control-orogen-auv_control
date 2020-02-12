@@ -13,4 +13,5 @@
   <depend package="base/types"/>
   <depend package="base/orogen/types"/>
   <depend package="control/motor_controller"/>
+  <depend package="base/logging"/>
 </package>

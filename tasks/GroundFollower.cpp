@@ -1,7 +1,7 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.cpp */
 
 #include "GroundFollower.hpp"
-//#include <math.h>
+#include <base-logging/Logging.hpp>
 
 using namespace auv_control;
 
@@ -38,6 +38,7 @@ bool GroundFollower::configureHook()
 
     distance_to_ground_cmd = _distance_to_ground.get();
     if(distance_to_ground_cmd <= 0){
+        LOG_ERROR("[GroundFollower]: Invalid distance to ground was given in the config.");
         return false;
     }
     return true;
