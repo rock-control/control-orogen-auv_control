@@ -2,6 +2,7 @@
 
 #include "GroundFollower.hpp"
 #include <base-logging/Logging.hpp>
+#include <base/Float.hpp>
 
 using namespace auv_control;
 
@@ -34,8 +35,6 @@ bool GroundFollower::configureHook()
     new_depth_timeout = base::Timeout(_depth_timeout.get());
     altimeter_dropout_timeout = base::Timeout(_altimeter_dropout_timeout.get());
 
-    last_valid_ground_position = NAN;
-
     distance_to_ground_cmd = _distance_to_ground.get();
     if(distance_to_ground_cmd <= 0){
         LOG_ERROR("[GroundFollower]: Invalid distance to ground was given in the config.");
@@ -51,6 +50,8 @@ bool GroundFollower::startHook()
     new_altimeter_timeout.restart();
     new_depth_timeout.restart();
     altimeter_dropout_timeout.restart();
+
+    last_valid_ground_position = base::unknown<double>();
     return true;
 }
 void GroundFollower::updateHook()
@@ -105,7 +106,7 @@ void GroundFollower::updateHook()
     cmd.time = base::Time::now();
 
 
-    if(altimeter.position[2] > 0.0f && !base::isUnset<double>(altimeter.position[2])){
+    if(!base::isUnset<double>(altimeter.position[2])){
         last_valid_ground_position = depth.position[2] - altimeter.position[2];
         if(state() != RUNNING)
             state(RUNNING);
