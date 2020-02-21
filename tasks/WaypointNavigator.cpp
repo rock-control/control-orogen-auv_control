@@ -58,9 +58,9 @@ void WaypointNavigator::updateHook()
         
         delta.time = base::Time::now();
         delta.linear = wp.cmd.linear - pose.position;
-        delta.angular(0) = base::Angle::fromRad(wp.cmd.angular(0) - base::getRoll(pose.orientation)).getRad();
-        delta.angular(1) = base::Angle::fromRad(wp.cmd.angular(1) - base::getPitch(pose.orientation)).getRad();
-        delta.angular(2) = base::Angle::fromRad(wp.cmd.angular(2) - base::getYaw(pose.orientation)).getRad();
+        delta.angular(0) = base::Angle::normalizeRad(wp.cmd.angular(0) - base::getRoll(pose.orientation));
+        delta.angular(1) = base::Angle::normalizeRad(wp.cmd.angular(1) - base::getPitch(pose.orientation));
+        delta.angular(2) = base::Angle::normalizeRad(wp.cmd.angular(2) - base::getYaw(pose.orientation));
         wpi.current_delta = delta;
         if (delta.linear.norm() <= wp.linear_tolerance && delta.angular.norm() <= wp.angular_tolerance){
             if (state() != KEEP_WAYPOINT){
