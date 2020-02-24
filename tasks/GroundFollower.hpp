@@ -1,13 +1,14 @@
 /* Generated from orogen/lib/orogen/templates/tasks/Task.hpp */
 
-#ifndef AUV_CONTROL_CONSTANTCOMMANDGROUNDFOLLOWER_TASK_HPP
-#define AUV_CONTROL_CONSTANTCOMMANDGROUNDFOLLOWER_TASK_HPP
+#ifndef AUV_CONTROL_GROUNDFOLLOWER_TASK_HPP
+#define AUV_CONTROL_GROUNDFOLLOWER_TASK_HPP
 
-#include "auv_control/ConstantCommandGroundFollowerBase.hpp"
+#include "auv_control/GroundFollowerBase.hpp"
+#include <base/Timeout.hpp>
 
-namespace auv_control {
+namespace auv_control{
 
-    /*! \class ConstantCommandGroundFollower 
+    /*! \class GroundFollower
      * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
      * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
      * In order to modify the interfaces you should (re)use oroGen and rely on the associated workflow.
@@ -16,37 +17,41 @@ namespace auv_control {
      * The name of a TaskContext is primarily defined via:
      \verbatim
      deployment 'deployment_name'
-         task('custom_task_name','auv_control::ConstantCommandGroundFollower')
+         task('custom_task_name','auv_control::GroundFollower')
      end
      \endverbatim
-     *  It can be dynamically adapted when the deployment is called with a prefix argument. 
+     *  It can be dynamically adapted when the deployment is called with a prefix argument.
      */
-    class ConstantCommandGroundFollower : public ConstantCommandGroundFollowerBase
+    class GroundFollower : public GroundFollowerBase
     {
-	friend class ConstantCommandGroundFollowerBase;
+	friend class GroundFollowerBase;
     protected:
         base::samples::RigidBodyState depth;
         base::samples::RigidBodyState altimeter;
         double last_valid_ground_position;
+        double distance_to_ground_cmd;
+        base::Timeout new_altimeter_timeout;
+        base::Timeout new_depth_timeout;
+        base::Timeout altimeter_dropout_timeout;
 
 
     public:
-        /** TaskContext constructor for ConstantCommandGroundFollower
+        /** TaskContext constructor for GroundFollower
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        ConstantCommandGroundFollower(std::string const& name = "auv_control::ConstantCommandGroundFollower", TaskCore::TaskState initial_state = Stopped);
+        GroundFollower(std::string const& name = "auv_control::GroundFollower", TaskCore::TaskState initial_state = Stopped);
 
-        /** TaskContext constructor for ConstantCommandGroundFollower 
-         * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices. 
-         * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task. 
+        /** TaskContext constructor for GroundFollower
+         * \param name Name of the task. This name needs to be unique to make it identifiable for nameservices.
+         * \param engine The RTT Execution engine to be used for this task, which serialises the execution of all commands, programs, state machines and incoming events for a task.
          * \param initial_state The initial TaskState of the TaskContext. Default is Stopped state.
          */
-        ConstantCommandGroundFollower(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
+        GroundFollower(std::string const& name, RTT::ExecutionEngine* engine, TaskCore::TaskState initial_state = Stopped);
 
-        /** Default deconstructor of ConstantCommandGroundFollower
+        /** Default deconstructor of GroundFollower
          */
-	~ConstantCommandGroundFollower();
+	~GroundFollower();
 
         /** This hook is called by Orocos when the state machine transitions
          * from PreOperational to Stopped. If it returns false, then the
@@ -77,7 +82,7 @@ namespace auv_control {
          *
          * The error(), exception() and fatal() calls, when called in this hook,
          * allow to get into the associated RunTimeError, Exception and
-         * FatalError states. 
+         * FatalError states.
          *
          * In the first case, updateHook() is still called, and recover() allows
          * you to go back into the Running state.  In the second case, the
