@@ -90,11 +90,9 @@ bool OptimalHeadingController::calcOutput(const LinearAngular6DCommandStatus &me
 
     output_command = merged_command.command;
 
-    //Set z to 0, to use only x and y fpr the distance
-    output_command.linear(2) = 0;
-    if(merged_command.command.linear.norm() > opt_distance){
+    // distance on the xy plane
+    if(merged_command.command.linear.head<2>().norm() > opt_distance){
         output_command.angular(2) = base::Angle::normalizeRad(atan2(merged_command.command.linear(1), merged_command.command.linear(0))
-                //+base::getYaw(orientation_sample.orientation)
                 + opt_heading);
     }
 
