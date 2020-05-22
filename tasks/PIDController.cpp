@@ -75,6 +75,7 @@ void PIDController::updateHook()
         // position control
         if (_world_frame)
         {
+            _control_angle_diff = true;
             mCurrentState.linear = pose_sample.position;
             mCurrentState.angular = base::Vector3d(
                 base::getRoll(pose_sample.orientation),
