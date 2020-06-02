@@ -107,7 +107,7 @@ pid_settings:
     YMax: 0.0
   angular:
   - Ts: 0.0
-    K: 0.0
+    K: 1.0
     Ti: 0.0
     Td: 0.0
     N: 0.0
@@ -116,7 +116,7 @@ pid_settings:
     YMin: 0.0
     YMax: 0.0
   - Ts: 0.0
-    K: 0.0
+    K: 1.0
     Ti: 0.0
     Td: 0.0
     N: 0.0
@@ -125,7 +125,7 @@ pid_settings:
     YMin: 0.0
     YMax: 0.0
   - Ts: 0.0
-    K: 0.0
+    K: 1.0
     Ti: 0.0
     Td: 0.0
     N: 0.0
