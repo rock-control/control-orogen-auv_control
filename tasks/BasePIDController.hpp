@@ -70,6 +70,11 @@ generate commands
          std::pair<base::LinearAngular6DCommand, LinearAngular6DPIDState> calcPIDStateCommand(
             const base::LinearAngular6DCommand &reference, const currentState &current_state, LinearAngular6DPID &pid);
 
+        /** This is used to control the orientation in the world frame by avoiding
+         *  the problem of pi=-pi.
+        */
+        bool _control_angle_diff = false;
+
     public:
         /** TaskContext constructor for BasePIDController
          * \param name Name of the task. This name needs to be unique to make it identifiable via nameservices.
@@ -149,4 +154,3 @@ generate commands
 }
 
 #endif
-

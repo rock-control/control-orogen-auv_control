@@ -75,6 +75,8 @@ void PIDController::updateHook()
         // position control
         if (_world_frame)
         {
+            _control_angle_diff = true; //member of the base class used to eliminate the pi=-pi singularity
+
             mCurrentState.linear = pose_sample.position;
             mCurrentState.angular = base::Vector3d(
                 base::getRoll(pose_sample.orientation),
