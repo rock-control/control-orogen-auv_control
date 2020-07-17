@@ -140,6 +140,12 @@ bool WorldToAligned::calcOutput(const LinearAngular6DCommandStatus &merged_comma
             output_command.angular(2)+=(2*M_PI);
 
     }
+    else if (_ang_vel_euler_rate.get())
+    {
+        output_command.angular = base::eulerRate2AngularVelocity(
+            output_command.angular.reverse(), currentPose.orientation
+        );
+    }
 
     // Finally, set the timestamp of the output
     output_command.time = merged_command.command.time;
