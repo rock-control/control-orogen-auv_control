@@ -1,13 +1,13 @@
-require 'minitest/spec'
-require 'orocos/test/component'
-require 'minitest/autorun'
+require "minitest/spec"
+require "orocos/test/component"
+require "minitest/autorun"
 
-describe 'auv_control::WorldToAligned' do
+describe "auv_control::WorldToAligned" do
     include Orocos::Test::Component
-    start  'world_to_aligned', 'auv_control::WorldToAligned' => 'world_to_aligned'
-    reader 'world_to_aligned', 'cmd_out', :attr_name => 'cmd_out'
-    writer 'world_to_aligned', 'cmd_in', :attr_name => 'cmd_in'
-    writer 'world_to_aligned', 'pose_samples', :attr_name => 'pose_samples'
+    start  "world_to_aligned", "auv_control::WorldToAligned" => "world_to_aligned"
+    reader "world_to_aligned", "cmd_out", :attr_name => "cmd_out"
+    writer "world_to_aligned", "cmd_in", :attr_name => "cmd_in"
+    writer "world_to_aligned", "pose_samples", :attr_name => "pose_samples"
 
     def quaternion_from_euler(rpy)
         # Euler angles respecting ZYX order
@@ -41,13 +41,12 @@ describe 'auv_control::WorldToAligned' do
     end
 
     it "should create a port with the given name prefixed with cmd_" do
-        world_to_aligned.addCommandInput 'test', Time.at(0)
+        world_to_aligned.addCommandInput "test", Time.at(0)
         port = world_to_aligned.cmd_test
-        assert_equal '/base/commands/LinearAngular6DCommand_m', port.type.name
+        assert_equal "/base/commands/LinearAngular6DCommand_m", port.type.name
     end
 
     it "should not provide output samples with same timestamp" do
-
         world_to_aligned.apply_conf_file("auv_control::WorldToAligned.yml")
 
         world_to_aligned.configure
@@ -56,24 +55,23 @@ describe 'auv_control::WorldToAligned' do
         pose_sample = generate_rbs
         cmd = generate_cmd
 
-        for i in 0..3
+        3.times do
             pose_sample.time = Time.now
             cmd.time = Time.now
             pose_samples.write pose_sample
             cmd_in.write cmd
             cmd_out0 = assert_has_one_new_sample cmd_out, 1
             assert_equal cmd.time.usec, cmd_out0.time.usec
-            for j in 1..5
+            4.times do
                 # No more repeated sample here.
-                cmd_out1 = assert_has_no_new_sample cmd_out, 0.1
+                assert_has_no_new_sample cmd_out, 0.1
             end
         end
     end
 
     it "should go to exception POSE_TIMEOUT" do
-
         world_to_aligned.apply_conf_file("auv_control::WorldToAligned.yml")
-        world_to_aligned.timeout_in = Time.at(world_to_aligned.timeout_pose.to_i+1)
+        world_to_aligned.timeout_in = Time.at(world_to_aligned.timeout_pose.to_i + 1)
         world_to_aligned.configure
         world_to_aligned.start
 
@@ -82,18 +80,17 @@ describe 'auv_control::WorldToAligned' do
 
         pose_samples.write pose_sample
         cmd_in.write cmd
-        cmd_out0 = assert_has_one_new_sample cmd_out, 0.1
+        assert_has_one_new_sample cmd_out, 0.1
         # sleep(world_to_aligned.timeout_in)
         cmd_in.write generate_cmd
         assert_state_change(world_to_aligned) { |s| s == :CONTROLLING }
-        cmd_out0 = assert_has_one_new_sample cmd_out, 0.1
+        assert_has_one_new_sample cmd_out, 0.1
         sleep(world_to_aligned.timeout_pose.to_i)
-        cmd_out0 = assert_has_no_new_sample cmd_out, 0.1
+        assert_has_no_new_sample cmd_out, 0.1
         assert_equal :POSE_TIMEOUT, world_to_aligned.state_reader.read
     end
 
     it "should not crash with just one pose_sample" do
-
         world_to_aligned.apply_conf_file("auv_control::WorldToAligned.yml")
 
         world_to_aligned.configure
@@ -104,14 +101,14 @@ describe 'auv_control::WorldToAligned' do
         pose_samples.write pose_sample
         cmd_in.write cmd
 
-        for i in 0..3
+        3.times do
             cmd.time = Time.now
             cmd_in.write cmd
             cmd_out0 = assert_has_one_new_sample cmd_out, 1
             assert_equal cmd.time.usec, cmd_out0.time.usec
-            for j in 1..5
+            4.times do
                 # No more repeated sample here.
-                cmd_out1 = assert_has_no_new_sample cmd_out, 0.01
+                assert_has_no_new_sample cmd_out, 0.01
             end
         end
     end
@@ -134,7 +131,7 @@ describe 'auv_control::WorldToAligned' do
         sleep(0.01)
         assert_equal :WAIT_FOR_POSE_SAMPLE, world_to_aligned.state_reader.read
 
-        for i in 0..3
+        3.times do
             pose_sample.time = Time.now
             cmd.time = Time.now
             cmd_c.time = Time.now
@@ -144,7 +141,7 @@ describe 'auv_control::WorldToAligned' do
             cmd_out0 = assert_has_one_new_sample cmd_out, 1
             # The latest command
             assert_equal cmd_c.time.usec, cmd_out0.time.usec
-            for j in 1..5
+            4.times do
                 # No more repeated sample here.
                 cmd_c.time = Time.now
                 cmd_cascade.write cmd_c
