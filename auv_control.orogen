@@ -144,6 +144,10 @@ task_context "WorldToAligned", subclasses: 'Base' do
     # efforts)
     property "position_control", "bool"
 
+    # Indicates how the angular velocity is being represented (true: euler-rate or
+    # false: axis-angle). This is NOT used for position control domain.
+    property "ang_vel_euler_rate", "bool", false
+
     # The system state. What is required depends on which parts of the state are
     # given as input
     input_port 'pose_samples', '/base/samples/RigidBodyState'

@@ -1,4 +1,7 @@
 --- name:default
+# Indicates how the angular velocity is being represented (true: euler-rate or
+# false: axis-angle). This is NOT used for position control domain.
+ang_vel_euler_rate: false
 # This property defines which parts of the command input is expected to be
 # set once we merged all the declared input ports.
 expected_inputs:
