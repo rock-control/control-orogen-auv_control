@@ -97,7 +97,7 @@ describe 'auv_control::ThrustersFeedback configuration' do
     sample = thrusters_feedback.cmd_in.new_sample
 
     # 3 thrusters inputs were sent and 2 are expected
-    thruster = Types::Base::JointState.new
+    thruster = Types.base.JointState.zero
     thruster.effort = 3
     sample.elements = [thruster, thruster, thruster]
     cmd_in.write sample
@@ -115,7 +115,7 @@ describe 'auv_control::ThrustersFeedback configuration' do
     sample = thrusters_feedback.cmd_in.new_sample
 
     # the effort field was not set
-    thruster = Types::Base::JointState.new
+    thruster = Types.base.JointState.zero
     sample.elements = [thruster, thruster]
     cmd_in.write sample
 
@@ -131,9 +131,9 @@ describe 'auv_control::ThrustersFeedback configuration' do
     thrusters_feedback.start
 
     sample = thrusters_feedback.cmd_in.new_sample
-      
-    thruster1 = Types::Base::JointState.new
-    thruster2 = Types::Base::JointState.new
+
+    thruster1 = Types.base.JointState.zero
+    thruster2 = Types.base.JointState.zero
     thruster1.speed = 457
     thruster2.speed = 789
     sample.elements = [thruster1, thruster2]
@@ -156,9 +156,9 @@ describe 'auv_control::ThrustersFeedback configuration' do
     thrusters_feedback.start
 
     sample = thrusters_feedback.cmd_in.new_sample
-      
-    thruster1 = Types::Base::JointState.new
-    thruster2 = Types::Base::JointState.new
+
+    thruster1 = Types.base.JointState.zero
+    thruster2 = Types.base.JointState.zero
     thruster1.speed = -530
     thruster2.speed = -650
     sample.elements = [thruster1, thruster2]
@@ -180,9 +180,9 @@ describe 'auv_control::ThrustersFeedback configuration' do
     thrusters_feedback.start
 
     sample = thrusters_feedback.cmd_in.new_sample
-      
-    thruster1 = Types::Base::JointState.new
-    thruster2 = Types::Base::JointState.new
+
+    thruster1 = Types.base.JointState.zero
+    thruster2 = Types.base.JointState.zero
     thruster1.raw = 25
     thruster2.raw = 17
     sample.elements = [thruster1, thruster2]
@@ -204,8 +204,9 @@ describe 'auv_control::ThrustersFeedback configuration' do
     thrusters_feedback.start
 
     sample = thrusters_feedback.cmd_in.new_sample
-    thruster1 = Types::Base::JointState.new
-    thruster2 = Types::Base::JointState.new
+
+    thruster1 = Types.base.JointState.zero
+    thruster2 = Types.base.JointState.zero
     thruster1.raw = -49
     thruster2.raw = -31
     sample.elements = [thruster1, thruster2]

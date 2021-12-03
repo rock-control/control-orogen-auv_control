@@ -18,13 +18,13 @@ describe 'auv_control::ThrusterForce2BodyEffort configuration' do
     thruster_force_2_body_effort.start
 
     sample = thruster_force_2_body_effort.thruster_forces.new_sample
-      
-    thruster1 = Types::Base::JointState.new
-    thruster2 = Types::Base::JointState.new
-    thruster3 = Types::Base::JointState.new
-    thruster4 = Types::Base::JointState.new
-    thruster5 = Types::Base::JointState.new
-    thruster6 = Types::Base::JointState.new
+
+    thruster1 = Types.base.JointState.zero
+    thruster2 = Types.base.JointState.zero
+    thruster3 = Types.base.JointState.zero
+    thruster4 = Types.base.JointState.zero
+    thruster5 = Types.base.JointState.zero
+    thruster6 = Types.base.JointState.zero
     thruster1.effort = 30
     thruster2.effort = 30
     thruster3.effort = 0
@@ -53,12 +53,12 @@ describe 'auv_control::ThrusterForce2BodyEffort configuration' do
 
     sample = thruster_force_2_body_effort.thruster_forces.new_sample
 
-    thruster1 = Types::Base::JointState.new
-    thruster2 = Types::Base::JointState.new
-    thruster3 = Types::Base::JointState.new
-    thruster4 = Types::Base::JointState.new
-    thruster5 = Types::Base::JointState.new
-    thruster6 = Types::Base::JointState.new
+    thruster1 = Types.base.JointState.zero
+    thruster2 = Types.base.JointState.zero
+    thruster3 = Types.base.JointState.zero
+    thruster4 = Types.base.JointState.zero
+    thruster5 = Types.base.JointState.zero
+    thruster6 = Types.base.JointState.zero
     thruster1.effort = 0
     thruster2.effort = 0
     thruster3.effort = 25

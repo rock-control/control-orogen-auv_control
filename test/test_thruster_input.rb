@@ -115,7 +115,7 @@ describe 'auv_control::ThrustersInput configuration' do
     sample = thrusters_input.cmd_in.new_sample
 
     # the effort field was not set
-    thruster = Types::Base::JointState.new
+    thruster = Types.base.JointState.zero
     sample.elements = [thruster, thruster]
     cmd_in.write sample
 
@@ -132,8 +132,8 @@ describe 'auv_control::ThrustersInput configuration' do
 
     sample = thrusters_input.cmd_in.new_sample
 
-    thruster1 = Types::Base::JointState.new
-    thruster2 = Types::Base::JointState.new
+    thruster1 = Types.base.JointState.zero
+    thruster2 = Types.base.JointState.zero
     thruster1.effort = 37
     thruster2.effort = 43
     sample.elements = [thruster1, thruster2]
@@ -157,8 +157,8 @@ describe 'auv_control::ThrustersInput configuration' do
 
     sample = thrusters_input.cmd_in.new_sample
 
-    thruster1 = Types::Base::JointState.new
-    thruster2 = Types::Base::JointState.new
+    thruster1 = Types.base.JointState.zero
+    thruster2 = Types.base.JointState.zero
     thruster1.effort = -15
     thruster2.effort = -7
     sample.elements = [thruster1, thruster2]
@@ -181,8 +181,8 @@ describe 'auv_control::ThrustersInput configuration' do
 
     sample = thrusters_input.cmd_in.new_sample
 
-    thruster1 = Types::Base::JointState.new
-    thruster2 = Types::Base::JointState.new
+    thruster1 = Types.base.JointState.zero
+    thruster2 = Types.base.JointState.zero
     thruster1.effort = 17
     thruster2.effort = 3
     sample.elements = [thruster1, thruster2]
@@ -205,8 +205,8 @@ describe 'auv_control::ThrustersInput configuration' do
 
     sample = thrusters_input.cmd_in.new_sample
 
-    thruster1 = Types::Base::JointState.new
-    thruster2 = Types::Base::JointState.new
+    thruster1 = Types.base.JointState.zero
+    thruster2 = Types.base.JointState.zero
     thruster1.effort = -49
     thruster2.effort = -31
     sample.elements = [thruster1, thruster2]
