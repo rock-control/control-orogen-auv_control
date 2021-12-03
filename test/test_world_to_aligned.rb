@@ -87,7 +87,7 @@ describe "auv_control::WorldToAligned" do
         assert_has_one_new_sample cmd_out, 0.1
         sleep(world_to_aligned.timeout_pose.to_i)
         assert_has_no_new_sample cmd_out, 0.1
-        assert_equal :POSE_TIMEOUT, world_to_aligned.state_reader.read
+        assert_state_change(world_to_aligned) { |s| s == :POSE_TIMEOUT }
     end
 
     it "should not crash with just one pose_sample" do
@@ -129,7 +129,7 @@ describe "auv_control::WorldToAligned" do
         cmd_c.linear = Eigen::Vector3.Unset
         cmd_c.time = Time.now
         sleep(0.01)
-        assert_equal :WAIT_FOR_POSE_SAMPLE, world_to_aligned.state_reader.read
+        assert_state_change(world_to_aligned) { |s| s == :WAIT_FOR_POSE_SAMPLE }
 
         3.times do
             pose_sample.time = Time.now

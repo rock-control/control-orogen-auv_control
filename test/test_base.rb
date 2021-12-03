@@ -192,7 +192,7 @@ describe 'auv_control::Base' do
             sample = invalidated_command
             cmd_out0 = assert_has_no_new_sample cmd_out, 1
             sleep(1)
-            assert_equal :TIMEOUT, task.state_reader.read
+            assert_state_change(task) { |s| s == :TIMEOUT }
 
             sample.time = Time.now
             sample.linear[0] = 1
@@ -200,7 +200,7 @@ describe 'auv_control::Base' do
             cmd0.write sample
             sleep(0.02)
             cmd_out0 = assert_has_one_new_sample cmd_out, 1
-            assert_equal :CONTROLLING, task.state_reader.read
+            assert_state_change(task) { |s| s == :CONTROLLING }
         end
         it "should not check for timeouts on ports that have a timeout value of zero" do
             task.addCommandInput '0', Time.at(0)
