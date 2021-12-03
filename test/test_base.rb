@@ -184,6 +184,7 @@ describe 'auv_control::Base' do
             sample.linear[0] = 1
             sample.linear[1] = 1
 
+
             cmd0.write sample
             pose.write pose_sample
             cmd_out0 = assert_has_one_new_sample cmd_out, 1

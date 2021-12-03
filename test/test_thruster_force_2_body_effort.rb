@@ -14,8 +14,8 @@ describe 'auv_control::ThrusterForce2BodyEffort configuration' do
 
     thruster_force_2_body_effort.apply_conf_file("auv_control::ThrusterForce2BodyEffort.yml")
 
-    thruster_force_2_body_effort.configure  
-    thruster_force_2_body_effort.start  
+    thruster_force_2_body_effort.configure
+    thruster_force_2_body_effort.start
 
     sample = thruster_force_2_body_effort.thruster_forces.new_sample
       
@@ -31,10 +31,10 @@ describe 'auv_control::ThrusterForce2BodyEffort configuration' do
     thruster4.effort = 0
     thruster5.effort = 50
     thruster6.effort = 50
-    
+
     sample.elements = [thruster1, thruster2, thruster3, thruster4, thruster5, thruster6]
 
-    thruster_forces.write sample 
+    thruster_forces.write sample
 
     data = assert_has_one_new_sample body_efforts, 1
 
@@ -48,8 +48,8 @@ describe 'auv_control::ThrusterForce2BodyEffort configuration' do
 
     thruster_force_2_body_effort.apply_conf_file("auv_control::ThrusterForce2BodyEffort.yml")
 
-    thruster_force_2_body_effort.configure  
-    thruster_force_2_body_effort.start  
+    thruster_force_2_body_effort.configure
+    thruster_force_2_body_effort.start
 
     sample = thruster_force_2_body_effort.thruster_forces.new_sample
 
@@ -68,7 +68,7 @@ describe 'auv_control::ThrusterForce2BodyEffort configuration' do
 
     sample.elements = [thruster1, thruster2, thruster3, thruster4, thruster5, thruster6]
 
-    thruster_forces.write sample 
+    thruster_forces.write sample
 
     data = assert_has_one_new_sample body_efforts, 1
 

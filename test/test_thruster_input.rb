@@ -53,7 +53,7 @@ describe 'auv_control::ThrustersInput configuration' do
 
     aux = thrusters_input.control_modes
     aux.clear
-    thrusters_input.control_modes = aux 
+    thrusters_input.control_modes = aux
 
     thrusters_input.configure
   end
@@ -65,7 +65,7 @@ describe 'auv_control::ThrustersInput configuration' do
 
     aux = thrusters_input.control_modes
     aux.clear
-    thrusters_input.control_modes = aux 
+    thrusters_input.control_modes = aux
 
     assert_raises(Orocos::StateTransitionFailed) { thrusters_input.configure }
   end
@@ -91,44 +91,44 @@ describe 'auv_control::ThrustersInput configuration' do
 
     thrusters_input.apply_conf_file("auv_control::ThrustersInput.yml")
 
-    thrusters_input.configure  
-    thrusters_input.start  
+    thrusters_input.configure
+    thrusters_input.start
 
     sample = thrusters_input.cmd_in.new_sample
 
     # 3 thrusters inputs were sent and 2 are expected
-    thruster = Types::Base::JointState.new
+    thruster = Types.base.JointState.zero
     thruster.effort = 3
     sample.elements = [thruster, thruster, thruster]
-    cmd_in.write sample 
+    cmd_in.write sample
 
-    assert_state_change(thrusters_input) { |s| s == :UNEXPECTED_THRUSTER_INPUT } 
+    assert_state_change(thrusters_input) { |s| s == :UNEXPECTED_THRUSTER_INPUT }
   end
-  
+
   it 'thruster input not set' do
 
     thrusters_input.apply_conf_file("auv_control::ThrustersInput.yml")
 
-    thrusters_input.configure  
-    thrusters_input.start  
+    thrusters_input.configure
+    thrusters_input.start
 
     sample = thrusters_input.cmd_in.new_sample
 
     # the effort field was not set
     thruster = Types::Base::JointState.new
     sample.elements = [thruster, thruster]
-    cmd_in.write sample 
+    cmd_in.write sample
 
-    assert_state_change(thrusters_input) { |s| s == :UNSET_THRUSTER_INPUT } 
+    assert_state_change(thrusters_input) { |s| s == :UNSET_THRUSTER_INPUT }
   end
-  
+
   it 'testing positive speed calculated value' do
 
     thrusters_input.apply_conf_file("auv_control::ThrustersInput.yml",
         ['default', 'control_modes_speed'], true)
 
-    thrusters_input.configure  
-    thrusters_input.start  
+    thrusters_input.configure
+    thrusters_input.start
 
     sample = thrusters_input.cmd_in.new_sample
 
@@ -137,7 +137,7 @@ describe 'auv_control::ThrustersInput configuration' do
     thruster1.effort = 37
     thruster2.effort = 43
     sample.elements = [thruster1, thruster2]
-    cmd_in.write sample 
+    cmd_in.write sample
 
     data = assert_has_one_new_sample cmd_out, 1
 
@@ -152,8 +152,8 @@ describe 'auv_control::ThrustersInput configuration' do
     thrusters_input.apply_conf_file("auv_control::ThrustersInput.yml",
         ['default', 'control_modes_speed'], true)
 
-    thrusters_input.configure  
-    thrusters_input.start  
+    thrusters_input.configure
+    thrusters_input.start
 
     sample = thrusters_input.cmd_in.new_sample
 
@@ -162,7 +162,7 @@ describe 'auv_control::ThrustersInput configuration' do
     thruster1.effort = -15
     thruster2.effort = -7
     sample.elements = [thruster1, thruster2]
-    cmd_in.write sample 
+    cmd_in.write sample
 
     data = assert_has_one_new_sample cmd_out, 1
 
@@ -176,8 +176,8 @@ describe 'auv_control::ThrustersInput configuration' do
 
     thrusters_input.apply_conf_file("auv_control::ThrustersInput.yml")
 
-    thrusters_input.configure  
-    thrusters_input.start  
+    thrusters_input.configure
+    thrusters_input.start
 
     sample = thrusters_input.cmd_in.new_sample
 
@@ -186,7 +186,7 @@ describe 'auv_control::ThrustersInput configuration' do
     thruster1.effort = 17
     thruster2.effort = 3
     sample.elements = [thruster1, thruster2]
-    cmd_in.write sample 
+    cmd_in.write sample
 
     data = assert_has_one_new_sample cmd_out, 1
 
@@ -200,8 +200,8 @@ describe 'auv_control::ThrustersInput configuration' do
 
     thrusters_input.apply_conf_file("auv_control::ThrustersInput.yml")
 
-    thrusters_input.configure  
-    thrusters_input.start  
+    thrusters_input.configure
+    thrusters_input.start
 
     sample = thrusters_input.cmd_in.new_sample
 
@@ -210,7 +210,7 @@ describe 'auv_control::ThrustersInput configuration' do
     thruster1.effort = -49
     thruster2.effort = -31
     sample.elements = [thruster1, thruster2]
-    cmd_in.write sample 
+    cmd_in.write sample
 
     data = assert_has_one_new_sample cmd_out, 1
 
