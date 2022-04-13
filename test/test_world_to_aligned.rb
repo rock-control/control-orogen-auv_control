@@ -123,10 +123,12 @@ describe "auv_control::WorldToAligned" do
 
         pose_sample = generate_rbs
         cmd = world_to_aligned.cmd_in.new_sample
+        cmd.linear = Eigen::Vector3.Zero
         cmd.angular = Eigen::Vector3.Unset
         cmd.time = Time.now
         cmd_c = world_to_aligned.cmd_in.new_sample
         cmd_c.linear = Eigen::Vector3.Unset
+        cmd_c.angular = Eigen::Vector3.Zero
         cmd_c.time = Time.now
         sleep(0.01)
         assert_state_change(world_to_aligned) { |s| s == :WAIT_FOR_POSE_SAMPLE }
