@@ -25,8 +25,8 @@ describe 'auv_control::Base' do
 
         before do
             task.expected_inputs do |v|
-                v.linear[0] = 1
-                v.linear[1] = 1
+                v.linear = [true, true, false]
+                v.angular = [false, false, false]
             end
         end
 
