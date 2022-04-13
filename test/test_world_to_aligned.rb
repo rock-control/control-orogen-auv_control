@@ -133,16 +133,21 @@ describe "auv_control::WorldToAligned" do
         sleep(0.01)
         assert_state_change(world_to_aligned) { |s| s == :WAIT_FOR_POSE_SAMPLE }
 
-        3.times do
+        3.times do |i|
             pose_sample.time = Time.now
             cmd.time = Time.now
             cmd_c.time = Time.now
             pose_samples.write pose_sample
             cmd_in.write cmd
+            if i > 0
+                cmd_out0 = assert_has_one_new_sample cmd_out, 1
+                assert_equal cmd.time.usec, cmd_out0.time.usec
+            end
+
             cmd_cascade.write cmd_c
             cmd_out0 = assert_has_one_new_sample cmd_out, 1
-            # The latest command
             assert_equal cmd_c.time.usec, cmd_out0.time.usec
+
             4.times do
                 # No more repeated sample here.
                 cmd_c.time = Time.now
