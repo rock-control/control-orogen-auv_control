@@ -97,15 +97,19 @@ describe "auv_control::WorldToAligned" do
         world_to_aligned.start
 
         pose_sample = generate_rbs
-        cmd = generate_cmd
         pose_samples.write pose_sample
+
+        cmd = generate_cmd
         cmd_in.write cmd
+        cmd_out0 = assert_has_one_new_sample cmd_out, 1
+        assert_equal cmd.time.usec, cmd_out0.time.usec
 
         3.times do
             cmd.time = Time.now
             cmd_in.write cmd
             cmd_out0 = assert_has_one_new_sample cmd_out, 1
             assert_equal cmd.time.usec, cmd_out0.time.usec
+
             4.times do
                 # No more repeated sample here.
                 assert_has_no_new_sample cmd_out, 0.01
@@ -123,24 +127,31 @@ describe "auv_control::WorldToAligned" do
 
         pose_sample = generate_rbs
         cmd = world_to_aligned.cmd_in.new_sample
+        cmd.linear = Eigen::Vector3.Zero
         cmd.angular = Eigen::Vector3.Unset
         cmd.time = Time.now
         cmd_c = world_to_aligned.cmd_in.new_sample
         cmd_c.linear = Eigen::Vector3.Unset
+        cmd_c.angular = Eigen::Vector3.Zero
         cmd_c.time = Time.now
         sleep(0.01)
         assert_state_change(world_to_aligned) { |s| s == :WAIT_FOR_POSE_SAMPLE }
 
-        3.times do
+        3.times do |i|
             pose_sample.time = Time.now
             cmd.time = Time.now
             cmd_c.time = Time.now
             pose_samples.write pose_sample
             cmd_in.write cmd
+            if i > 0
+                cmd_out0 = assert_has_one_new_sample cmd_out, 1
+                assert_equal cmd.time.usec, cmd_out0.time.usec
+            end
+
             cmd_cascade.write cmd_c
             cmd_out0 = assert_has_one_new_sample cmd_out, 1
-            # The latest command
             assert_equal cmd_c.time.usec, cmd_out0.time.usec
+
             4.times do
                 # No more repeated sample here.
                 cmd_c.time = Time.now
