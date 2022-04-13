@@ -97,15 +97,19 @@ describe "auv_control::WorldToAligned" do
         world_to_aligned.start
 
         pose_sample = generate_rbs
-        cmd = generate_cmd
         pose_samples.write pose_sample
+
+        cmd = generate_cmd
         cmd_in.write cmd
+        cmd_out0 = assert_has_one_new_sample cmd_out, 1
+        assert_equal cmd.time.usec, cmd_out0.time.usec
 
         3.times do
             cmd.time = Time.now
             cmd_in.write cmd
             cmd_out0 = assert_has_one_new_sample cmd_out, 1
             assert_equal cmd.time.usec, cmd_out0.time.usec
+
             4.times do
                 # No more repeated sample here.
                 assert_has_no_new_sample cmd_out, 0.01
