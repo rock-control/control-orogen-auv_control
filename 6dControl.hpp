@@ -13,6 +13,12 @@ namespace auv_control{
     struct ExpectedInputs{
         bool linear[3];
         bool angular[3];
+
+        ExpectedInputs() {
+            for (int i = 0; i < 3; ++i) {
+                linear[i] = angular[i] = true;
+            }
+        }
     };
 
     struct PIDState : public motor_controller::PIDState
