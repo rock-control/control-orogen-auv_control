@@ -6,7 +6,8 @@ import_types_from "6dControl.hpp"
 using_library "motor_controller"
 using_library "base-logging", typekit: false
 
-typekit.export_types '/motor_controller/PIDSettings', '/motor_controller/ParallelPIDSettings'
+typekit
+    .export_types "/motor_controller/PIDSettings", "/motor_controller/ParallelPIDSettings"
 
 # Definition of the base interface for all AUV control components
 #
@@ -17,19 +18,19 @@ task_context "Base" do
     abstract
 
     # This property defines which parts of the command input is expected to be
-    # set once we merged all the declared input ports. 
-    property("expected_inputs", "/auv_control/ExpectedInputs").
-        dynamic
-    
+    # set once we merged all the declared input ports.
+    property("expected_inputs", "/auv_control/ExpectedInputs")
+        .dynamic
+
     # If true, the component will send a zero command before getting into an
     # exception state. Otherwise, it will not do anything
     property "keep_position_on_exception", "bool", true
-  
+
     # If true write NaN on all axis, in keep position case
     property "nan_on_keep_position", "bool", false
 
     # The target state for this controller
-    # 
+    #
     # This port is statically defined for simplicity reasons, additional ports
     # can be created using the addCommandInput operation
     input_port("cmd_in", "/base/LinearAngular6DCommand")
@@ -45,26 +46,26 @@ task_context "Base" do
     #
     # This port is statically defined for simplicity reasons, additional ports
     # can be created using the addCommandInput operation
-    input_port('cmd_cascade', '/base/LinearAngular6DCommand')
+    input_port("cmd_cascade", "/base/LinearAngular6DCommand")
 
     # This property defines the timeout for the cascade input port. 0
     # means that the timeout would be ignored. Default is 1 second.
     property "timeout_cascade", "/base/Time"
 
-    #This property defines the safty behavior ath the merging of the input-ports.
-    #If the property is on true (default) the merged command need to be like in
-    #the expected_inputs property defined. Else the expected_inputs are ignored 
-    #while the merged comand are unic.
+    # This property defines the safty behavior ath the merging of the input-ports.
+    # If the property is on true (default) the merged command need to be like in
+    # the expected_inputs property defined. Else the expected_inputs are ignored
+    # while the merged comand are unic.
     property "safe_mode", "bool", true
 
-    # Create a new input to merge 
+    # Create a new input to merge
     #
     # Returns true if the port got added, and false if a port with the same name
     # already exists
-    operation("addCommandInput").
-        argument("name", "string").
-        argument("timeout", "/base/Time").
-        returns('bool')
+    operation("addCommandInput")
+        .argument("name", "string")
+        .argument("timeout", "/base/Time")
+        .returns("bool")
 
     # This property allows additional command input ports to be added on configuration.
     property "additional_command_input", "/std/vector<auv_control/InputPortConfig>"
@@ -80,21 +81,22 @@ end
 
 # Base implementation of all the tasks that use one PID controller per axis to
 # generate commands
-task_context 'BasePIDController', subclasses: 'Base' do
+task_context "BasePIDController", subclasses: "Base" do
     abstract
 
     # Ideal Settings for the PID controllers
-    property("pid_settings", "/base/LinearAngular6DPIDSettings").
-        dynamic
-    
-    # Parallel Settings for the PID controllers
-    property("parallel_pid_settings", "/base/LinearAngular6DParallelPIDSettings").
-        dynamic
+    property("pid_settings", "/base/LinearAngular6DPIDSettings")
+        .dynamic
 
-    # Use the Ideal (false) or Parallel PID-Settings 
+    # Parallel Settings for the PID controllers
+    property("parallel_pid_settings", "/base/LinearAngular6DParallelPIDSettings")
+        .dynamic
+
+    # Use the Ideal (false) or Parallel PID-Settings
     property "use_parallel_pid_settings", "bool", false
 
-    # Defines if the derivative will be applied to the error or to the output in the PID controller
+    # Defines if the derivative will be applied to the error or to the output in the PID
+    # controller
     property "apply_derivative_to_error", "bool", false
 
     # Under this Value the axis are not controled. Output is 0.
@@ -107,14 +109,14 @@ task_context 'BasePIDController', subclasses: 'Base' do
     # The system state. Only the parts of the state that are controlled needs to
     # be available (i.e. if the command involves only orientation, only the
     # orientation part is really needed)
-    input_port 'pose_samples', '/base/samples/RigidBodyState'
+    input_port "pose_samples", "/base/samples/RigidBodyState"
 
     # The output command. It is a velocity command expressed in the aligned
     # frame.
-    output_port 'cmd_out', '/base/LinearAngular6DCommand'
+    output_port "cmd_out", "/base/LinearAngular6DCommand"
 
     # The states of the pid-controllers
-    output_port 'pid_state', '/auv_control/LinearAngular6DPIDState'
+    output_port "pid_state", "/auv_control/LinearAngular6DPIDState"
 
     error_states :UNSURE_POSE_SAMPLE
     exception_states :POSE_SAMPLE_INVALID, :POSE_TIMEOUT
@@ -122,7 +124,7 @@ end
 
 # Controller that takes either positions or velocities, expressed in either the
 # world or aligned frames, and outputs "whatever" in the same frame
-task_context "PIDController", subclasses: 'BasePIDController' do
+task_context "PIDController", subclasses: "BasePIDController" do
 
     # The command domain (true:position or false:velocity)
     property "position_control", "bool"
@@ -138,7 +140,7 @@ end
 #
 # Note that this task expects to either have both x,y inputs or none. Giving it
 # only X or only Y will result in a failure to start.
-task_context "WorldToAligned", subclasses: 'Base' do
+task_context "WorldToAligned", subclasses: "Base" do
 
     # The domain of what we are converting (true:position or false:velocity or
     # efforts)
@@ -150,14 +152,14 @@ task_context "WorldToAligned", subclasses: 'Base' do
 
     # The system state. What is required depends on which parts of the state are
     # given as input
-    input_port 'pose_samples', '/base/samples/RigidBodyState'
+    input_port "pose_samples", "/base/samples/RigidBodyState"
 
     # This property defines the timeout for the pose_samples input port.
     # 0 means that the timeout would be ignored. Default is 1 second
     property "timeout_pose", "/base/Time"
 
     # The output command.
-    output_port 'cmd_out', '/base/LinearAngular6DCommand'
+    output_port "cmd_out", "/base/LinearAngular6DCommand"
 
     runtime_states :WAIT_FOR_POSE_SAMPLE
     exception_states :POSE_SAMPLE_INVALID, :POSE_TIMEOUT
@@ -165,13 +167,13 @@ end
 
 # Controller that takes either velocities or efforts expressed in the aligned
 # frame as input and outputs the same commands, but expressed in the body frame.
-task_context "AlignedToBody", subclasses: 'Base' do
+task_context "AlignedToBody", subclasses: "Base" do
 
     # The system pose in the world frame
     #
     # Only the orientation is being used (to be more precise, only the pitch and
     # roll angles)
-    input_port 'orientation_samples', '/base/samples/RigidBodyState'
+    input_port "orientation_samples", "/base/samples/RigidBodyState"
 
     # This property defines the timeout for the orientation_samples input port.
     # 0 means that the timeout would be ignored. Default is 1 second
@@ -180,7 +182,7 @@ task_context "AlignedToBody", subclasses: 'Base' do
     # The output command. It is expressed in the body frame, and is of the same
     # nature than the input (efforts if the inputs are efforts, velocities if
     # the inputs are velocities)
-    output_port 'cmd_out', '/base/LinearAngular6DCommand'
+    output_port "cmd_out", "/base/LinearAngular6DCommand"
 
     runtime_states :WAIT_FOR_ORIENTATION_SAMPLE
     exception_states :ORIENTATION_SAMPLE_INVALID, :ORIENTATION_TIMEOUT
@@ -193,13 +195,15 @@ end
 #
 # It basically projects the (merged) input vector onto the thrusters using the
 # matrix
-task_context "AccelerationController", subclasses: 'Base' do
-
-    # Matrix with size of 6 * n. n means the count of thrusters that are used.
-    # The rows 0 to 2 of the matrix are the linear axis. The lines 3 to 5 of the
+task_context "AccelerationController", subclasses: "Base" do
+    # Matrix with size of n * 6. n means the count of thrusters that are used.
+    # The columns 0 to 2 of the matrix are the linear axis. The columns 3 to 5 of the
     # matrix are the angular axis.
+    #
+    # Warning: By default, the storage orders in Eigen is column-major. So the
+    # thrusterMatrix will be gotten transposed.
     property "matrix", "/base/MatrixXd"
-    
+
     # Weights that indicate which thrusters should be prioritized in
     # cases where multiple solutions are possible. The thrusters with lower
     # weights will be prioritized. The property size should be equal to the number of
@@ -222,79 +226,87 @@ task_context "AccelerationController", subclasses: 'Base' do
     #
     # If left empty, uses RAW by default
     property "control_modes", "/std/vector</base/JointState/MODE>"
-    
-    # TRUE: allows the SVD solution for calculating the thrusters commands 
+
+    # TRUE: allows the SVD solution for calculating the thrusters commands
     #       similarly to pseudo-inverse solution.
-    # FALSE: the thruster commands will be calcultated by transposing the 
+    # FALSE: the thruster commands will be calcultated by transposing the
     #        thruster matrix and multiplying it by the input.
     property "svd_calculation", "bool", true
-    
+
     # Generated motor commands
     output_port "cmd_out", "/base/commands/Joints"
 
     # The expected generated effort (as opposed to the input effort)
     output_port "expected_effort", "/base/LinearAngular6DCommand"
-    
+
     exception_states :WRONG_SIZE_OF_CONTROLMODES, :WRONG_SIZE_OF_LIMITS, :WRONG_SIZE_OF_NAMES, :INVALID_NAME_IN_LIMITS 
 end
 
 # Generates a single constant command in the configured domain
 task_context "ConstantCommand" do
     # The desired command
-    property 'cmd', '/base/LinearAngular6DCommand'
+    property "cmd", "/base/LinearAngular6DCommand"
 
     # The output command.
-    output_port 'cmd_out', '/base/LinearAngular6DCommand'
+    output_port "cmd_out", "/base/LinearAngular6DCommand"
 
     periodic(0.01)
 end
 
-
-# The GroundFollower task provides a depth command to the control chain that keeps a fixed distance from the ground provided depth and altitude readings. In the case of altitude dropout, the task will still provide a command for a fixed period of time (given as a property). If this time is exceeded, keeping a fixed depth is considered an unsafe behaviour and therefore an expection state is emitted by the task as a call for help.
+# The GroundFollower task provides a depth command to the control chain that keeps a fixed
+# distance from the ground provided depth and altitude readings. In the case of altitude
+# dropout, the task will still provide a command for a fixed period of time (given as a
+# property). If this time is exceeded, keeping a fixed depth is considered an unsafe
+# behaviour and therefore an expection state is emitted by the task as a call for help.
 task_context "GroundFollower" do
-
     # The desired distance to ground, should be a positive number.
-    property 'distance_to_ground', 'double', 2.0
-    # The timeout the task should wait to get an altimeter reading
-    property 'altimeter_timeout', "/base/Time"
-    # The timeout the task should wait to get a depth reading
-    property 'depth_timeout', "/base/Time"
-    # This timeout is when there is a reading on the altimeter but it is a nan which means that the altimeter is running but cannot see the ground, in this case the task will run for the specified time keeping the last valid ground distance before going into an exception state
-    property 'altimeter_dropout_timeout', "/base/Time"
+    property "distance_to_ground", "double", 2.0
 
-    # Minimum saftey altitude, if altitude goes below this value a warning state is emitted, this indicates that the control chain is not keeping the desired depth correctly
-    property 'safety_distance', 'double', 1.0
+    # The timeout the task should wait to get an altimeter reading
+    property "altimeter_timeout", "/base/Time"
+
+    # The timeout the task should wait to get a depth reading
+    property "depth_timeout", "/base/Time"
+
+    # This timeout is when there is a reading on the altimeter but it is a nan which means
+    # that the altimeter is running but cannot see the ground, in this case the task will
+    # run for the specified time keeping the last valid ground distance before going into
+    # an exception state
+    property "altimeter_dropout_timeout", "/base/Time"
+
+    # Minimum saftey altitude, if altitude goes below this value a warning state is
+    # emitted, this indicates that the control chain is not keeping the desired depth
+    # correctly
+    property "safety_distance", "double", 1.0
 
     input_port "altimeter", "/base/samples/RigidBodyState"
     input_port "depth", "/base/samples/RigidBodyState"
 
-
     output_port "floor_position", "double"
     # The output command.
-    output_port 'cmd_out', '/base/LinearAngular6DCommand'
+    output_port "cmd_out", "/base/LinearAngular6DCommand"
 
     runtime_states(:NO_DEPTH_READING, :NO_ALTIMETER_READING, :ALTIMETER_DROPOUT, :WARNING_LOW_ALTITUDE, :NO_VALID_GROUND_DISTANCE)
     exception_states(:DEPTH_TIMEOUT, :ALTIMETER_TIMEOUT, :INVALID_DEPTH_READING, :INVALID_NEGATIVE_ALTIMETER_READING, :ALTIMETER_DROPOUT_TIMEOUT)
 
     periodic(0.01)
 end
-    
 
-# Follows a set of waypoints, where each waypoint is defined 
+# Follows a set of waypoints, where each waypoint is defined
 task_context "WaypointNavigator" do
     needs_configuration
 
     # The trajectory to follow, expressed as a set of waypoints in the world
     # frame
     input_port "trajectory", "/std/vector</base/LinearAngular6DWaypoint>"
-    
+
     # The current system pose
     input_port "pose_sample", "/base/samples/RigidBodyState"
 
     # The output command, as a pose in world frame that can be used by the
     # auv_control controllers
     output_port "cmd_out", "/base/LinearAngular6DCommand"
-   
+
     # Shows error between current and desired waypoint for debuging,
     # current waypoint is navigated by this controller and remaining waypoints to follow
     output_port("waypoint_info", "/base/LinearAngular6DWaypointInfo")
@@ -321,12 +333,11 @@ task_context "MotionCommand2DConverter" do
     port_driven "cmd_in"
 end
 
-# Task that allows a vehicle to drive long distances in an optimal 
-# orientation. So the vehicle can drive faster to his target 
-# position. This controler works with Commands in AlignedPosition 
+# Task that allows a vehicle to drive long distances in an optimal
+# orientation. So the vehicle can drive faster to his target
+# position. This controler works with Commands in AlignedPosition
 # Frame.
-task_context "OptimalHeadingController", subclasses: 'Base' do
-
+task_context "OptimalHeadingController", subclasses: "Base" do
     # The optimal orientation of the vehicle, if the target position
     # is on an orientation of 0.0
     property "optimal_heading", "double", 0.0
@@ -334,13 +345,13 @@ task_context "OptimalHeadingController", subclasses: 'Base' do
     # The distance to target position, over that the vehicle used
     # the optimal heading
     property "optimal_heading_distance", "double"
-    
+
     # The system state. What is required depends on which parts of the state are
     # given as input
-    input_port 'orientation_samples', '/base/samples/RigidBodyState'
-    
+    input_port "orientation_samples", "/base/samples/RigidBodyState"
+
     # The output command.
-    output_port 'cmd_out', '/base/LinearAngular6DCommand'
+    output_port "cmd_out", "/base/LinearAngular6DCommand"
 
     error_states :WAIT_FOR_ORIENTATION_SAMPLE
 end
@@ -354,18 +365,18 @@ task_context "ThrustersBase" do
     # Should have a size equal to the number of thrusters
     # Thruster[N] = Coeff * rotation * |rotation|
     property "thruster_coeff_pos", "base::VectorXd"
-    
+
     # Convert thruster signal into forces, in negative direction or CCW.
     # Should have a size equal to the number of thrusters
     # Thruster[N] = Coeff * rotation * |rotation|
     property "thruster_coeff_neg", "/base/VectorXd"
-    
-    # If left empty, uses RAW by default  
-    
+
+    # If left empty, uses RAW by default
+
     property "control_modes", "/std/vector</base/JointState/MODE>"
     # In case the control_modes is RAW (pwm), used to convert the signal into DC Voltage
-    # Thruster[N] = Coeff * voltage * |voltage|  
-    property "thruster_voltage", "double", 0  
+    # Thruster[N] = Coeff * voltage * |voltage|
+    property "thruster_voltage", "double", 0
 
     # The description about the ports are specified in ThrustersInput and
     # ThrustersFeedback tasks
@@ -373,16 +384,16 @@ task_context "ThrustersBase" do
 
     output_port "cmd_out", "/base/commands/Joints"
 
-    exception_states :UNSET_THRUSTER_INPUT, :UNEXPECTED_THRUSTER_INPUT 
-                    
-    port_driven 'cmd_in'
+    exception_states :UNSET_THRUSTER_INPUT, :UNEXPECTED_THRUSTER_INPUT
+
+    port_driven "cmd_in"
 end
 
 # Task that convert thruster forces to thruster's rotation.
 #
 # AccelerationController.cmd_out --> ThrustersInput --> Demultiplexer.cmd_in
 #
-task_context "ThrustersInput", subclasses: 'ThrustersBase' do
+task_context "ThrustersInput", subclasses: "ThrustersBase" do
     needs_configuration
 
     # cmd_in: forces that each thruster should apply. Should contain data in cmd_in.effort
@@ -393,7 +404,7 @@ end
 #
 # Multiplexer.joint_samples --> ThrustersFeedback --> ThrusterForce2BodyEffort.thruster_forces
 #
-task_context "ThrustersFeedback", subclasses: 'ThrustersBase' do
+task_context "ThrustersFeedback", subclasses: "ThrustersBase" do
     needs_configuration
 
     # cmd_in: thrusters rotation feedback
@@ -421,12 +432,11 @@ task_context "ThrusterForce2BodyEffort" do
 
     exception_states :UNSET_THRUSTER_INPUT, :UNEXPECTED_THRUSTER_INPUT
 
-    port_driven 'thruster_forces'
+    port_driven "thruster_forces"
 end
 
 # Task that works as switch betwen two commands
-task_context "CommandInjection", subclasses: 'Base' do
-
+task_context "CommandInjection", subclasses: "Base" do
     # Timeout for the injection command
     property "cmd_injection_timeout", "double", 0.05
 

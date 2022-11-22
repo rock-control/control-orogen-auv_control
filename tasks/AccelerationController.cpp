@@ -26,6 +26,7 @@ bool AccelerationController::configureHook()
     if (! AccelerationControllerBase::configureHook()){
         return false;
     }
+    // Warning: By default, the storage orders in Eigen is column-major. So the thrusterMatrix will be gotten transposed.
     thrusterMatrix = _matrix.get();
     unsigned int numberOfThrusters = thrusterMatrix.cols();
     inputVector = Eigen::VectorXd::Zero(6);
