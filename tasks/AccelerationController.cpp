@@ -7,12 +7,12 @@
 
 using namespace auv_control;
 
-AccelerationController::AccelerationController(std::string const& name)
+AccelerationController::AccelerationController(std::string const &name)
     : AccelerationControllerBase(name)
 {
 }
 
-AccelerationController::AccelerationController(std::string const& name, RTT::ExecutionEngine* engine)
+AccelerationController::AccelerationController(std::string const &name, RTT::ExecutionEngine *engine)
     : AccelerationControllerBase(name, engine)
 {
 }
@@ -23,12 +23,24 @@ AccelerationController::~AccelerationController()
 
 bool AccelerationController::configureHook()
 {
-    if (! AccelerationControllerBase::configureHook()){
+    if (!AccelerationControllerBase::configureHook())
+    {
         return false;
     }
-    // Warning: By default, the storage orders in Eigen is column-major. So the thrusterMatrix will be gotten transposed.
-    thrusterMatrix = _matrix.get();
-    unsigned int numberOfThrusters = thrusterMatrix.cols();
+
+    // Warning: By default, the storage order in Eigen is column-major.
+    // This means that it is in effect transposed on load when compared
+    // with how it looks in YAML, that is the YAML
+    //
+    // thrusterMatrix:
+    // data: [1, 2, 3,
+    //        4, 5, 6]
+    //
+    // Will actually be loaded in thrusterMatrix as row(0) = [1, 4], row(1) = [2, 5] ...
+    //
+    // The transpose here makes sure that one that writes YAML config files gets what (s)he expects.
+    thrusterMatrix = _matrix.get().transpose();
+    unsigned int numberOfThrusters = thrusterMatrix.rows();
     inputVector = Eigen::VectorXd::Zero(6);
     cmdVector = Eigen::VectorXd::Zero(numberOfThrusters);
     expectedEffortVector = Eigen::VectorXd::Zero(6);
@@ -41,27 +53,29 @@ bool AccelerationController::configureHook()
         LOG_ERROR("The thrusters weights vector should be empty if svd_calculation is FALSE.");
         return false;
     }
-    else if(thrustersWeights.size() == 0 && _svd_calculation == true)
+    else if (thrustersWeights.size() == 0 && _svd_calculation == true)
     {
         LOG_WARN("The svd_calculation is TRUE, but the thrusters weights were not set. "
                  "Setting the thrusters weights to a vector of ones...");
         thrustersWeights = Eigen::VectorXd::Ones(numberOfThrusters);
         _thrusters_weights.set(thrustersWeights);
     }
-    else if(thrustersWeights.size() != 0 && thrustersWeights.size() != numberOfThrusters)
+    else if (thrustersWeights.size() != 0 && thrustersWeights.size() != numberOfThrusters)
     {
         LOG_ERROR("The thrusters weights vector's size should be equal to the number of thrusters (%i), "
-                  "but it currently has a size equal to %i.", numberOfThrusters, thrustersWeights.size());
+                  "but it currently has a size equal to %i.",
+                  numberOfThrusters, thrustersWeights.size());
         return false;
     }
     else
     {
-        for(int i = 0; i < thrustersWeights.size(); i++)
+        for (int i = 0; i < thrustersWeights.size(); i++)
         {
-            if(thrustersWeights[i] <= 0)
+            if (thrustersWeights[i] <= 0)
             {
                 LOG_ERROR("All the thrusters weights should have positive values. "
-                          "Please check the index %i element.", i);
+                          "Please check the index %i element.",
+                          i);
                 return false;
             }
         }
@@ -69,40 +83,49 @@ bool AccelerationController::configureHook()
 
     weighingMatrix = thrustersWeights.asDiagonal();
 
-    if(_svd_calculation.get())
+    if (_svd_calculation.get())
     {
         base::MatrixXd auxPseudoInverse;
-        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix*weighingMatrix.inverse()*thrusterMatrix.transpose(),  Eigen::ComputeThinU | Eigen::ComputeThinV));
+        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix.transpose() * weighingMatrix.inverse() * thrusterMatrix, Eigen::ComputeThinU | Eigen::ComputeThinV));
 
         // Pseudo-inverse of the svd matrix
-        auxPseudoInverse = svd->solve(Eigen::MatrixXd::Identity(thrusterMatrix.rows(), thrusterMatrix.rows()));
+        auxPseudoInverse = svd->solve(Eigen::MatrixXd::Identity(thrusterMatrix.cols(), thrusterMatrix.cols()));
 
         // Weighted pseudo-inverse used for optimal distribution of propulsion and control forces according to Fossen (1994, p. 98)
-        weightedPseudoInverse = weighingMatrix.inverse()*thrusterMatrix.transpose()*auxPseudoInverse;
+        weightedPseudoInverse = weighingMatrix.inverse() * thrusterMatrix * auxPseudoInverse;
 
         // SVD of the weighted pseudo-inverse to calculate the expectedEffortVector
-        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(weightedPseudoInverse,  Eigen::ComputeThinU | Eigen::ComputeThinV));
+        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(weightedPseudoInverse, Eigen::ComputeThinU | Eigen::ComputeThinV));
     }
     else
-        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix.transpose(),  Eigen::ComputeThinU | Eigen::ComputeThinV));
+        svd.reset(new Eigen::JacobiSVD<Eigen::MatrixXd>(thrusterMatrix, Eigen::ComputeThinU | Eigen::ComputeThinV));
 
-    if(names.size() != numberOfThrusters && names.size() != 0){
+    if (names.size() != numberOfThrusters && names.size() != 0)
+    {
         exception(WRONG_SIZE_OF_NAMES);
         return false;
     }
 
-    if(_limits.get().size() != numberOfThrusters && !_limits.get().empty()){
+    if (_limits.get().size() != numberOfThrusters && !_limits.get().empty())
+    {
         exception(WRONG_SIZE_OF_LIMITS);
         return false;
-    } else {
+    }
+    else
+    {
         limits = _limits.get();
     }
 
-    if(names.size() && limits.names.size()){
-        for(unsigned i = 0; i < names.size(); i++){
-            try{
+    if (names.size() && limits.names.size())
+    {
+        for (unsigned i = 0; i < names.size(); i++)
+        {
+            try
+            {
                 limits.mapNameToIndex(names[i]);
-            } catch (std::exception& e){
+            }
+            catch (std::exception &e)
+            {
                 std::cout << "error:" << e.what() << std::endl;
                 exception(INVALID_NAME_IN_LIMITS);
                 return false;
@@ -111,14 +134,18 @@ bool AccelerationController::configureHook()
     }
 
     controlModes = _control_modes.get();
-    if(controlModes.size() == 0){
-        //resize the controlModes to number of Thrusters
+    if (controlModes.size() == 0)
+    {
+        // resize the controlModes to number of Thrusters
         controlModes.resize(numberOfThrusters);
-        //set undefined controlModes to RAW
-        for(unsigned int i = 0; i < numberOfThrusters; i++){
+        // set undefined controlModes to RAW
+        for (unsigned int i = 0; i < numberOfThrusters; i++)
+        {
             controlModes[i] = base::JointState::RAW;
         }
-    } else if(controlModes.size() != numberOfThrusters){
+    }
+    else if (controlModes.size() != numberOfThrusters)
+    {
         exception(WRONG_SIZE_OF_CONTROLMODES);
     }
 
@@ -131,7 +158,7 @@ bool AccelerationController::configureHook()
 
 bool AccelerationController::startHook()
 {
-    if (! AccelerationControllerBase::startHook())
+    if (!AccelerationControllerBase::startHook())
         return false;
 
     return true;
@@ -146,30 +173,39 @@ bool AccelerationController::calcOutput(const LinearAngular6DCommandStatus &merg
             inputVector(i) = 0;
     }
 
-    if(_svd_calculation.get())
+    if (_svd_calculation.get())
     {
         cmdVector = weightedPseudoInverse * inputVector;
     }
     else
     {
-        cmdVector = thrusterMatrix.transpose()*inputVector;
+        cmdVector = thrusterMatrix * inputVector;
     }
 
-    for (unsigned int i = 0; i < jointCommand.size(); ++i){
-        //Cutoff cmdValue at the JointLimits
-        if(!_limits.get().empty()){
-            if(names.size() && _limits.get().hasNames()){
-                if(cmdVector(i) > _limits.get()[names[i]].max.getField(controlModes[i])){
+    for (unsigned int i = 0; i < jointCommand.size(); ++i)
+    {
+        // Cutoff cmdValue at the JointLimits
+        if (!_limits.get().empty())
+        {
+            if (names.size() && _limits.get().hasNames())
+            {
+                if (cmdVector(i) > _limits.get()[names[i]].max.getField(controlModes[i]))
+                {
                     cmdVector(i) = _limits.get()[names[i]].max.getField(controlModes[i]);
                 }
-                if(cmdVector(i) < _limits.get()[names[i]].min.getField(controlModes[i])){
+                if (cmdVector(i) < _limits.get()[names[i]].min.getField(controlModes[i]))
+                {
                     cmdVector(i) = _limits.get()[names[i]].min.getField(controlModes[i]);
                 }
-            } else {
-                if(cmdVector(i) > _limits.get()[i].max.getField(controlModes[i])){
+            }
+            else
+            {
+                if (cmdVector(i) > _limits.get()[i].max.getField(controlModes[i]))
+                {
                     cmdVector(i) = _limits.get()[i].max.getField(controlModes[i]);
                 }
-                if(cmdVector(i) < _limits.get()[i].min.getField(controlModes[i])){
+                if (cmdVector(i) < _limits.get()[i].min.getField(controlModes[i]))
+                {
                     cmdVector(i) = _limits.get()[i].min.getField(controlModes[i]);
                 }
             }
@@ -180,7 +216,7 @@ bool AccelerationController::calcOutput(const LinearAngular6DCommandStatus &merg
     _cmd_out.write(jointCommand);
 
     base::LinearAngular6DCommand expectedEffort;
-    expectedEffortVector = svd->solve(cmdVector);;
+    expectedEffortVector = svd->solve(cmdVector);
     expectedEffort.linear.x() = expectedEffortVector(0);
     expectedEffort.linear.y() = expectedEffortVector(1);
     expectedEffort.linear.z() = expectedEffortVector(2);

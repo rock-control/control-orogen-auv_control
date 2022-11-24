@@ -200,8 +200,9 @@ task_context "AccelerationController", subclasses: "Base" do
     # The columns 0 to 2 of the matrix are the linear axis. The columns 3 to 5 of the
     # matrix are the angular axis.
     #
-    # Warning: By default, the storage orders in Eigen is column-major. So the
-    # thrusterMatrix will be gotten transposed.
+    # Warning: if one writes this property programmatically (as opposed to loading it from
+    # a YAML file), you must transpose it before writing it. See the comments in configure
+    # Hook for more details.
     property "matrix", "/base/MatrixXd"
 
     # Weights that indicate which thrusters should be prioritized in
