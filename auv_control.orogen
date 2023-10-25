@@ -6,8 +6,10 @@ import_types_from "6dControl.hpp"
 using_library "motor_controller"
 using_library "base-logging", typekit: false
 
-typekit
-    .export_types "/motor_controller/PIDSettings", "/motor_controller/ParallelPIDSettings"
+typekit do
+    export_types "/motor_controller/PIDSettings", "/motor_controller/ParallelPIDSettings"
+    export_types "/base/LinearAngular6DWaypoint"
+end
 
 # Definition of the base interface for all AUV control components
 #
